@@ -28,16 +28,10 @@ class CommentsTable
                     ->label('Comment'),
                 TextColumn::make('created_at')
                     ->label('Created At')
-                    ->dateTime(
-                        format: 'M j, Y g:i A T',
-                        timezone: Auth::user()->timezone,
-                    ),
+                    ->dateTime('M j, Y g:i A', Auth::user()->timezone),
                 TextColumn::make('updated_at')
                     ->label('Updated At')
-                    ->dateTime(
-                        format: 'M j, Y g:i A T',
-                        timezone: Auth::user()->timezone,
-                    ),
+                    ->dateTime('M j, Y g:i A', Auth::user()->timezone),
             ])
             ->filters([
                 //

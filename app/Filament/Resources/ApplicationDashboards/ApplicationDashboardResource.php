@@ -15,6 +15,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use UnitEnum;
 
 class ApplicationDashboardResource extends Resource
@@ -68,10 +69,10 @@ class ApplicationDashboardResource extends Resource
                 TextColumn::make('seo_terms')
                     ->limit(40),
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->dateTime('M j, Y g:i A', Auth::user()->timezone)
                     ->sortable(),
                 TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->dateTime('M j, Y g:i A', Auth::user()->timezone)
                     ->sortable(),
             ])
             ->filters([

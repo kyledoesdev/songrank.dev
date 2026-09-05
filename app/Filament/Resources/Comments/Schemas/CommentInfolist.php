@@ -12,6 +12,7 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Auth;
 
 class CommentInfolist
 {
@@ -66,15 +67,15 @@ class CommentInfolist
                     ->schema([
                         TextEntry::make('approved_at')
                             ->label('Approved')
-                            ->dateTime()
+                            ->dateTime('M j, Y g:i A', Auth::user()->timezone)
                             ->placeholder('Not Approved')
                             ->icon(fn (mixed $state): Heroicon => $state ? Heroicon::OutlinedCheckCircle : Heroicon::OutlinedXCircle)
                             ->iconColor(fn (mixed $state): string => $state ? 'success' : 'danger'),
                         TextEntry::make('created_at')
-                            ->dateTime()
+                            ->dateTime('M j, Y g:i A', Auth::user()->timezone)
                             ->since(),
                         TextEntry::make('updated_at')
-                            ->dateTime()
+                            ->dateTime('M j, Y g:i A', Auth::user()->timezone)
                             ->since(),
                     ]),
             ]);

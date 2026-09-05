@@ -14,6 +14,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class LegalDocumentTable
 {
@@ -30,15 +31,15 @@ class LegalDocumentTable
                 TextColumn::make('effective_at')
                     ->label('Effective From')
                     ->sortable()
-                    ->dateTime(),
+                    ->dateTime('M j, Y g:i A', Auth::user()->timezone),
                 TextColumn::make('created_at')
                     ->label('Created')
                     ->sortable()
-                    ->dateTime(),
+                    ->dateTime('M j, Y g:i A', Auth::user()->timezone),
                 TextColumn::make('updated_at')
                     ->label('Last Updated')
                     ->sortable()
-                    ->dateTime(),
+                    ->dateTime('M j, Y g:i A', Auth::user()->timezone),
             ])
             ->defaultSort('effective_at', 'desc')
             ->filters([

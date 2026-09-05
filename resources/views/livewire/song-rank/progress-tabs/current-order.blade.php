@@ -10,13 +10,13 @@
             <div class="p-4">
                 <div class="flex items-center justify-center gap-2 sm:gap-4">
                     <div class="flex-1">
-                        <x-song-ranked-item :ranking="$ranking" :song="$duel['left']" />
+                        <x-songs.ranked-item :ranking="$ranking" :song="$duel['left']" />
                     </div>
                     <div class="flex-shrink-0">
                         <i class="fa-solid fa-khanda text-2xl sm:text-3xl text-yellow-600"></i>
                     </div>
                     <div class="flex-1">
-                        <x-song-ranked-item :ranking="$ranking" :song="$duel['right']" />
+                        <x-songs.ranked-item :ranking="$ranking" :song="$duel['right']" />
                     </div>
                 </div>
             </div>
@@ -43,7 +43,7 @@
                                 {{ $index + 1 }}
                             </span>
                             <div class="flex-1 min-w-0">
-                                <x-song-ranked-item :ranking="$ranking" :song="$song" />
+                                <x-songs.ranked-item :ranking="$ranking" :song="$song" />
                             </div>
                         </div>
                     @endforeach
@@ -94,7 +94,7 @@
                                                 {{ $index + 1 }}
                                             </span>
                                             <div class="flex-1 min-w-0">
-                                                <x-song-ranked-item :ranking="$ranking" :song="$song" />
+                                                <x-songs.ranked-item :ranking="$ranking" :song="$song" />
                                             </div>
                                         </div>
                                     @endforeach
@@ -117,7 +117,7 @@
                                                         </span>
                                                     @endif
                                                     <div class="flex-1 min-w-0">
-                                                        <x-song-ranked-item :ranking="$ranking" :song="$song" />
+                                                        <x-songs.ranked-item :ranking="$ranking" :song="$song" />
                                                     </div>
                                                 </div>
                                             @endforeach
@@ -134,7 +134,7 @@
                                                         </span>
                                                     @endif
                                                     <div class="flex-1 min-w-0">
-                                                        <x-song-ranked-item :ranking="$ranking" :song="$song" />
+                                                        <x-songs.ranked-item :ranking="$ranking" :song="$song" />
                                                     </div>
                                                 </div>
                                             @endforeach

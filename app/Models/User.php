@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Kyledoesdev\Essentials\Concerns\HasStatsAfterEvents;
+use Laravel\Pennant\Concerns\HasFeatures;
 use Spatie\Comments\Models\Concerns\InteractsWithComments;
 use Spatie\Comments\Models\Concerns\Interfaces\CanComment;
 use Spatie\Comments\Support\CommentatorProperties;
@@ -25,6 +26,7 @@ class User extends Authenticatable implements CanComment, FilamentUser
     /** @use HasFactory<UserFactory> */
     use HasFactory;
 
+    use HasFeatures;
     use HasStatsAfterEvents;
     use InteractsWithComments;
     use Notifiable;

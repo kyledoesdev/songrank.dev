@@ -19,6 +19,7 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use UnitEnum;
 
 class ArtistResource extends Resource
@@ -47,10 +48,10 @@ class ArtistResource extends Resource
                     ->counts('rankings')
                     ->sortable(),
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->dateTime('M j, Y g:i A', Auth::user()->timezone)
                     ->sortable(),
                 TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->dateTime('M j, Y g:i A', Auth::user()->timezone)
                     ->sortable(),
             ])
             ->filters([])

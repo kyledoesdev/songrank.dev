@@ -4,7 +4,7 @@ Thank you for considering contributing to SongRank! To keep things running smoot
 
 ## Bug Reports
 
-A bug report should include a clear title, a description of the expected vs. actual behavior, and the steps to reproduce it. The more detail you provide, the easier it is to track down and fix. Please search [existing issues](https://github.com/kyledoesdev/spotify-song-ranker/issues) first to avoid duplicates.
+A bug report should include a clear title, a description of the expected vs. actual behavior, and the steps to reproduce it. The more detail you provide, the easier it is to track down and fix. Please search [existing issues](https://github.com/kyledoesdev/songrank.dev/issues) first to avoid duplicates.
 
 ## Feature Requests
 

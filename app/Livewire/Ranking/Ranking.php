@@ -3,6 +3,7 @@
 namespace App\Livewire\Ranking;
 
 use App\Models\Ranking as RankingModel;
+use Laravel\Head\Facades\Head;
 use Livewire\Component;
 
 class Ranking extends Component
@@ -18,6 +19,8 @@ class Ranking extends Component
         if (! $this->ranking->canBeSeen()) {
             abort(404);
         }
+
+        Head::title($this->ranking->name);
     }
 
     public function render()
@@ -25,6 +28,6 @@ class Ranking extends Component
         return view('livewire.ranking.ranking', [
             'ranking' => $this->ranking,
             'sortingState' => $this->ranking->sortingState,
-        ])->title(config('app.name').' - '.$this->ranking->name);
+        ]);
     }
 }

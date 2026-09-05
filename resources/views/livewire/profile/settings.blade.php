@@ -66,7 +66,6 @@
                             disabled
                             class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm text-slate-600 cursor-not-allowed"
                         >
-                        <p class="text-xs text-slate-500 mt-2"></p>
                     </div>
                 </div>
                 
@@ -119,11 +118,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- Footer with additional info -->
-        <div class="mt-8 pt-6 border-t border-slate-200">
-            
         </div>
     </div>
 </div>

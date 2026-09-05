@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "329cf3ffcd57c8b111f4a7b8f40b7b02",
+    "content-hash": "ea522943f7e4d04db72bff51d210b510",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -3154,6 +3154,77 @@
             "time": "2026-07-27T14:48:58+00:00"
         },
         {
+            "name": "laravel/head",
+            "version": "v0.2.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/laravel/head.git",
+                "reference": "09e88a09c0ca08533be94863a4d3e95016b6d88f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/laravel/head/zipball/09e88a09c0ca08533be94863a4d3e95016b6d88f",
+                "reference": "09e88a09c0ca08533be94863a4d3e95016b6d88f",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/contracts": "^13.17.0",
+                "illuminate/routing": "^13.17.0",
+                "illuminate/support": "^13.17.0",
+                "illuminate/view": "^13.17.0",
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "inertiajs/inertia-laravel": "^3.1",
+                "laravel/pint": "^1.28.0",
+                "livewire/livewire": "^4.3",
+                "orchestra/testbench": "^11.0",
+                "pestphp/pest": "^4.0",
+                "phpstan/phpstan": "^2.0",
+                "rector/rector": "^2.3"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "Head": "Laravel\\Head\\Facades\\Head"
+                    },
+                    "providers": [
+                        "Laravel\\Head\\HeadServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Laravel\\Head\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylor@laravel.com"
+                }
+            ],
+            "description": "First-party head management for Laravel applications",
+            "homepage": "https://github.com/laravel/head",
+            "keywords": [
+                "head",
+                "laravel",
+                "metadata",
+                "seo",
+                "tags"
+            ],
+            "support": {
+                "issues": "https://github.com/laravel/head/issues",
+                "source": "https://github.com/laravel/head"
+            },
+            "time": "2026-08-26T18:54:37+00:00"
+        },
+        {
             "name": "laravel/nightwatch",
             "version": "v1.28.5",
             "source": {
@@ -3246,6 +3317,83 @@
                 "source": "https://github.com/laravel/nightwatch"
             },
             "time": "2026-07-28T00:33:11+00:00"
+        },
+        {
+            "name": "laravel/pennant",
+            "version": "v1.26.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/laravel/pennant.git",
+                "reference": "a343096b4b01a23a5dfadf92b0907f710134d5e0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/laravel/pennant/zipball/a343096b4b01a23a5dfadf92b0907f710134d5e0",
+                "reference": "a343096b4b01a23a5dfadf92b0907f710134d5e0",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/console": "^10.0|^11.0|^12.0|^13.0",
+                "illuminate/container": "^10.0|^11.0|^12.0|^13.0",
+                "illuminate/contracts": "^10.0|^11.0|^12.0|^13.0",
+                "illuminate/database": "^10.0|^11.0|^12.0|^13.0",
+                "illuminate/queue": "^10.0|^11.0|^12.0|^13.0",
+                "illuminate/support": "^10.0|^11.0|^12.0|^13.0",
+                "php": "^8.1",
+                "symfony/console": "^6.0|^7.0|^8.0",
+                "symfony/finder": "^6.0|^7.0|^8.0"
+            },
+            "require-dev": {
+                "laravel/octane": "^1.4|^2.0",
+                "orchestra/testbench": "^8.36|^9.15|^10.8|^11.0",
+                "phpstan/phpstan": "^1.10"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "Feature": "Laravel\\Pennant\\Feature"
+                    },
+                    "providers": [
+                        "Laravel\\Pennant\\PennantServiceProvider"
+                    ]
+                },
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/helpers.php",
+                    "src/functions.php"
+                ],
+                "psr-4": {
+                    "Laravel\\Pennant\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylor@laravel.com"
+                }
+            ],
+            "description": "A simple, lightweight library for managing feature flags.",
+            "homepage": "https://github.com/laravel/pennant",
+            "keywords": [
+                "feature",
+                "flags",
+                "laravel",
+                "pennant"
+            ],
+            "support": {
+                "issues": "https://github.com/laravel/pennant/issues",
+                "source": "https://github.com/laravel/pennant"
+            },
+            "time": "2026-08-13T13:05:53+00:00"
         },
         {
             "name": "laravel/prompts",

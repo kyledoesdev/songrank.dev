@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\Users\RelationManagers;
 
-use Carbon\Carbon;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class PreferencesRelationManager extends RelationManager
 {
@@ -33,23 +33,13 @@ class PreferencesRelationManager extends RelationManager
                     ->label('ID'),
                 ToggleColumn::make('recieve_newsletter_emails'),
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->dateTime('M j, Y g:i A', Auth::user()->timezone)
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->formatStateUsing(function ($state, $record) {
-                        return Carbon::parse($record->getAttributes()['created_at'])
-                            ->inUserTimezone()
-                            ->format('m/d/Y g:i A T');
-                    }),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->dateTime('M j, Y g:i A', Auth::user()->timezone)
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->formatStateUsing(function ($state, $record) {
-                        return Carbon::parse($record->getAttributes()['updated_at'])
-                            ->inUserTimezone()
-                            ->format('m/d/Y g:i A T');
-                    }),
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->recordActions([])
             ->toolbarActions([]);

@@ -2,7 +2,7 @@
     class="relative"
     :key="'card-'.$ranking->getKey()"
 >
-    <x-ranking-card :ranking="$ranking" />
+    <x-rankings.card :ranking="$ranking" />
 
     @if (auth()->id() === $ranking->user_id && Route::currentRouteName() === 'profile')
         <div class="absolute top-2 right-2 flex flex-col space-y-1 mr-1 mt-1" :key="'ranking-quick-actions-'.$ranking->getKey()">

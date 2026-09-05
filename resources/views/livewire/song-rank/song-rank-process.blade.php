@@ -1,7 +1,3 @@
-@php 
-    $title = $ranking->name;
-@endphp
-
 <div>
     <div class="pl-4 pr-4 bg-white shadow-lg rounded-lg mt-4">
         <div class="flex justify-center bg-white p-4">
@@ -30,93 +26,8 @@
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 px-2 md:px-4 overflow-x-hidden">
             @if($currentSong1 && $currentSong2)
-                <div class="w-full overflow-x-hidden">
-                    <div class="w-full flex flex-col">
-                        @if ($showEmbeds)
-                            <div class="w-full overflow-hidden">
-                                <iframe
-                                    src="https://open.spotify.com/embed/{{ $currentSong1['is_podcast'] ? 'episode' : 'track' }}/{{ $currentSong1['spotify_song_id'] }}"
-                                    class="w-full max-w-full"
-                                    style="min-height: 232px;"
-                                    frameborder="0" 
-                                    allowtransparency="true" 
-                                    allow="encrypted-media"
-                                ></iframe>
-                            </div>
-                        @else
-                            <div class="mb-2 flex justify-center bg-gray-100 p-4 rounded-lg">
-                                <div class="text-center">
-                                    <img 
-                                        src="{{ $currentSong1['cover'] }}" 
-                                        alt="{{ $currentSong1['title'] }}"
-                                        class="w-48 h-48 sm:w-64 sm:h-64 object-cover rounded-lg shadow-lg mx-auto"
-                                    />
-                                    <div class="mt-2 font-medium text-gray-800">{{ $currentSong1['title'] }}</div>
-                                </div>
-                            </div>
-                        @endif
-                        
-                        <div class="mt-4 flex flex-col items-center">
-                            <hr class="w-full my-3">
-                            <button 
-                                class="border-2 border-zinc-800 rounded-lg hover:bg-zinc-100 text-zinc-800 px-6 py-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-w-[200px]"
-                                wire:click="chooseSong({{ $currentSong1['id'] }})"
-                                wire:loading.attr="disabled"
-                                wire:target="chooseSong"
-                                wire:key="song1-{{ $currentSong1['id'] }}"
-                            >
-                                <span wire:loading.remove wire:target="chooseSong">{{ $currentSong1['title'] }}</span>
-                                <span wire:loading wire:target="chooseSong" class="inline-flex items-center gap-2">
-                                    <i class="fa-solid fa-spinner fa-spin"></i>
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="w-full overflow-x-hidden">
-                    <div class="w-full flex flex-col">
-                        @if ($showEmbeds)
-                            <div class="w-full overflow-hidden">
-                                <iframe
-                                    src="https://open.spotify.com/embed/{{ $currentSong2['is_podcast'] ? 'episode' : 'track' }}/{{ $currentSong2['spotify_song_id'] }}"
-                                    class="w-full max-w-full"
-                                    style="min-height: 232px;"
-                                    frameborder="0" 
-                                    allowtransparency="true" 
-                                    allow="encrypted-media"
-                                ></iframe>
-                            </div>
-                        @else
-                            <div class="mb-2 flex justify-center bg-gray-100 p-4 rounded-lg">
-                                <div class="text-center">
-                                    <img 
-                                        src="{{ $currentSong2['cover'] }}" 
-                                        alt="{{ $currentSong2['title'] }}"
-                                        class="w-48 h-48 sm:w-64 sm:h-64 object-cover rounded-lg shadow-lg mx-auto"
-                                    />
-                                    <div class="mt-2 font-medium text-gray-800">{{ $currentSong2['title'] }}</div>
-                                </div>
-                            </div>
-                        @endif
-                        
-                        <div class="mt-4 flex flex-col items-center">
-                            <hr class="w-full my-3">
-                            <button 
-                                class="border-2 border-zinc-800 rounded-lg hover:bg-zinc-100 text-zinc-800 px-6 py-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-w-[200px]"
-                                wire:click="chooseSong({{ $currentSong2['id'] }})"
-                                wire:loading.attr="disabled"
-                                wire:target="chooseSong"
-                                wire:key="song2-{{ $currentSong2['id'] }}"
-                            >
-                                <span wire:loading.remove wire:target="chooseSong">{{ $currentSong2['title'] }}</span>
-                                <span wire:loading wire:target="chooseSong" class="inline-flex items-center gap-2">
-                                    <i class="fa-solid fa-spinner fa-spin"></i>
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <x-songs.comparison-card :song="$currentSong1" :show-embeds="$showEmbeds" wire-key="song1-{{ $currentSong1['id'] }}" />
+                <x-songs.comparison-card :song="$currentSong2" :show-embeds="$showEmbeds" wire-key="song2-{{ $currentSong2['id'] }}" />
             @endif
         </div>
 
