@@ -24,6 +24,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use UnitEnum;
 
 class UserResource extends Resource
@@ -85,12 +86,12 @@ class UserResource extends Resource
                     ->counts('rankings'),
                 TextColumn::make('created_at')
                     ->label('Signed Up At')
-                    ->dateTime()
+                    ->dateTime('M j, Y g:i A', Auth::user()->timezone)
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('updated_at')
                     ->label('Last Logged In At')
-                    ->dateTime()
+                    ->dateTime('M j, Y g:i A', Auth::user()->timezone)
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])

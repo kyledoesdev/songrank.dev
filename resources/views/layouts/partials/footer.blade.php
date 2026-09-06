@@ -40,7 +40,7 @@
                     <a target="_blank" href="https://twitch.tv/spacelampsix" class="text-gray-400 hover:text-purple-400 transition-colors" aria-label="Twitch">
                         <i class="fa-brands fa-twitch text-lg"></i>
                     </a>
-                    <a target="_blank" href="https://bsky.app/profile/kyledoes.dev" class="text-gray-400 hover:text-purple-400 transition-colors" aria-label="X.com">
+                    <a target="_blank" href="https://x.com/kyledoesdev" class="text-gray-400 hover:text-purple-400 transition-colors" aria-label="X.com">
                         <i class="fa-brands fa-x-twitter text-lg"></i>
                     </a>
                 </div>

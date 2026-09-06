@@ -62,7 +62,7 @@
                                 <div class="p-2 md:p-4 mt-4">{{ $song->rank }}.</div>
                                 <div class="flex-1">
                                     <li>
-                                        <x-song-ranked-item
+                                        <x-songs.ranked-item
                                             :ranking="$ranking"
                                             :song="$song"
                                         />

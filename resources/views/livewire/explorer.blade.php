@@ -55,7 +55,7 @@
                             wire:key="ranking-{{ $ranking->getKey() }}"
                             wire:transition
                         >
-                            <x-ranking-card :ranking="$ranking" />
+                            <x-rankings.card :ranking="$ranking" />
                         </div>
                     @endforeach
                 </div>
@@ -64,7 +64,7 @@
                     <div wire:intersect="loadMore" class="mt-4">
                         <div class="animate-pulse grid grid-cols-1 lg:grid-cols-2 gap-4">
                             @foreach (range(1, 4) as $_)
-                                <x-ranking-card-placeholder wire:transition />
+                                <x-rankings.card-placeholder wire:transition />
                             @endforeach
                         </div>
                     </div>

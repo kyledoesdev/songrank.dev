@@ -24,22 +24,7 @@
                 @endif
                 @unless ($ranking->isShowType())
                     <div class="flex items-center mx-2">
-                        <a
-                            href="https://open.spotify.com/{{ $song->artist?->is_podcast ? 'episode' : 'track' }}/{{ $song->spotify_song_id }}"
-                            target="_blank"
-                            class="inline-flex items-center gap-2"
-                            style="border-bottom: 2px solid #06D6A0; padding-bottom: 2px;"
-                        >
-                            <p class="inline text-[#06D6A0]">
-                                <img
-                                    src="/spotify-logo.png"
-                                    class="inline w-auto h-3.5 sm:h-4"
-                                    style="aspect-ratio: 3.15"
-                                    alt="Spotify"
-                                >
-                            </p>
-                            <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
-                        </a>
+                        <x-spotify-logo :url="'https://open.spotify.com/' . ($song->artist?->is_podcast ? 'episode' : 'track') . '/' . $song->spotify_song_id" />
                     </div>
                 @endunless
             </div>

@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class RankingTable
 {
@@ -63,7 +64,7 @@ class RankingTable
             TextColumn::make('created_at')
                 ->label('Created')
                 ->sortable()
-                ->dateTime()
+                ->dateTime('M j, Y g:i A', Auth::user()->timezone)
                 ->toggleable(isToggledHiddenByDefault: false),
             static::completedAtColumn(),
             TextColumn::make('songs_count')
@@ -78,8 +79,6 @@ class RankingTable
         return TextColumn::make('completed_at')
             ->label('Completed')
             ->sortable()
-            ->dateTime()
-            ->toggleable(isToggledHiddenByDefault: false)
             ->formatStateUsing(function (Ranking $record): string {
                 $timestamp = $record->getAttributes()['completed_at'];
 
@@ -88,8 +87,9 @@ class RankingTable
                 }
 
                 return Carbon::parse($timestamp)
-                    ->inUserTimezone()
-                    ->format('m/d/Y g:i A T');
-            });
+                    ->tz(Auth::user()->timezone)
+                    ->format('M j, Y g:i A');
+            })
+            ->toggleable(isToggledHiddenByDefault: false);
     }
 }

@@ -11,6 +11,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class FaqTable
 {
@@ -29,7 +30,7 @@ class FaqTable
                 TextColumn::make('updated_at')
                     ->label('Last Updated')
                     ->sortable()
-                    ->dateTime(),
+                    ->dateTime('M j, Y g:i A', Auth::user()->timezone),
             ])
             ->defaultSort('order', 'asc')
             ->reorderable('order')

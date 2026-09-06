@@ -3,7 +3,7 @@
 
     <div class="space-y-2">
         @foreach($songs as $song)
-            <x-song-ranked-item
+            <x-songs.ranked-item
                 :song="$song"
                 :ranking="$ranking"
             />

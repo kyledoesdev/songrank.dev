@@ -6,6 +6,7 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class LandingPageContentTable
 {
@@ -25,7 +26,7 @@ class LandingPageContentTable
                 TextColumn::make('updated_at')
                     ->label('Last Updated')
                     ->sortable()
-                    ->dateTime(),
+                    ->dateTime('M j, Y g:i A', Auth::user()->timezone),
             ])
             ->defaultSort('name', 'asc')
             ->filters([

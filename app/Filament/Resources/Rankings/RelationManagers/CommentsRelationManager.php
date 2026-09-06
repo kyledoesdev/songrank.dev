@@ -8,6 +8,7 @@ use Filament\Actions\ViewAction;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class CommentsRelationManager extends RelationManager
 {
@@ -29,7 +30,7 @@ class CommentsRelationManager extends RelationManager
                     ->html()
                     ->searchable(),
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->dateTime('M j, Y g:i A', Auth::user()->timezone)
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
