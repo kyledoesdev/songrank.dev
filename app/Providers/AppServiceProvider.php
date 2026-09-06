@@ -87,9 +87,7 @@ class AppServiceProvider extends ServiceProvider
                 ->canonical()
                 ->searchableByRobots()
                 ->meta('author', 'kyledoesdev')
-                ->when(! app()->runningUnitTests(), fn (HeadBuilder $head): HeadBuilder => $head
-                    ->meta('keywords', cache()->remember('seo-terms', now()->addWeeks(1), fn () => Seo::query()->first()->seo_terms))
-                )
+                ->meta('keywords', rescue(fn () => cache()->remember('seo-terms', now()->addWeeks(1), fn () => Seo::query()->first()->seo_terms), '', false))
                 ->favicon(asset('favicon.ico'), 'image/x-icon')
                 ->icon(asset('favicon-32x32.png'), 'image/png', '32x32')
                 ->icon(asset('favicon-16x16.png'), 'image/png', '16x16')
