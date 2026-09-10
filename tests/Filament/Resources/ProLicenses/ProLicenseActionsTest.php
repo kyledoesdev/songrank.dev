@@ -45,6 +45,51 @@ describe('granting a licence', function () {
         expect($license->notes)->toBe('Support gesture.');
     });
 
+    it('grants a gift when that type is chosen', function () {
+        $recipient = User::factory()->createOne();
+
+        Livewire::test(ListProLicenses::class)
+            ->callAction('grant', [
+                'user_id' => $recipient->getKey(),
+                'source' => ProLicenseSource::GIFT->value,
+                'notes' => 'Gift from Jane for the charity stream.',
+            ]);
+
+        $license = ProLicense::query()->forUser($recipient)->first();
+
+        expect($license->source)->toBe(ProLicenseSource::GIFT)
+            ->and($license->status)->toBe(ProLicenseStatus::ACTIVE)
+            ->and($license->notes)->toBe('Gift from Jane for the charity stream.')
+            ->and($recipient->fresh()->is_pro)->toBeTrue();
+    });
+
+    it('defaults to complimentary when no type is picked', function () {
+        $recipient = User::factory()->createOne();
+
+        Livewire::test(ListProLicenses::class)
+            ->callAction('grant', [
+                'user_id' => $recipient->getKey(),
+                'notes' => 'Beta tester.',
+            ]);
+
+        expect(ProLicense::query()->forUser($recipient)->first()->source)
+            ->toBe(ProLicenseSource::COMP);
+    });
+
+    it('refuses to hand-grant a purchase, which only Stripe may write', function () {
+        $recipient = User::factory()->createOne();
+
+        Livewire::test(ListProLicenses::class)
+            ->callAction('grant', [
+                'user_id' => $recipient->getKey(),
+                'source' => ProLicenseSource::PURCHASE->value,
+                'notes' => 'Should never land.',
+            ])
+            ->assertHasActionErrors(['source']);
+
+        assertDatabaseCount('pro_licenses', 0);
+    });
+
     it('insists on a reason', function () {
         Livewire::test(ListProLicenses::class)
             ->callAction('grant', [

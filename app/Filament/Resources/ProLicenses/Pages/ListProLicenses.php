@@ -33,8 +33,8 @@ class ListProLicenses extends ListRecords
             Action::make('grant')
                 ->label('Grant a license')
                 ->icon(Heroicon::Gift)
-                ->modalHeading('Grant a complimentary license')
-                ->modalDescription('Gives the user Pro immediately, with no payment behind it. Use for beta testers and support gestures.')
+                ->modalHeading('Grant a license')
+                ->modalDescription('Gives the user Pro immediately, with no payment behind it. Use for beta testers, support gestures and gifts.')
                 ->schema([
                     Select::make('user_id')
                         ->label('User')
@@ -44,15 +44,28 @@ class ListProLicenses extends ListRecords
                             ->all())
                         ->searchable()
                         ->required(),
+
+                    /* Paid sources are excluded: only Stripe may call a license a purchase. */
+                    Select::make('source')
+                        ->label('Type')
+                        ->options(fn (): array => collect(ProLicenseSource::cases())
+                            ->reject(fn (ProLicenseSource $case): bool => $case->isPaid())
+                            ->mapWithKeys(fn (ProLicenseSource $case): array => [$case->value => $case->label()])
+                            ->all())
+                        ->default(ProLicenseSource::COMP->value)
+                        ->selectablePlaceholder(false)
+                        ->required(),
+
                     Textarea::make('notes')
                         ->label('Why')
+                        ->placeholder('Beta tester for tier lists. / Gift from Jane for the charity stream.')
                         ->required()
                         ->rows(3),
                 ])
                 ->action(function (array $data): void {
                     app(GrantProLicense::class)->handle(
                         user: User::findOrFail($data['user_id']),
-                        source: ProLicenseSource::COMP,
+                        source: ProLicenseSource::from($data['source']),
                         attributes: ['notes' => $data['notes']],
                     );
                 })

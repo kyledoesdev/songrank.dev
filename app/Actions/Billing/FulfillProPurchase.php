@@ -113,7 +113,7 @@ final class FulfillProPurchase
         $buyer = $license->user;
 
         if (is_null($buyer)) {
-            Log::warning('Fulfilled a Pro license to a user who deleted themself during the checkout process. This payment likely needs refunding.', [
+            Log::warning("Fulfilled a Pro license to $buyer who deleted themself during the checkout process. This payment likely needs refunding.", [
                 'pro_license_uuid' => $license->uuid,
                 'stripe_payment_intent_id' => $license->stripe_payment_intent_id,
             ]);
@@ -122,5 +122,7 @@ final class FulfillProPurchase
         }
 
         $buyer->notify(new ProPurchaseReceipt($license));
+
+        Log::channel('discord_user_updates')->info("$buyer has gone pro!");
     }
 }
