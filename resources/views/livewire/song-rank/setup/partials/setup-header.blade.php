@@ -1,4 +1,5 @@
 @use('App\Enums\RankingType')
+@use('Illuminate\Support\Facades\Auth')
 
 {{-- Livewire partial: expects $type, $locked, and $placeholder from the including setup view. --}}
 
@@ -8,11 +9,11 @@
             <i class="fa fa-solid fa-star text-2xl text-purple-400"></i>
 
             <h5 class="mt-3 font-semibold text-zinc-800">
-                You've reached {{ $this->rankingAllowance()->limit() }} rankings
+                You've reached {{ Auth::user()->rankingLimit() }} rankings
             </h5>
 
             <p class="mt-2 text-sm text-zinc-600 max-w-lg mx-auto">
-                Free accounts can keep up to {{ $this->rankingAllowance()->limit() }} rankings. Delete one you're finished with, or go Pro for unlimited rankings of every type.
+                Free accounts can keep up to {{ Auth::user()->rankingLimit() }} rankings. Delete one you're finished with, or go Pro for unlimited rankings of every type.
             </p>
 
             <div class="mt-4 flex flex-wrap items-center justify-center gap-2">

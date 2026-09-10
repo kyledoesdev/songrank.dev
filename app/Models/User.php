@@ -2,9 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasRankingAllowance;
 use App\QueryBuilders\UserQueryBuilder;
-use App\Services\Billing\RankingAllowance;
-use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
@@ -28,6 +27,7 @@ class User extends Authenticatable implements CanComment, FilamentUser
     use Billable;
     use HasFactory;
     use HasFeatures;
+    use HasRankingAllowance;
     use HasStatsAfterEvents;
     use InteractsWithComments;
     use Notifiable;
@@ -92,13 +92,6 @@ class User extends Authenticatable implements CanComment, FilamentUser
         return $this->hasMany(ProLicense::class);
     }
 
-    /**
-     * Recompute `is_pro` from the licenses this user holds.
-     *
-     * Writes through the query builder rather than saving the model: a stale
-     * instance whose in-memory `is_pro` already matches would produce no dirty
-     * attributes, and the row would keep a value the licenses contradict.
-     */
     public function syncProStatus(): void
     {
         $isPro = $this->proLicenses()->active()->exists();
@@ -109,11 +102,6 @@ class User extends Authenticatable implements CanComment, FilamentUser
 
         $this->is_pro = $isPro;
         $this->syncOriginalAttribute('is_pro');
-    }
-
-    public function rankingAllowance(): RankingAllowance
-    {
-        return once(fn (): RankingAllowance => new RankingAllowance($this));
     }
 
     public function canAccessPanel(Panel $panel): bool

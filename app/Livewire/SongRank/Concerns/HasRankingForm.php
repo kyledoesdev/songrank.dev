@@ -4,7 +4,6 @@ namespace App\Livewire\SongRank\Concerns;
 
 use App\Livewire\Forms\RankingForm;
 use App\Models\Ranking;
-use App\Services\Billing\RankingAllowance;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Pennant\Feature;
 
@@ -58,12 +57,7 @@ trait HasRankingForm
             return false;
         }
 
-        return Auth::user()->rankingAllowance()->exceeded();
-    }
-
-    public function rankingAllowance(): RankingAllowance
-    {
-        return Auth::user()->rankingAllowance();
+        return ! Auth::user()->canCreateRanking();
     }
 
     /**
@@ -76,7 +70,7 @@ trait HasRankingForm
             return true;
         }
 
-        $this->flashRankingLimitReached($this->rankingAllowance()->limit());
+        $this->flashRankingLimitReached(Auth::user()->rankingLimit());
 
         return false;
     }

@@ -57,7 +57,7 @@ class ProLicense extends Model
         ];
     }
 
-    protected static function booted(): void
+    protected static function boot(): void
     {
         static::creating(function (ProLicense $license) {
             $license->uuid ??= Str::uuid()->toString();

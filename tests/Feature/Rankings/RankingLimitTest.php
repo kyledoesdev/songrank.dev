@@ -5,54 +5,53 @@ use App\Livewire\SongRank\Setup\PlaylistSetup;
 use App\Livewire\SongRank\Setup\ShowSetup;
 use App\Models\Ranking;
 use App\Models\User;
-use App\Services\Billing\RankingAllowance;
 use Laravel\Pennant\Feature;
 use Livewire\Livewire;
 
 describe('the ranking allowance', function () {
-    it('caps free accounts at the configured limit', function () {
-        $allowance = new RankingAllowance(userWithRankings(3));
+    it('caps a free account at the configured limit', function () {
+        $user = userWithRankings(3);
 
-        expect($allowance->used())->toBe(3)
-            ->and($allowance->limit())->toBe(100)
-            ->and($allowance->remaining())->toBe(97)
-            ->and($allowance->exceeded())->toBeFalse()
-            ->and($allowance->isUnlimited())->toBeFalse();
+        expect($user->rankingLimit())->toBe(100)
+            ->and($user->canCreateRanking())->toBeTrue();
     });
 
     it('reports no ceiling for a Pro account', function () {
-        $allowance = new RankingAllowance(proUser());
+        $user = proUser();
 
-        expect($allowance->limit())->toBeNull()
-            ->and($allowance->remaining())->toBeNull()
-            ->and($allowance->isUnlimited())->toBeTrue()
-            ->and($allowance->exceeded())->toBeFalse()
-            ->and($allowance->percentUsed())->toBeNull();
+        expect($user->rankingLimit())->toBeNull()
+            ->and($user->canCreateRanking())->toBeTrue();
     });
 
-    it('is exceeded exactly at the limit, not before', function () {
+    it('stops exactly at the limit, not before', function () {
         config()->set('billing.ranking_limits.free', 3);
 
-        expect((new RankingAllowance(userWithRankings(2)))->exceeded())->toBeFalse()
-            ->and((new RankingAllowance(userWithRankings(3)))->exceeded())->toBeTrue();
+        expect(userWithRankings(2)->canCreateRanking())->toBeTrue()
+            ->and(userWithRankings(3)->canCreateRanking())->toBeFalse();
     });
 
-    it('never reports negative headroom past the limit', function () {
+    it('keeps refusing past the limit', function () {
         config()->set('billing.ranking_limits.free', 3);
 
-        expect((new RankingAllowance(userWithRankings(5)))->remaining())->toBe(0);
+        expect(userWithRankings(5)->canCreateRanking())->toBeFalse();
     });
 
     it('counts in-progress rankings against the limit', function () {
+        config()->set('billing.ranking_limits.free', 2);
+
         $user = User::factory()->createOne();
         Ranking::factory()->count(2)->for($user)->create(['is_ranked' => false]);
 
-        expect((new RankingAllowance($user))->used())->toBe(2);
+        expect($user->canCreateRanking())->toBeFalse();
     });
 
-    it('summarises usage for the billing page', function () {
-        expect((new RankingAllowance(userWithRankings(3)))->summary())->toBe('3 of 100')
-            ->and((new RankingAllowance(proUser()))->summary())->toBe('0 rankings');
+    it('never lets a Pro account be capped by the free limit', function () {
+        config()->set('billing.ranking_limits.free', 1);
+
+        $user = proUser();
+        Ranking::factory()->count(50)->for($user)->create();
+
+        expect($user->canCreateRanking())->toBeTrue();
     });
 });
 
