@@ -3,6 +3,29 @@
 {{-- Livewire partial: expects $type, $locked, and $placeholder from the including setup view. --}}
 
 <div class="p-2 mb-2" x-auto-animate>
+    @if ($this->rankingLimitReached())
+        <div class="rounded-xl border border-purple-200 bg-purple-50 p-6 text-center">
+            <i class="fa fa-solid fa-star text-2xl text-purple-400"></i>
+
+            <h5 class="mt-3 font-semibold text-zinc-800">
+                You've reached {{ $this->rankingAllowance()->limit() }} rankings
+            </h5>
+
+            <p class="mt-2 text-sm text-zinc-600 max-w-lg mx-auto">
+                Free accounts can keep up to {{ $this->rankingAllowance()->limit() }} rankings. Delete one you're finished with, or go Pro for unlimited rankings of every type.
+            </p>
+
+            <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
+                <a href="{{ route('billing') }}" class="btn-primary p-3">
+                    <i class="fa fa-solid fa-star mr-1"></i>
+                    Go Pro &mdash; $10 once
+                </a>
+                <a href="{{ route('dashboard') }}" class="text-sm px-3 py-2 rounded-lg bg-white border border-zinc-200 hover:border-zinc-300">
+                    Manage your rankings
+                </a>
+            </div>
+        </div>
+    @else
     <div class="space-y-4 md:space-y-0">
         <h5 class="md:text-md mt-2 mb-4 md:text-left">
             Choose a ranking type to get started. Enter in an artist name, or the playlist or show URL.
@@ -63,4 +86,5 @@
             </div>
         </div>
     </div>
+    @endif
 </div>

@@ -79,3 +79,5 @@ Route::middleware(Authenticate::class)->group(function () {
         Route::get('health', HealthCheckResultsController::class);
     });
 });
+
+require __DIR__.'/billing.php';

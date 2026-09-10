@@ -7,6 +7,7 @@ use App\Filament\Resources\Users\Pages\EditUser;
 use App\Filament\Resources\Users\Pages\ListUsers;
 use App\Filament\Resources\Users\Pages\ViewUser;
 use App\Filament\Resources\Users\RelationManagers\PreferencesRelationManager;
+use App\Filament\Resources\Users\RelationManagers\ProLicensesRelationManager;
 use App\Filament\Resources\Users\RelationManagers\RankingsRelationManager;
 use App\Models\User;
 use BackedEnum;
@@ -162,6 +163,7 @@ class UserResource extends Resource
         return [
             RelationGroup::make('', [
                 RankingsRelationManager::class,
+                ProLicensesRelationManager::class,
                 PreferencesRelationManager::class,
             ]),
         ];

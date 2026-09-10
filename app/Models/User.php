@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\QueryBuilders\UserQueryBuilder;
+use App\Services\Billing\RankingAllowance;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -15,6 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Kyledoesdev\Essentials\Concerns\HasStatsAfterEvents;
+use Laravel\Cashier\Billable;
 use Laravel\Pennant\Concerns\HasFeatures;
 use Spatie\Comments\Models\Concerns\InteractsWithComments;
 use Spatie\Comments\Models\Concerns\Interfaces\CanComment;
@@ -23,9 +25,8 @@ use Spatie\Comments\Support\CommentatorProperties;
 #[UseEloquentBuilder(UserQueryBuilder::class)]
 class User extends Authenticatable implements CanComment, FilamentUser
 {
-    /** @use HasFactory<UserFactory> */
+    use Billable;
     use HasFactory;
-
     use HasFeatures;
     use HasStatsAfterEvents;
     use InteractsWithComments;
@@ -44,12 +45,15 @@ class User extends Authenticatable implements CanComment, FilamentUser
         'user_packet',
         'external_token',
         'external_refresh_token',
+        'stripe_id',
         'is_dev',
+        'is_pro',
         'password',
     ];
 
     protected $hidden = [
         'remember_token',
+        'stripe_id',
         'external_token',
         'external_refresh_token',
         'ip_address',
@@ -64,6 +68,7 @@ class User extends Authenticatable implements CanComment, FilamentUser
         return [
             'user_packet' => 'object',
             'is_dev' => 'boolean',
+            'is_pro' => 'boolean',
         ];
     }
 
@@ -80,6 +85,35 @@ class User extends Authenticatable implements CanComment, FilamentUser
     public function preferences(): HasOne
     {
         return $this->hasOne(UserPreference::class);
+    }
+
+    public function proLicenses(): HasMany
+    {
+        return $this->hasMany(ProLicense::class);
+    }
+
+    /**
+     * Recompute `is_pro` from the licenses this user holds.
+     *
+     * Writes through the query builder rather than saving the model: a stale
+     * instance whose in-memory `is_pro` already matches would produce no dirty
+     * attributes, and the row would keep a value the licenses contradict.
+     */
+    public function syncProStatus(): void
+    {
+        $isPro = $this->proLicenses()->active()->exists();
+
+        static::withTrashed()
+            ->whereKey($this->getKey())
+            ->update(['is_pro' => $isPro]);
+
+        $this->is_pro = $isPro;
+        $this->syncOriginalAttribute('is_pro');
+    }
+
+    public function rankingAllowance(): RankingAllowance
+    {
+        return once(fn (): RankingAllowance => new RankingAllowance($this));
     }
 
     public function canAccessPanel(Panel $panel): bool

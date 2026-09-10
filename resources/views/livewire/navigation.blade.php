@@ -60,6 +60,14 @@
                             Profile
                         </a>
                     @endif --}}
+                    @feature('songrank-pro')
+                        @if (Route::currentRouteName() != 'billing')
+                            <a href="{{ route('billing') }}" class="flex items-center px-3 py-2 text-sm font-medium text-zinc-800 rounded-md hover:bg-gray-100">
+                                <i class="fa fa-credit-card mr-3"></i>
+                                Billing
+                            </a>
+                        @endif
+                    @endfeature
                     @if (Route::currentRouteName() != 'settings')
                         <a href="{{ route('settings') }}" class="flex items-center px-3 py-2 text-sm font-medium text-zinc-800 rounded-md hover:bg-gray-100">
                             <i class="fa fa-cog mr-3"></i>
@@ -164,6 +172,14 @@
                                         Profile
                                     </a>
                                 @endif
+                                @feature('songrank-pro')
+                                    @if (Route::currentRouteName() != 'billing')
+                                        <a href="{{ route('billing') }}" class="flex items-center gap-2 w-full first-of-type:rounded-t-md last-of-type:rounded-b-md px-4 py-2.5 text-left text-sm hover:bg-gray-50 disabled:text-gray-500">
+                                            <i class="fa fa-solid fa-credit-card"></i>
+                                            Billing
+                                        </a>
+                                    @endif
+                                @endfeature
                                 @if (Route::currentRouteName() != 'settings')
                                     <a href="{{ route('settings') }}" class="flex items-center gap-2 w-full first-of-type:rounded-t-md last-of-type:rounded-b-md px-4 py-2.5 text-left text-sm hover:bg-gray-50 disabled:text-gray-500">
                                         <i class="fa fa-solid fa-cog"></i>

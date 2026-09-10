@@ -39,6 +39,8 @@ class DeleteUserJob implements ShouldQueue
             });
         }
 
+        $this->detachProLicenses();
+
         $this->user->update([
             'external_token' => null,
             'external_refresh_token' => null,
@@ -49,5 +51,21 @@ class DeleteUserJob implements ShouldQueue
         ]);
 
         $this->user->delete();
+    }
+
+    /**
+     * Keep the license, drop the owner.
+     *
+     * Financial records outlive accounts, and the Stripe customer stays put —
+     * deleting it would take the invoice history with it. The denormalised
+     * stripe_customer_id keeps the row meaningful on its own, and a user who
+     * signs back up starts fresh rather than silently inheriting Pro.
+     */
+    private function detachProLicenses(): void
+    {
+        $this->user->proLicenses()->update(['user_id' => null]);
+
+        /* A mass update fires no model events, so ProLicenseObserver never runs. */
+        $this->user->syncProStatus();
     }
 }

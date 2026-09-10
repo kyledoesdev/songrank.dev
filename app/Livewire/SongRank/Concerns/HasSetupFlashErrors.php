@@ -115,4 +115,15 @@ trait HasSetupFlashErrors
             });
         ");
     }
+
+    protected function flashRankingLimitReached(int $limit): void
+    {
+        $this->js("
+            window.flash({
+                title: 'You have reached {$limit} rankings.',
+                message: 'Free accounts can keep up to {$limit} rankings. Delete one you are finished with, or go Pro for unlimited rankings.',
+                icon: 'error',
+            });
+        ");
+    }
 }

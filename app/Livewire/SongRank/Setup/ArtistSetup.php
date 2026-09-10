@@ -53,6 +53,10 @@ class ArtistSetup extends Component
 
     public function search(): void
     {
+        if (! $this->ensureCanCreateRanking()) {
+            return;
+        }
+
         $this->selectedArtist = null;
         $this->resetTrackList();
         $this->resetFeaturedTracks();

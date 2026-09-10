@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Notifications\NewCommentOnRanking;
+use App\Notifications\ProPurchaseReceipt;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Notifications\DatabaseNotification;
 
@@ -45,6 +46,7 @@ class Notification extends DatabaseNotification
     {
         return match ($this->type) {
             NewCommentOnRanking::class => ($this->user_name ?? 'Someone').' commented on '.($this->entity['name'] ?? 'your ranking'),
+            ProPurchaseReceipt::class => $this->message ?? 'Welcome to Song Rank Pro!',
             default => 'You have a new notification',
         };
     }

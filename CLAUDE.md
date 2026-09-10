@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-songrank.dev — a Laravel 12 application that ranks songs via a merge-sort algorithm. Users authenticate with Spotify, select an artist or playlist, then make pairwise song comparisons until a full ranking is produced.
+songrank.dev — a Laravel 13 application that ranks songs via a merge-sort algorithm. Users authenticate with Spotify, select an artist or playlist, then make pairwise song comparisons until a full ranking is produced.
 
 ## Common Commands
 
@@ -29,6 +29,7 @@ Three top-level suites are registered in `phpunit.xml`, and all are bound to `Te
     - `Discovery/` — public browse surfaces (explore, leaderboards)
     - `Pages/` — simple content-driven pages (faq, support)
     - `Rankings/` — the core ranking domain (setup, algorithm, comments, export, management)
+    - `Billing/` — Song Rank Pro: checkout, Stripe webhooks, licences, the billing page
 - **Filament** (`tests/Filament/`) — the admin panel; gets `RefreshDatabase`. **Mirrors the `app/Filament/` directory structure**, so a test sits at the same path as the code it covers:
     - `app/Filament/Resources/Rankings/…` → `tests/Filament/Resources/Rankings/…`
     - `app/Filament/Widgets/…` → `tests/Filament/Widgets/…`
@@ -62,7 +63,7 @@ Additional conventions:
 
 ## Tech Stack
 
-- **Backend:** PHP 8.4, Laravel 12, Livewire (full-stack components)
+- **Backend:** PHP 8.4, Laravel 13, Livewire (full-stack components)
 - **Frontend:** Blade templates, Alpine.js, Tailwind CSS v4, Vite
 - **Admin Panel:** Filament 5
 - **Auth:** Laravel Socialite with Spotify OAuth provider
@@ -78,6 +79,7 @@ Business logic lives in `app/Actions/` rather than controllers or Livewire compo
 - `Actions/Rankings/` — Ranking creation and completion (`CompleteSongRankProcess`, `StoreArtistRanking`, etc.)
 - `Actions/Spotify/` — Spotify API interactions (`GetArtistSongs`, `GetArtistAppearsOnSongs`, `GetPlaylistTracks`, `RefreshToken`). `GetArtistAppearsOnSongs` is deliberately separate: featured tracks are expensive to fetch for prolific guests, so `count()` probes cheaply during artist selection and `handle()` only runs when the user toggles the featured list on
 - `Actions/Comments/` — Comment operations
+- `Actions/Billing/` — Song Rank Pro purchase lifecycle (`StartProCheckout`, `FulfillProPurchase`, `RevokeProLicense`, `GrantProLicense`, `HandleStripeWebhook`)
 
 ### Livewire Components
 The primary UI layer. Each page is a Livewire component in `app/Livewire/`:
@@ -87,6 +89,31 @@ The primary UI layer. Each page is a Livewire component in `app/Livewire/`:
 - `Explorer` — Browse public rankings
 - `Ranking/Ranking` — View a completed ranking
 - `Profile/Profile`, `Profile/Settings` — User profile and preferences
+
+### Song Rank Pro (Billing)
+
+A one-time $10 purchase, gated by the `songrank-pro` Pennant flag (`app/Features/SongRankPro.php`, currently `is_dev` only).
+
+Two separate concepts, deliberately never merged:
+
+- **The flag** answers "does the Pro system exist for this user yet?" — a rollout switch. `pennant:purge` is a routine deploy step.
+- **A `pro_licenses` row** answers "has this person paid?" — the entitlement. **Never grant Pro by activating a Pennant flag.**
+
+`users.is_pro` is a projection of the licences table, not a second source of truth. `ProLicenseObserver` recomputes it whenever a licence is saved, deleted or restored, so `$user->is_pro` is a column read rather than a query — it is called from the nav, the setup header, the middleware and the billing page on a single page load. The one gap is mass assignment: `ProLicense::query()->update(...)` fires no model events, so anything doing that must call `$user->syncProStatus()` itself (`DeleteUserJob` is the only place that currently does).
+
+Other notes:
+
+- Cashier's `WebhookController` handles only eight subscription-shaped events. The one-off purchase lifecycle is ours, routed by `HandleStripeWebhook` off the `WebhookReceived` event. Stripe's event names and payment statuses are modelled as `StripeWebhookEvent` and `StripePaymentStatus` — resolve them with `tryFrom()` rather than comparing raw strings, and note that Stripe event names contain dots, so they can never be looked up with `data_get()`.
+- Fulfillment runs from both the webhook and the success redirect, and Stripe retries webhooks for three days, so it must stay safe to run repeatedly. It **claims** the license with a single conditional `where status = pending` update and checks the affected row count — reading the status into PHP and then writing would leave a window where two callers both pass the check and both send a receipt. The loser backfills any field the winner could not populate (Stripe raises the invoice asynchronously, so an early caller can see `session.invoice` as null).
+- `config/cashier.php` pins `webhook.events` to `StripeWebhookEvent`, **not** Cashier's `DEFAULT_EVENTS`. The defaults are all subscription-shaped; leaving them would make `php artisan cashier:webhook` create an endpoint that never delivers `checkout.session.completed` and silently stops every purchase from fulfilling.
+- Never let a money event pass in silence. A refund or chargeback for a payment intent no license claims is logged loudly, because Stripe will keep retrying the original `checkout.session.completed` and could hand Pro to somebody already refunded.
+- Money is stored in integer minor units and displayed via `Cashier::formatAmount()`. Never floats.
+- **Store as little as possible.** No card brand or last four, no payment-method columns on `users`, no trial columns, and no subscription tables — Cashier's published migrations for those were deliberately removed. Stripe holds the card; we hold an invoice URL. Anything added here has to be disclosed in the privacy policy, so the bar is "the product genuinely cannot work without it".
+- Ranking limits live in `config/billing.php` (`null` means unlimited). `$user->rankingAllowance()` returns a `RankingAllowance`. The block is a UI one: `setup-header.blade.php` swaps the search box for an upgrade prompt when `rankingLimitReached()`, so a capped user never reaches a search. `ensureCanCreateRanking()` at the top of each setup component's `search()` is only a backstop for stale pages. **There is no ranking policy** — being told 403 after clicking "begin ranking" is the wrong place to find out.
+- The checkout session is treated as a resource: `store`, `show`, `destroy`. `show` and `destroy` answer GET because Stripe redirects the customer's browser to them. Entitlement is handled by `RedirectIfAlreadyPro` on the route so the controller has a single return type.
+- Invoice PDFs come from Stripe (`invoice_creation` on the checkout session). There is no PDF library and none should be added.
+- Automatic tax is opt-in via `STRIPE_AUTOMATIC_TAX`, and gates both `Cashier::calculateTaxes()` and the session's `automatic_tax`/`tax_id_collection`. Sending those before the Stripe account has a head office address makes Stripe **reject the whole checkout session**, so it stays off until Stripe Tax is genuinely configured.
+- `ProUpgradeThankYou` renders an `EmailTemplate` row named in `ProUpgradeThankYou::TEMPLATE`, edited in Filament. Until that row exists the notification sends nothing — `via()` returns no channels — so a missing template can never fail a purchase.
 
 ### Custom Query Builders
 `app/QueryBuilders/RankingQueryBuilder.php` provides scoped queries: `forExplorePage()`, `forProfilePage()`, `forNewsletter()`.

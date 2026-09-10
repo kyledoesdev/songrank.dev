@@ -37,6 +37,8 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 NavigationGroup::make('Song Rank')
                     ->collapsible(),
+                NavigationGroup::make('Billing')
+                    ->collapsible(),
                 NavigationGroup::make('System')
                     ->collapsible(),
             ])

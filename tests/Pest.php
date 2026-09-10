@@ -3,6 +3,7 @@
 use App\Contracts\Rankable;
 use App\Enums\RankingType;
 use App\Models\Artist;
+use App\Models\ProLicense;
 use App\Models\Ranking;
 use App\Models\Song;
 use App\Models\User;
@@ -60,6 +61,31 @@ function kyle(): User
         'name' => 'Kyle',
         'is_dev' => true,
     ]);
+}
+
+/**
+ * A user holding an active, paid Pro license.
+ */
+function proUser(array $attributes = []): User
+{
+    $user = User::factory()->createOne($attributes);
+
+    ProLicense::factory()->active()->for($user)->create();
+
+    /* ProLicenseObserver has since flipped is_pro on the row, not on this instance. */
+    return $user->fresh();
+}
+
+/**
+ * A user sitting on exactly $count rankings, for allowance assertions.
+ */
+function userWithRankings(int $count, array $attributes = []): User
+{
+    $user = User::factory()->createOne($attributes);
+
+    Ranking::factory()->count($count)->for($user)->create();
+
+    return $user;
 }
 
 function expectedSongTitles(int $count): array

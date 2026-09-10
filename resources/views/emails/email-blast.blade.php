@@ -8,7 +8,7 @@
 
 {!! Str::of($emailTemplate->content)->markdown() !!}
 
-@component('mail::button', ['url' => env("APP_URL")])
+@component('mail::button', ['url' => config('app.url')])
     Login to {{ config('app.name') }}
 @endcomponent
 

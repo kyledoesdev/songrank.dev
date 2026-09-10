@@ -34,6 +34,10 @@ class ShowSetup extends Component
 
     public function search(): void
     {
+        if (! $this->ensureCanCreateRanking()) {
+            return;
+        }
+
         $this->resetTrackList();
         $this->selectedShow = [];
 

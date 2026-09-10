@@ -22,6 +22,8 @@ class UserFactory extends Factory
             'ip_address' => fake()->localIpv4(),
             'external_token' => str()->random(32),
             'external_refresh_token' => str()->random(32),
+            'is_dev' => false,
+            'is_pro' => false,
         ];
     }
 
