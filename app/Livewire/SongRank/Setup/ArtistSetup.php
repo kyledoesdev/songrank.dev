@@ -10,7 +10,6 @@ use App\Enums\RankingType;
 use App\Livewire\SongRank\Concerns\HasRankingForm;
 use App\Livewire\SongRank\Concerns\HasSetupFlashErrors;
 use App\Livewire\SongRank\Concerns\HasTrackList;
-use App\Models\Artist;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -35,10 +34,7 @@ class ArtistSetup extends Component
 
     public function mount(): void
     {
-        $this->randomArtist = Artist::query()
-            ->whereNotNull('artist_img')
-            ->inRandomOrder()
-            ->first()?->artist_name ?? '';
+        $this->randomArtist = random_artist();
     }
 
     public function render()

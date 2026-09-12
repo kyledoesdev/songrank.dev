@@ -2,6 +2,7 @@
 
 namespace App\Livewire\SongRank\Concerns;
 
+use App\Livewire\Concerns\InteractsWithAlerts;
 use App\Livewire\Forms\RankingForm;
 use App\Models\Ranking;
 use Illuminate\Support\Facades\Auth;
@@ -9,6 +10,8 @@ use Laravel\Pennant\Feature;
 
 trait HasRankingForm
 {
+    use InteractsWithAlerts;
+
     public RankingForm $form;
 
     public function confirmBeginRanking(): void
@@ -29,19 +32,15 @@ trait HasRankingForm
         $message = 'Are you sure you are ready to begin? After starting the ranking process, you WILL NOT be able to remove or edit the songs in the ranking.';
 
         if ($songCount >= 50) {
-            $extraWarning = "Your ranking has {$songCount} songs, it may take > ~30 minutes to complete the ranking. (You can always start it now and pick back up where you left off later).";
-            $message = $message.' '.$extraWarning;
+            $message .= " Your ranking has {$songCount} songs, it may take > ~30 minutes to complete the ranking. (You can always start it now and pick back up where you left off later).";
         }
 
-        $this->js("
-            window.confirm({
-                title: 'Begin Ranking?',
-                message: '{$message}',
-                confirmText: 'Let\\'s Go!',
-                componentId: '{$this->getId()}',
-                action: 'beginRanking'
-            });
-        ");
+        $this->confirmAction(
+            action: 'beginRanking',
+            title: 'Begin Ranking?',
+            message: $message,
+            confirmText: "Let's Go!",
+        );
     }
 
     public function updatedFormCommentsEnabled($value): void
