@@ -7,6 +7,7 @@ use App\Models\Playlist;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 class TierlistQueryBuilder extends Builder
@@ -42,6 +43,21 @@ class TierlistQueryBuilder extends Builder
             ->withTopTier()
             ->withCount('items')
             ->orderByRaw('completed_at IS NULL DESC, completed_at DESC');
+    }
+
+    /**
+     * How many lists this user holds of each type, in one query rather than one
+     * per type. Types they have none of are simply absent.
+     *
+     * @return Collection<string, int>
+     */
+    public function countsByTypeFor(User $user): Collection
+    {
+        return $this->newQuery()
+            ->where('user_id', $user->getKey())
+            ->selectRaw('type, count(*) as total')
+            ->groupBy('type')
+            ->pluck('total', 'type');
     }
 
     /**
@@ -97,6 +113,11 @@ class TierlistQueryBuilder extends Builder
     public function public(): static
     {
         return $this->where('is_public', true);
+    }
+
+    public function inProgress(): static
+    {
+        return $this->where('is_complete', false);
     }
 
     public function completed(): static

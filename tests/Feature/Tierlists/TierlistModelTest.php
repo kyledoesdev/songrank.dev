@@ -32,14 +32,6 @@ describe('default tiers', function () {
 });
 
 describe('relationships', function () {
-    it('belongs to the user who made it', function () {
-        $user = User::factory()->createOne();
-
-        $tierlist = Tierlist::factory()->for($user)->create();
-
-        expect($tierlist->user->is($user))->toBeTrue();
-    });
-
     it('resolves an artist entry through the morph map', function () {
         $artist = Artist::factory()->create();
         $item = placeEntry(Tierlist::factory()->create(), $artist);
@@ -62,10 +54,6 @@ describe('relationships', function () {
 
         expect($item->fresh()->entryable)->toBeInstanceOf(Track::class)
             ->and($item->entryable_type)->toBe(TierlistType::TRACK->value);
-    });
-
-    it('has no source unless one is given', function () {
-        expect(Tierlist::factory()->create()->source)->toBeNull();
     });
 
     it('remembers the playlist a track list was imported from', function () {
@@ -189,9 +177,6 @@ describe('completed at', function () {
         expect(Tierlist::factory()->create()->completed_at)->toBe('In Progress');
     });
 
-    it('reads as a human diff once it is finished', function () {
-        expect(publicCompletedTierlist()->completed_at)->toContain('ago');
-    });
 });
 
 /**

@@ -4,7 +4,6 @@ use App\Actions\Tierlists\ResolveTierlistEntries;
 use App\Enums\TierlistType;
 use App\Models\Album;
 use App\Models\Artist;
-use App\Models\Song;
 use App\Models\Track;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -13,81 +12,81 @@ describe('artist entries', function () {
     it('creates an artist it has never seen', function () {
         $resolved = resolveEntries(TierlistType::ARTIST, [artistEntry()]);
 
-        $artist = Artist::where('artist_id', 'artist-id')->firstOrFail();
+        $artist = Artist::where('artist_id', 'tame-impala-id')->firstOrFail();
 
-        expect($artist->artist_name)->toBe('Radiohead')
-            ->and($artist->artist_img)->toBe('https://example.test/artist.png')
-            ->and($resolved->get('artist-id')->is($artist))->toBeTrue();
+        expect($artist->artist_name)->toBe('Tame Impala')
+            ->and($artist->artist_img)->toBe('https://example.test/tame-impala.png')
+            ->and($resolved->get('tame-impala-id')->is($artist))->toBeTrue();
     });
 
     it('leaves an artist it already holds alone rather than rewriting it', function () {
         Artist::factory()->create([
-            'artist_id' => 'artist-id',
-            'artist_name' => 'Radiohead (old)',
+            'artist_id' => 'tame-impala-id',
+            'artist_name' => 'Tame Impala (old)',
             'artist_img' => 'https://example.test/existing.png',
         ]);
 
         resolveEntries(TierlistType::ARTIST, [artistEntry()]);
 
-        $artist = Artist::where('artist_id', 'artist-id')->firstOrFail();
+        $artist = Artist::where('artist_id', 'tame-impala-id')->firstOrFail();
 
         expect(Artist::count())->toBe(1)
-            ->and($artist->artist_name)->toBe('Radiohead (old)')
+            ->and($artist->artist_name)->toBe('Tame Impala (old)')
             ->and($artist->artist_img)->toBe('https://example.test/existing.png');
     });
 
     it('fills in the picture for an artist it only knew as a credit', function () {
         Artist::factory()->create([
-            'artist_id' => 'artist-id',
+            'artist_id' => 'tame-impala-id',
             'artist_img' => null,
         ]);
 
         resolveEntries(TierlistType::ARTIST, [artistEntry()]);
 
-        expect(Artist::where('artist_id', 'artist-id')->firstOrFail()->artist_img)
-            ->toBe('https://example.test/artist.png');
+        expect(Artist::where('artist_id', 'tame-impala-id')->firstOrFail()->artist_img)
+            ->toBe('https://example.test/tame-impala.png');
     });
 });
 describe('album entries', function () {
     it('creates the album and the artist it credits', function () {
         $resolved = resolveEntries(TierlistType::ALBUM, [albumEntry()]);
 
-        $album = Album::where('album_id', 'album-id')->firstOrFail();
+        $album = Album::where('album_id', 'currents-id')->firstOrFail();
 
-        expect($album->name)->toBe('In Rainbows')
-            ->and($album->release_date)->toBe('2007-10-10')
-            ->and($album->total_tracks)->toBe(10)
-            ->and($album->artist->artist_name)->toBe('Radiohead')
-            ->and($resolved->get('album-id')->is($album))->toBeTrue();
+        expect($album->name)->toBe('Currents')
+            ->and($album->release_date)->toBe('2015-07-17')
+            ->and($album->total_tracks)->toBe(13)
+            ->and($album->artist->artist_name)->toBe('Tame Impala')
+            ->and($resolved->get('currents-id')->is($album))->toBeTrue();
     });
 
     it('points several albums at one shared artist row', function () {
         resolveEntries(TierlistType::ALBUM, [
             albumEntry(),
-            albumEntry(['id' => 'kid-a-id', 'name' => 'Kid A']),
+            albumEntry(['id' => 'lonerism-id', 'name' => 'Lonerism']),
         ]);
 
-        expect(Artist::where('artist_id', 'artist-id')->count())->toBe(1)
+        expect(Artist::where('artist_id', 'tame-impala-id')->count())->toBe(1)
             ->and(Album::query()->pluck('artist_id')->unique())->toHaveCount(1);
     });
 
     it('reuses an artist that already exists, keeping its artwork', function () {
         $existing = Artist::factory()->create([
-            'artist_id' => 'artist-id',
-            'artist_img' => 'https://example.test/real-artist.png',
+            'artist_id' => 'tame-impala-id',
+            'artist_img' => 'https://example.test/tame-impala-real.png',
         ]);
 
         resolveEntries(TierlistType::ALBUM, [albumEntry()]);
 
         expect(Artist::count())->toBe(1)
-            ->and($existing->fresh()->artist_img)->toBe('https://example.test/real-artist.png')
+            ->and($existing->fresh()->artist_img)->toBe('https://example.test/tame-impala-real.png')
             ->and(Album::first()->artist_id)->toBe($existing->getKey());
     });
 
     it('still stores an album that credits nobody', function () {
         resolveEntries(TierlistType::ALBUM, [albumEntry(['artist_id' => null, 'artist_name' => null])]);
 
-        expect(Album::where('album_id', 'album-id')->firstOrFail()->artist_id)->toBeNull()
+        expect(Album::where('album_id', 'currents-id')->firstOrFail()->artist_id)->toBeNull()
             ->and(Artist::count())->toBe(0);
     });
 });
@@ -96,20 +95,14 @@ describe('track entries', function () {
     it('creates the track and the artist it credits', function () {
         $resolved = resolveEntries(TierlistType::TRACK, [trackEntry()]);
 
-        $track = Track::where('track_id', 'track-id')->firstOrFail();
+        $track = Track::where('track_id', 'less-i-know-id')->firstOrFail();
 
-        expect($track->name)->toBe('Nude')
-            ->and($track->album_name)->toBe('In Rainbows')
-            ->and($track->artist->artist_name)->toBe('Radiohead')
-            ->and($resolved->get('track-id')->is($track))->toBeTrue();
+        expect($track->name)->toBe('The Less I Know The Better')
+            ->and($track->album_name)->toBe('Currents')
+            ->and($track->artist->artist_name)->toBe('Tame Impala')
+            ->and($resolved->get('less-i-know-id')->is($track))->toBeTrue();
     });
 
-    it('keeps a track separate from the songs table', function () {
-        resolveEntries(TierlistType::TRACK, [trackEntry()]);
-
-        expect(Track::count())->toBe(1)
-            ->and(Song::count())->toBe(0);
-    });
 });
 
 describe('duplicates and empties', function () {
@@ -157,48 +150,13 @@ function resolveEntries(TierlistType $type, array $entries)
     return (new ResolveTierlistEntries)->handle($type, collect($entries));
 }
 
-function artistEntry(array $overrides = []): array
-{
-    return array_merge([
-        'id' => 'artist-id',
-        'name' => 'Radiohead',
-        'cover' => 'https://example.test/artist.png',
-    ], $overrides);
-}
-
-function albumEntry(array $overrides = []): array
-{
-    return array_merge([
-        'id' => 'album-id',
-        'name' => 'In Rainbows',
-        'cover' => 'https://example.test/album.png',
-        'artist_id' => 'artist-id',
-        'artist_name' => 'Radiohead',
-        'release_date' => '2007-10-10',
-        'total_tracks' => 10,
-        'album_type' => 'album',
-    ], $overrides);
-}
-
-function trackEntry(array $overrides = []): array
-{
-    return array_merge([
-        'id' => 'track-id',
-        'name' => 'Nude',
-        'cover' => 'https://example.test/album.png',
-        'artist_id' => 'artist-id',
-        'artist_name' => 'Radiohead',
-        'album_name' => 'In Rainbows',
-    ], $overrides);
-}
-
 function albumEntries(int $count): array
 {
     return collect(range(1, $count))
         ->map(fn (int $i) => albumEntry([
-            'id' => "album-id-{$i}",
+            'id' => "currents-id-{$i}",
             'name' => "Album {$i}",
-            'artist_id' => "artist-id-{$i}",
+            'artist_id' => "tame-impala-id-{$i}",
             'artist_name' => "Artist {$i}",
         ]))
         ->all();

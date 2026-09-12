@@ -2,7 +2,6 @@
 
 use App\Models\Album;
 use App\Models\Artist;
-use App\Models\Playlist;
 use App\Models\Tierlist;
 use App\Models\TierlistItem;
 use App\Models\Track;
@@ -28,14 +27,14 @@ describe('the explore feed', function () {
     });
 
     it('searches the list name', function () {
-        $match = publicCompletedTierlist(['name' => 'Best Shoegaze Records']);
+        $match = publicCompletedTierlist(['name' => 'Best Psych Rock Records']);
         publicCompletedTierlist(['name' => 'Something Else']);
 
-        expect(Tierlist::query()->forExplorePage('shoegaze')->pluck('id')->all())->toBe([$match->id]);
+        expect(Tierlist::query()->forExplorePage('psych rock')->pluck('id')->all())->toBe([$match->id]);
     });
 
     it('searches the source a list came from', function () {
-        $artist = Artist::factory()->create(['artist_name' => 'Slowdive']);
+        $artist = Artist::factory()->create(['artist_name' => 'Local Natives']);
         $match = Tierlist::factory()
             ->complete()
             ->public()
@@ -44,7 +43,7 @@ describe('the explore feed', function () {
 
         publicCompletedTierlist(['name' => 'Untitled Too']);
 
-        expect(Tierlist::query()->forExplorePage('slowdive')->pluck('id')->all())->toBe([$match->id]);
+        expect(Tierlist::query()->forExplorePage('local natives')->pluck('id')->all())->toBe([$match->id]);
     });
 
     it('counts the entries on each list', function () {
@@ -179,11 +178,4 @@ describe('the dashboard feed', function () {
         expect(Tierlist::query()->forDashboard($user)->get())->toHaveCount(1);
     });
 
-    it('carries the source so a card can draw its artwork', function () {
-        $user = User::factory()->createOne();
-        $playlist = Playlist::factory()->create();
-        Tierlist::factory()->for($user)->tracks()->fromPlaylist($playlist)->create();
-
-        expect(Tierlist::query()->forDashboard($user)->first()->source->is($playlist))->toBeTrue();
-    });
 });

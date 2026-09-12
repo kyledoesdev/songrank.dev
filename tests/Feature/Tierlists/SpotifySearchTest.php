@@ -11,16 +11,16 @@ describe('searching albums', function () {
     it('maps a result onto the shape an album entry is stored from', function () {
         fakeSearch('albums', [spotifyAlbum()]);
 
-        $album = (new SearchAlbums)->handle(searcher(), 'in rainbows')->first();
+        $album = (new SearchAlbums)->handle(searcher(), 'currents')->first();
 
         expect($album)->toBe([
-            'id' => 'album-id',
-            'name' => 'In Rainbows',
-            'cover' => 'https://example.test/album.png',
-            'artist_id' => 'artist-id',
-            'artist_name' => 'Radiohead',
-            'release_date' => '2007-10-10',
-            'total_tracks' => 10,
+            'id' => 'currents-id',
+            'name' => 'Currents',
+            'cover' => 'https://example.test/currents.png',
+            'artist_id' => 'tame-impala-id',
+            'artist_name' => 'Tame Impala',
+            'release_date' => '2015-07-17',
+            'total_tracks' => 13,
             'album_type' => 'album',
         ]);
     });
@@ -31,16 +31,16 @@ describe('searching albums', function () {
             spotifyAlbum(['id' => 'coverless-id', 'images' => []]),
         ]);
 
-        $albums = (new SearchAlbums)->handle(searcher(), 'in rainbows');
+        $albums = (new SearchAlbums)->handle(searcher(), 'currents');
 
         expect($albums)->toHaveCount(1)
-            ->and($albums->first()['id'])->toBe('album-id');
+            ->and($albums->first()['id'])->toBe('currents-id');
     });
 
     it('asks Spotify for albums', function () {
         fakeSearch('albums', [spotifyAlbum()]);
 
-        (new SearchAlbums)->handle(searcher(), 'in rainbows');
+        (new SearchAlbums)->handle(searcher(), 'currents');
 
         Http::assertSent(fn (Request $request) => str_contains($request->url(), 'type=album'));
     });
@@ -51,7 +51,7 @@ describe('searching albums', function () {
             'https://api.spotify.com/v1/search*' => fn () => throw new Exception('spotify is down'),
         ]);
 
-        expect((new SearchAlbums)->handle(searcher(), 'in rainbows'))->toBeNull();
+        expect((new SearchAlbums)->handle(searcher(), 'currents'))->toBeNull();
     });
 });
 
@@ -59,28 +59,28 @@ describe('searching tracks', function () {
     it('maps a result onto the shape a track entry is stored from', function () {
         fakeSearch('tracks', [spotifyTrack()]);
 
-        $track = (new SearchTracks)->handle(searcher(), 'nude')->first();
+        $track = (new SearchTracks)->handle(searcher(), 'the less i know')->first();
 
         expect($track)->toBe([
-            'id' => 'track-id',
-            'name' => 'Nude',
-            'cover' => 'https://example.test/album.png',
-            'artist_id' => 'artist-id',
-            'artist_name' => 'Radiohead',
-            'album_name' => 'In Rainbows',
+            'id' => 'less-i-know-id',
+            'name' => 'The Less I Know The Better',
+            'cover' => 'https://example.test/currents.png',
+            'artist_id' => 'tame-impala-id',
+            'artist_name' => 'Tame Impala',
+            'album_name' => 'Currents',
         ]);
     });
 
     it('takes the artwork from the album the track belongs to', function () {
         fakeSearch('tracks', [spotifyTrack(['album' => ['name' => 'No Art', 'images' => []]])]);
 
-        expect((new SearchTracks)->handle(searcher(), 'nude'))->toBeEmpty();
+        expect((new SearchTracks)->handle(searcher(), 'the less i know'))->toBeEmpty();
     });
 
     it('asks Spotify for tracks', function () {
         fakeSearch('tracks', [spotifyTrack()]);
 
-        (new SearchTracks)->handle(searcher(), 'nude');
+        (new SearchTracks)->handle(searcher(), 'the less i know');
 
         Http::assertSent(fn (Request $request) => str_contains($request->url(), 'type=track'));
     });
@@ -90,26 +90,26 @@ describe('importing a discography', function () {
     it('returns every release the artist has', function () {
         fakeDiscography(1, [
             spotifyAlbum(),
-            spotifyAlbum(['id' => 'ep-id', 'name' => 'Airbag EP', 'album_type' => 'single']),
+            spotifyAlbum(['id' => 'patience-id', 'name' => 'Patience', 'album_type' => 'single']),
         ]);
 
-        $albums = (new GetArtistAlbums)->handle(searcher(), 'artist-id');
+        $albums = (new GetArtistAlbums)->handle(searcher(), 'tame-impala-id');
 
-        expect($albums->pluck('id')->all())->toBe(['album-id', 'ep-id'])
+        expect($albums->pluck('id')->all())->toBe(['currents-id', 'patience-id'])
             ->and($albums->last()['album_type'])->toBe('single');
     });
 
     it('collapses the same record released into several markets', function () {
         fakeDiscography(1, [
             spotifyAlbum(),
-            spotifyAlbum(['id' => 'album-id-jp', 'name' => 'IN RAINBOWS']),
-            spotifyAlbum(['id' => 'album-id-uk', 'name' => 'In Rainbows']),
+            spotifyAlbum(['id' => 'currents-id-jp', 'name' => 'CURRENTS']),
+            spotifyAlbum(['id' => 'currents-id-uk', 'name' => 'Currents']),
         ]);
 
-        $albums = (new GetArtistAlbums)->handle(searcher(), 'artist-id');
+        $albums = (new GetArtistAlbums)->handle(searcher(), 'tame-impala-id');
 
         expect($albums)->toHaveCount(1)
-            ->and($albums->first()['id'])->toBe('album-id');
+            ->and($albums->first()['id'])->toBe('currents-id');
     });
 
     it('walks every page of a long discography', function () {
@@ -118,14 +118,14 @@ describe('importing a discography', function () {
             'https://api.spotify.com/v1/artists/*' => fn (Request $request) => Http::response([
                 'total' => 51,
                 'items' => str_contains($request->url(), 'offset=50')
-                    ? [spotifyAlbum(['id' => 'late-id', 'name' => 'A Moon Shaped Pool'])]
+                    ? [spotifyAlbum(['id' => 'slow-rush-id', 'name' => 'The Slow Rush'])]
                     : [spotifyAlbum()],
             ]),
         ]);
 
-        $albums = (new GetArtistAlbums)->handle(searcher(), 'artist-id');
+        $albums = (new GetArtistAlbums)->handle(searcher(), 'tame-impala-id');
 
-        expect($albums->pluck('id')->all())->toBe(['album-id', 'late-id']);
+        expect($albums->pluck('id')->all())->toBe(['currents-id', 'slow-rush-id']);
     });
 
     it('returns nothing when Spotify falls over', function () {
@@ -134,56 +134,11 @@ describe('importing a discography', function () {
             'https://api.spotify.com/v1/artists/*' => fn () => throw new Exception('spotify is down'),
         ]);
 
-        expect((new GetArtistAlbums)->handle(searcher(), 'artist-id'))->toBeNull();
+        expect((new GetArtistAlbums)->handle(searcher(), 'tame-impala-id'))->toBeNull();
     });
 });
 
 function searcher(): User
 {
     return User::factory()->createOne();
-}
-
-function fakeSearch(string $key, array $items): void
-{
-    Http::fake([
-        'https://accounts.spotify.com/*' => Http::response(['access_token' => 'fresh-token']),
-        'https://api.spotify.com/v1/search*' => Http::response([$key => ['items' => $items]]),
-    ]);
-}
-
-function fakeDiscography(int $total, array $items): void
-{
-    Http::fake([
-        'https://accounts.spotify.com/*' => Http::response(['access_token' => 'fresh-token']),
-        'https://api.spotify.com/v1/artists/*' => Http::response([
-            'total' => $total,
-            'items' => $items,
-        ]),
-    ]);
-}
-
-function spotifyAlbum(array $overrides = []): array
-{
-    return array_merge([
-        'id' => 'album-id',
-        'name' => 'In Rainbows',
-        'album_type' => 'album',
-        'release_date' => '2007-10-10',
-        'total_tracks' => 10,
-        'images' => [['url' => 'https://example.test/album.png']],
-        'artists' => [['id' => 'artist-id', 'name' => 'Radiohead']],
-    ], $overrides);
-}
-
-function spotifyTrack(array $overrides = []): array
-{
-    return array_merge([
-        'id' => 'track-id',
-        'name' => 'Nude',
-        'artists' => [['id' => 'artist-id', 'name' => 'Radiohead']],
-        'album' => [
-            'name' => 'In Rainbows',
-            'images' => [['url' => 'https://example.test/album.png']],
-        ],
-    ], $overrides);
 }
