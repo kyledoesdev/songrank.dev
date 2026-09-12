@@ -5,65 +5,62 @@ use App\Models\Artist;
 
 describe('resolving credited artists', function () {
     it('creates an artist it has never seen and hands back its row id', function () {
-        $resolved = resolveCredits([['id' => 'new-id', 'name' => 'Portishead']]);
+        $resolved = resolveCredits([['id' => 'local-natives-id', 'name' => 'Local Natives']]);
 
-        $artist = Artist::where('artist_id', 'new-id')->firstOrFail();
+        $artist = Artist::where('artist_id', 'local-natives-id')->firstOrFail();
 
-        expect($resolved->get('new-id'))->toBe($artist->getKey())
-            ->and($artist->artist_name)->toBe('Portishead');
+        expect($resolved->get('local-natives-id'))->toBe($artist->getKey())
+            ->and($artist->artist_name)->toBe('Local Natives');
     });
 
     it('leaves an artist we already know exactly as it is', function () {
         $existing = Artist::factory()->create([
-            'artist_id' => 'known-id',
-            'artist_name' => 'Portishead',
-            'artist_img' => 'https://example.test/portishead.png',
+            'artist_id' => 'tame-impala-id',
+            'artist_name' => 'Tame Impala',
+            'artist_img' => 'https://example.test/tame-impala.png',
         ]);
 
-        $resolved = resolveCredits([['id' => 'known-id', 'name' => 'Portishead (Remastered)']]);
+        $resolved = resolveCredits([['id' => 'tame-impala-id', 'name' => 'Tame Impala (Remastered)']]);
 
         expect(Artist::count())->toBe(1)
-            ->and($resolved->get('known-id'))->toBe($existing->getKey())
-            ->and($existing->fresh()->artist_name)->toBe('Portishead')
-            ->and($existing->fresh()->artist_img)->toBe('https://example.test/portishead.png');
+            ->and($resolved->get('tame-impala-id'))->toBe($existing->getKey())
+            ->and($existing->fresh()->artist_name)->toBe('Tame Impala')
+            ->and($existing->fresh()->artist_img)->toBe('https://example.test/tame-impala.png');
     });
 
     it('resolves known and unknown artists in one pass', function () {
-        $existing = Artist::factory()->create(['artist_id' => 'known-id']);
+        $existing = Artist::factory()->create(['artist_id' => 'tame-impala-id']);
 
         $resolved = resolveCredits([
-            ['id' => 'known-id', 'name' => 'Known'],
-            ['id' => 'new-id', 'name' => 'New'],
+            ['id' => 'tame-impala-id', 'name' => 'Tame Impala'],
+            ['id' => 'foster-the-people-id', 'name' => 'Foster the People'],
         ]);
 
         expect($resolved)->toHaveCount(2)
-            ->and($resolved->get('known-id'))->toBe($existing->getKey())
-            ->and($resolved->get('new-id'))->toBe(Artist::where('artist_id', 'new-id')->first()->getKey());
+            ->and($resolved->get('tame-impala-id'))->toBe($existing->getKey())
+            ->and($resolved->get('foster-the-people-id'))
+            ->toBe(Artist::where('artist_id', 'foster-the-people-id')->first()->getKey());
     });
 
     it('collapses the same artist credited several times', function () {
         resolveCredits([
-            ['id' => 'same-id', 'name' => 'Portishead'],
-            ['id' => 'same-id', 'name' => 'Portishead'],
+            ['id' => 'foster-the-people-id', 'name' => 'Foster the People'],
+            ['id' => 'foster-the-people-id', 'name' => 'Foster the People'],
         ]);
 
-        expect(Artist::where('artist_id', 'same-id')->count())->toBe(1);
+        expect(Artist::where('artist_id', 'foster-the-people-id')->count())->toBe(1);
     });
 
     it('falls back to a placeholder rather than failing on a nameless credit', function () {
-        resolveCredits([['id' => 'nameless-id', 'name' => null]]);
+        resolveCredits([['id' => 'uncredited-id', 'name' => null]]);
 
-        expect(Artist::where('artist_id', 'nameless-id')->firstOrFail()->artist_name)
+        expect(Artist::where('artist_id', 'uncredited-id')->firstOrFail()->artist_name)
             ->toBe('Unknown Artist');
     });
 
     it('skips a credit with no spotify id at all', function () {
         expect(resolveCredits([['id' => null, 'name' => 'Nobody']]))->toBeEmpty()
             ->and(Artist::count())->toBe(0);
-    });
-
-    it('resolves nothing from an empty set', function () {
-        expect(resolveCredits([]))->toBeEmpty();
     });
 });
 

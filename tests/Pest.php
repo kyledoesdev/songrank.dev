@@ -1,16 +1,6 @@
 <?php
 
-use App\Contracts\SpotifyEntity;
-use App\Enums\RankingType;
-use App\Enums\TierlistType;
-use App\Models\Artist;
-use App\Models\ProLicense;
-use App\Models\Ranking;
-use App\Models\Song;
-use App\Models\Tierlist;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Features\SupportTesting\Testable;
 use Tests\TestCase;
 
 /*
@@ -33,143 +23,16 @@ pest()->extend(TestCase::class)
 
 /*
 |--------------------------------------------------------------------------
-| Functions
+| Helpers
 |--------------------------------------------------------------------------
 |
-| While Pest is very powerful out-of-the-box, you may have some testing code specific to your
-| project that you don't want to repeat in every file. Here you can also expose helpers as
-| global functions to help you to reduce the number of lines of code in your test files.
+| Helper names are global, so they have to stay unique across the whole suite.
+| They are grouped by the domain they build for rather than piled into this
+| file; anything used by a single test file still lives at the bottom of it.
 |
 */
 
-function publicCompletedRanking(?SpotifyEntity $source = null, array $attributes = []): Ranking
-{
-    $factory = Ranking::factory();
-
-    if ($source) {
-        $factory = $factory->for($source, 'source');
-    }
-
-    return $factory->create(array_merge([
-        'is_public' => true,
-        'is_ranked' => true,
-        'completed_at' => now(),
-    ], $attributes));
-}
-
-/**
- * A tier list anyone may open: finished and public.
- */
-function publicCompletedTierlist(array $attributes = []): Tierlist
-{
-    return Tierlist::factory()
-        ->complete()
-        ->public()
-        ->create($attributes);
-}
-
-/**
- * A user sitting on exactly $count tier lists of one type, for allowance assertions.
- */
-function userWithTierlists(int $count, TierlistType $type = TierlistType::ARTIST, array $attributes = []): User
-{
-    $user = User::factory()->createOne($attributes);
-
-    Tierlist::factory()
-        ->count($count)
-        ->for($user)
-        ->create(['type' => $type->value]);
-
-    return $user;
-}
-function kyle(): User
-{
-    return User::factory()->createOne([
-        'name' => 'Kyle',
-        'is_dev' => true,
-    ]);
-}
-
-/**
- * A user holding an active, paid Pro license.
- */
-function proUser(array $attributes = []): User
-{
-    $user = User::factory()->createOne($attributes);
-
-    ProLicense::factory()->active()->for($user)->create();
-
-    /* ProLicenseObserver has since flipped is_pro on the row, not on this instance. */
-    return $user->fresh();
-}
-
-/**
- * A user sitting on exactly $count rankings, for allowance assertions.
- */
-function userWithRankings(int $count, array $attributes = []): User
-{
-    $user = User::factory()->createOne($attributes);
-
-    Ranking::factory()->count($count)->for($user)->create();
-
-    return $user;
-}
-
-function expectedSongTitles(int $count): array
-{
-    return collect(range(1, $count))
-        ->mapWithKeys(fn (int $i) => [$i => "Should be number {$i}"])
-        ->all();
-}
-
-function algorithmRanking(User $user, string $name, array $expectedSongTitles): Ranking
-{
-    $artist = Artist::factory()->create([
-        'artist_name' => 'Test Artist',
-        'is_podcast' => false,
-    ]);
-
-    $ranking = Ranking::create([
-        'user_id' => $user->getKey(),
-        'type' => RankingType::ARTIST->value,
-        'source_id' => $artist->getKey(),
-        'name' => $name,
-        'is_ranked' => false,
-        'is_public' => true,
-    ]);
-
-    foreach ($expectedSongTitles as $title) {
-        Song::factory()->create([
-            'ranking_id' => $ranking->getKey(),
-            'artist_id' => $artist->getKey(),
-            'title' => $title,
-            'rank' => 0,
-        ]);
-    }
-
-    return $ranking;
-}
-
-function simulateRankingComparisons(Testable $component, int $maxComparisons): void
-{
-    for ($i = 0; $i < $maxComparisons; $i++) {
-        $leftSong = $component->get('currentSong1');
-        $rightSong = $component->get('currentSong2');
-
-        if (empty($leftSong['title']) || empty($rightSong['title'])) {
-            break;
-        }
-
-        preg_match('/(\d+)/', $leftSong['title'], $leftMatches);
-        preg_match('/(\d+)/', $rightSong['title'], $rightMatches);
-
-        $leftSongRank = (int) $leftMatches[1];
-        $rightSongRank = (int) $rightMatches[1];
-
-        $winningSongId = $leftSongRank < $rightSongRank
-            ? $leftSong['id']
-            : $rightSong['id'];
-
-        $component->call('chooseSong', $winningSongId);
-    }
-}
+require_once __DIR__.'/Helpers/users.php';
+require_once __DIR__.'/Helpers/rankings.php';
+require_once __DIR__.'/Helpers/tierlists.php';
+require_once __DIR__.'/Helpers/spotify.php';
