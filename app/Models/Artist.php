@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use App\Contracts\Rankable;
+use App\Contracts\SpotifyEntity;
 use App\QueryBuilders\ArtistQueryBuilder;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 #[UseEloquentBuilder(ArtistQueryBuilder::class)]
-class Artist extends Model implements Rankable
+class Artist extends Model implements SpotifyEntity
 {
     protected $fillable = [
         'artist_id',

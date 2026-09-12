@@ -2,7 +2,7 @@
 
 namespace App\Contracts;
 
-interface Rankable
+interface SpotifyEntity
 {
     public function cover(): ?string;
 

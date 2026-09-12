@@ -1,11 +1,13 @@
 <?php
 
-use App\Contracts\Rankable;
+use App\Contracts\SpotifyEntity;
 use App\Enums\RankingType;
+use App\Enums\TierlistType;
 use App\Models\Artist;
 use App\Models\ProLicense;
 use App\Models\Ranking;
 use App\Models\Song;
+use App\Models\Tierlist;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Features\SupportTesting\Testable;
@@ -40,7 +42,7 @@ pest()->extend(TestCase::class)
 |
 */
 
-function publicCompletedRanking(?Rankable $source = null, array $attributes = []): Ranking
+function publicCompletedRanking(?SpotifyEntity $source = null, array $attributes = []): Ranking
 {
     $factory = Ranking::factory();
 
@@ -55,6 +57,31 @@ function publicCompletedRanking(?Rankable $source = null, array $attributes = []
     ], $attributes));
 }
 
+/**
+ * A tier list anyone may open: finished and public.
+ */
+function publicCompletedTierlist(array $attributes = []): Tierlist
+{
+    return Tierlist::factory()
+        ->complete()
+        ->public()
+        ->create($attributes);
+}
+
+/**
+ * A user sitting on exactly $count tier lists of one type, for allowance assertions.
+ */
+function userWithTierlists(int $count, TierlistType $type = TierlistType::ARTIST, array $attributes = []): User
+{
+    $user = User::factory()->createOne($attributes);
+
+    Tierlist::factory()
+        ->count($count)
+        ->for($user)
+        ->create(['type' => $type->value]);
+
+    return $user;
+}
 function kyle(): User
 {
     return User::factory()->createOne([

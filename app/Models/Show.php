@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use App\Contracts\Rankable;
+use App\Contracts\SpotifyEntity;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-class Show extends Model implements Rankable
+class Show extends Model implements SpotifyEntity
 {
     protected $fillable = [
         'show_id',
