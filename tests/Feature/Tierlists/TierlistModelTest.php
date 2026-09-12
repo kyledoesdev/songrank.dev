@@ -9,6 +9,7 @@ use App\Models\Tierlist;
 use App\Models\TierlistItem;
 use App\Models\Track;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 
 use function Pest\Laravel\actingAs;
 
@@ -100,6 +101,35 @@ describe('the bank', function () {
     });
 });
 
+describe('entries are unique to a list', function () {
+    it('refuses the same entry twice on one list', function () {
+        $tierlist = Tierlist::factory()->create();
+        $artist = Artist::factory()->create();
+
+        placeEntry($tierlist, $artist);
+
+        expect(fn () => placeEntry($tierlist, $artist))->toThrow(QueryException::class);
+    });
+
+    it('allows the same entry on two different lists', function () {
+        $artist = Artist::factory()->create();
+
+        placeEntry(Tierlist::factory()->create(), $artist);
+        placeEntry(Tierlist::factory()->create(), $artist);
+
+        expect(TierlistItem::count())->toBe(2);
+    });
+
+    it('lets an entry come back after it was taken off the board', function () {
+        $tierlist = Tierlist::factory()->create();
+        $artist = Artist::factory()->create();
+
+        placeEntry($tierlist, $artist)->delete();
+
+        expect(fn () => placeEntry($tierlist, $artist))->not->toThrow(QueryException::class)
+            ->and(TierlistItem::count())->toBe(1);
+    });
+});
 describe('reading order', function () {
     it('reads the top tier left to right, then down', function () {
         $tierlist = Tierlist::factory()->create();

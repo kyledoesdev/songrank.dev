@@ -6,10 +6,13 @@ use App\Enums\TierlistType;
 use App\QueryBuilders\TierlistQueryBuilder;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Kyledoesdev\Essentials\Concerns\HasStatsAfterEvents;
@@ -19,7 +22,9 @@ use Spatie\Comments\Models\Concerns\HasComments;
 class Tierlist extends Model
 {
     use HasComments;
+    use HasFactory;
     use HasStatsAfterEvents;
+    use SoftDeletes;
 
     protected $fillable = [
         'user_id',

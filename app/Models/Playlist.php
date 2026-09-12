@@ -5,12 +5,18 @@ namespace App\Models;
 use App\Contracts\SpotifyEntity;
 use App\QueryBuilders\PlaylistQueryBuilder;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[UseEloquentBuilder(PlaylistQueryBuilder::class)]
 class Playlist extends Model implements SpotifyEntity
 {
+    use HasFactory;
+    use SoftDeletes;
+
     protected $fillable = [
         'playlist_id',
         'creator_id',

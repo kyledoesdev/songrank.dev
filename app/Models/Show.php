@@ -3,10 +3,16 @@
 namespace App\Models;
 
 use App\Contracts\SpotifyEntity;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Show extends Model implements SpotifyEntity
 {
+    use HasFactory;
+    use SoftDeletes;
+
     protected $fillable = [
         'show_id',
         'publisher',

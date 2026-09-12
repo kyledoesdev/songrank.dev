@@ -6,10 +6,13 @@ use App\Enums\RankingType;
 use App\QueryBuilders\RankingQueryBuilder;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 use Kyledoesdev\Essentials\Concerns\HasStatsAfterEvents;
 use Spatie\Comments\Models\Concerns\HasComments;
@@ -18,7 +21,9 @@ use Spatie\Comments\Models\Concerns\HasComments;
 class Ranking extends Model
 {
     use HasComments;
+    use HasFactory;
     use HasStatsAfterEvents;
+    use SoftDeletes;
 
     public const MAX_SONGS = 500;
 

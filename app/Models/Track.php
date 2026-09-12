@@ -5,8 +5,11 @@ namespace App\Models;
 use App\Contracts\SpotifyEntity;
 use App\QueryBuilders\TrackQueryBuilder;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * A track in the shared Spotify catalog, deduplicated by spotify id.
@@ -17,6 +20,9 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 #[UseEloquentBuilder(TrackQueryBuilder::class)]
 class Track extends Model implements SpotifyEntity
 {
+    use HasFactory;
+    use SoftDeletes;
+
     protected $fillable = [
         'track_id',
         'artist_id',

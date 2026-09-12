@@ -35,7 +35,6 @@ return new class extends Migration
             $table->unsignedInteger('position');
             $table->boolean('is_bank')->default(false);
             $table->timestamps();
-            $table->softDeletes();
 
             $table->unique(['tierlist_id', 'slug']);
             $table->index(['tierlist_id', 'position']);
@@ -48,9 +47,12 @@ return new class extends Migration
             $table->morphs('entryable');
             $table->unsignedInteger('position');
             $table->timestamps();
-            $table->softDeletes();
 
             $table->index(['tier_id', 'position']);
+
+            /* One entry cannot sit on the same list twice. Items hard delete, so
+               no trashed row can block re-adding something you took off the board. */
+            $table->unique(['tierlist_id', 'entryable_type', 'entryable_id']);
         });
     }
 

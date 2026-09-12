@@ -10,7 +10,10 @@ use Database\Factories\ProLicenseFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Laravel\Cashier\Cashier;
 
@@ -19,6 +22,9 @@ use Laravel\Cashier\Cashier;
 #[UseFactory(ProLicenseFactory::class)]
 class ProLicense extends Model
 {
+    use HasFactory;
+    use SoftDeletes;
+
     protected $fillable = [
         'uuid',
         'user_id',
