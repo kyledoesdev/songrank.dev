@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\Http;
 final class SearchAlbums
 {
     /**
-     * Building a bank is a multi-add flow, unlike picking one artist to rank, so
-     * it returns a deeper page of results than SearchArtists does.
+     * Picking entries is a multi-add flow, unlike picking one artist to rank, so
+     * this returns a deeper page of results than SearchArtists does.
      */
     public function handle(User $user, string $searchTerm): ?Collection
     {

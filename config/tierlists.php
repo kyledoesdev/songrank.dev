@@ -25,12 +25,12 @@ return [
     */
 
     'default_tiers' => [
-        ['name' => 'S', 'slug' => 's', 'color' => '#FF7F7F'],
-        ['name' => 'A', 'slug' => 'a', 'color' => '#FFBF7F'],
-        ['name' => 'B', 'slug' => 'b', 'color' => '#FFDF7F'],
-        ['name' => 'C', 'slug' => 'c', 'color' => '#FFFF7F'],
-        ['name' => 'D', 'slug' => 'd', 'color' => '#BFFF7F'],
-        ['name' => 'F', 'slug' => 'f', 'color' => '#7FFF7F'],
+        ['name' => 'S', 'color' => '#FF7F7F'],
+        ['name' => 'A', 'color' => '#FFBF7F'],
+        ['name' => 'B', 'color' => '#FFDF7F'],
+        ['name' => 'C', 'color' => '#FFFF7F'],
+        ['name' => 'D', 'color' => '#BFFF7F'],
+        ['name' => 'F', 'color' => '#7FFF7F'],
     ],
 
     /*
@@ -45,6 +45,6 @@ return [
     |
     */
 
-    'bank' => ['name' => 'Bank', 'slug' => 'bank', 'color' => '#E4E4E7'],
+    'bank' => ['name' => 'Unranked', 'color' => '#E4E4E7'],
 
 ];

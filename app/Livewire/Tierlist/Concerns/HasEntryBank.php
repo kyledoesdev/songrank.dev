@@ -95,8 +95,8 @@ trait HasEntryBank
     }
 
     /**
-     * Pours a whole import into the bank, keeping what fits and saying so when
-     * the rest did not.
+     * Pours a whole import in, keeping what fits and saying so when the rest
+     * did not.
      */
     protected function addEntries(Collection $entries): void
     {

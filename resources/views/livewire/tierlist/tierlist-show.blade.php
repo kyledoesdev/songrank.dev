@@ -1,4 +1,7 @@
 <div>
+    @if (! $tierlist->is_complete)
+        <livewire:tierlist.tierlist-builder :tierlist="$tierlist" />
+    @else
     <div class="pl-4 pr-4 pb-4 bg-white shadow-lg rounded-lg mt-4">
         <div class="flex justify-between items-center">
             <div>
@@ -20,7 +23,7 @@
 
         <hr>
 
-        {{-- The board. Phase 4 makes these rows draggable; for now they render what is there. --}}
+        {{-- The finished board. --}}
         <div class="mt-4 space-y-1">
             @foreach ($tierlist->placementTiers() as $tier)
                 <div class="flex items-stretch rounded-lg overflow-hidden border border-zinc-200" wire:key="tier-{{ $tier->getKey() }}">
@@ -44,7 +47,7 @@
             <div class="mt-4 rounded-lg border border-zinc-200 overflow-hidden">
                 <div class="px-4 py-2 bg-gray-50 border-b border-zinc-200">
                     <h4 class="font-semibold text-gray-800 text-sm">
-                        The Bank
+                        Unranked
                         <span class="text-xs font-normal text-zinc-500">
                             &mdash; {{ $tierlist->bank->items->count() }} still to place
                         </span>
@@ -59,4 +62,5 @@
             </div>
         @endif
     </div>
+    @endif
 </div>

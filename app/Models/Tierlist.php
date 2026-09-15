@@ -138,6 +138,11 @@ class Tierlist extends Model
             ->values();
     }
 
+    public function canBeEdited(): bool
+    {
+        return $this->user_id === Auth::id();
+    }
+
     public function canBeSeen(): bool
     {
         if ($this->user_id == Auth::id()) {

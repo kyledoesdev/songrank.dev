@@ -14,7 +14,6 @@ class Tier extends Model
     protected $fillable = [
         'tierlist_id',
         'name',
-        'slug',
         'color',
         'position',
         'is_bank',

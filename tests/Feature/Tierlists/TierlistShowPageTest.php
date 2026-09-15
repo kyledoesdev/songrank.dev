@@ -87,7 +87,7 @@ describe('the board', function () {
             ->assertSee($artist->spotifyUrl());
     });
 
-    it('shows what is still waiting in the bank', function () {
+    it('shows what is still waiting to be placed', function () {
         $tierlist = publicCompletedTierlist();
 
         TierlistItem::factory()->inTier($tierlist->bank)->create();
@@ -95,17 +95,17 @@ describe('the board', function () {
         actingAs(kyle());
 
         get(route('tierlist', ['id' => $tierlist->getKey()]))
-            ->assertSee('The Bank')
+            ->assertSee('Unranked')
             ->assertSee('1 still to place');
     });
 
-    it('leaves the bank out once everything has been placed', function () {
+    it('drops that section once everything has been placed', function () {
         $tierlist = publicCompletedTierlist();
 
         TierlistItem::factory()->inTier($tierlist->placementTiers()->first())->create();
 
         actingAs(kyle());
 
-        get(route('tierlist', ['id' => $tierlist->getKey()]))->assertDontSee('The Bank');
+        get(route('tierlist', ['id' => $tierlist->getKey()]))->assertDontSee('Unranked');
     });
 });

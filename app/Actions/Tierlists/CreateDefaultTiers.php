@@ -18,7 +18,6 @@ final class CreateDefaultTiers
         $tiers = [[
             'tierlist_id' => $tierlist->getKey(),
             'name' => $bank['name'],
-            'slug' => $bank['slug'],
             'color' => $bank['color'],
             'position' => 0,
             'is_bank' => true,
@@ -30,7 +29,6 @@ final class CreateDefaultTiers
             $tiers[] = [
                 'tierlist_id' => $tierlist->getKey(),
                 'name' => $tier['name'],
-                'slug' => $tier['slug'],
                 'color' => $tier['color'],
                 'position' => $index + 1,
                 'is_bank' => false,

@@ -30,13 +30,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('tierlist_id')->constrained()->cascadeOnDelete();
             $table->string('name');
-            $table->string('slug');
             $table->string('color', 7);
             $table->unsignedInteger('position');
             $table->boolean('is_bank')->default(false);
             $table->timestamps();
 
-            $table->unique(['tierlist_id', 'slug']);
             $table->index(['tierlist_id', 'position']);
         });
 
