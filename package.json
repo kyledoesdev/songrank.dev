@@ -1,4 +1,5 @@
 {
+    "name": "spotify-song-ranker",
     "private": true,
     "type": "module",
     "scripts": {

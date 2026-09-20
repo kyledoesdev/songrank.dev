@@ -12,9 +12,14 @@
                     {{ $tierlist->type->label() }} tier list
                 </p>
             </div>
-            <div class="flex">
+            <div class="flex gap-1 sm:gap-2">
+                @if (auth()->id() === $tierlist->user_id)
+                    <a href="{{ route('tierlist.edit', ['id' => $tierlist->getKey()]) }}" class="btn-secondary p-1 sm:p-2">
+                        <i class="fa fa-solid fa-pencil text-sm sm:text-base"></i>
+                    </a>
+                @endif
                 @auth
-                    <a href="{{ route('dashboard') }}" class="btn-primary p-1 sm:p-2 m-1 sm:m-2">
+                    <a href="{{ route('dashboard') }}" class="btn-primary p-1 sm:p-2">
                         <i class="fa fa-solid fa-house text-sm sm:text-base"></i>
                     </a>
                 @endauth

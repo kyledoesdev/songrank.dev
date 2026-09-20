@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Tierlist\EditTierlist;
 use App\Livewire\Tierlist\TierlistSetup;
 use App\Livewire\Tierlist\TierlistShow;
 use Illuminate\Auth\Middleware\Authenticate;
@@ -28,5 +29,9 @@ Route::middleware(EnsureFeaturesAreActive::using('tierlists'))->group(function (
         Route::livewire('/tierlists/create', TierlistSetup::class)
             ->name('tierlists.create')
             ->withHead(title: 'Create a Tier List');
+
+        Route::livewire('/tierlist/{id}/edit', EditTierlist::class)
+            ->name('tierlist.edit')
+            ->withHead(title: 'Edit Tier List');
     });
 });

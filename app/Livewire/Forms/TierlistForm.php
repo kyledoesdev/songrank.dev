@@ -19,4 +19,11 @@ class TierlistForm extends Form
 
     #[Validate('required')]
     public $comments_replies_enabled = true;
+
+    public function updatedCommentsEnabled($value): void
+    {
+        if (! $value || $value === '0') {
+            $this->comments_replies_enabled = '0';
+        }
+    }
 }

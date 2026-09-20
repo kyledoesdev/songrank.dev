@@ -166,7 +166,7 @@ class AppServiceProvider extends ServiceProvider
             return;
         }
 
-        DevCommands::except('server');
+        DevCommands::except('server', 'logs');
         DevCommands::node('dev', 'vite')->yellow();
         DevCommands::artisan('queue:listen --tries=1 --timeout=0', 'queue')->purple();
         DevCommands::register(

@@ -13,13 +13,6 @@ trait HasTierlistForm
 
     public TierlistForm $form;
 
-    public function updatedFormCommentsEnabled($value): void
-    {
-        if (! $value || $value === '0') {
-            $this->form->comments_replies_enabled = '0';
-        }
-    }
-
     public function tierlistLimitReached(): bool
     {
         return ! Auth::user()->canCreateTierlist($this->tierlistType());
