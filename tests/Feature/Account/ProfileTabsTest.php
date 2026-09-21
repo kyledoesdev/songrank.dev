@@ -1,7 +1,9 @@
 <?php
 
+use App\Livewire\Tierlist\Card as TierlistCard;
 use App\Models\Tierlist;
 use App\Models\User;
+use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
 
@@ -130,5 +132,55 @@ describe('profile tabs', function () {
             ->get(route('profile', ['id' => $owner->spotify_id]))
             ->assertOk()
             ->assertDontSee('Tier Lists');
+    });
+});
+
+describe('tier list card actions', function () {
+    test('owner sees edit and delete buttons on their tier list cards', function () {
+        $owner = kyle();
+        $tierlist = publicCompletedTierlist(['user_id' => $owner->getKey()]);
+
+        actingAs($owner)
+            ->get(route('profile', ['id' => $owner->spotify_id]))
+            ->assertOk()
+            ->assertSee(route('tierlist.edit', ['id' => $tierlist->getKey()]))
+            ->assertSee('Delete Tier List');
+    });
+
+    test('visitors do not see edit and delete buttons', function () {
+        $owner = kyle();
+        $visitor = User::factory()->createOne(['is_dev' => true]);
+        $tierlist = publicCompletedTierlist(['user_id' => $owner->getKey()]);
+
+        actingAs($visitor)
+            ->get(route('profile', ['id' => $owner->spotify_id]))
+            ->assertOk()
+            ->assertDontSee(route('tierlist.edit', ['id' => $tierlist->getKey()]))
+            ->assertDontSee('Delete Tier List');
+    });
+
+    test('owner can delete a tier list from the profile card', function () {
+        $owner = kyle();
+        $tierlist = publicCompletedTierlist(['user_id' => $owner->getKey()]);
+
+        Livewire::actingAs($owner)
+            ->test(TierlistCard::class, ['tierlist' => $tierlist])
+            ->call('destroy')
+            ->assertDispatched('tierlists-updated');
+
+        $tierlist->refresh();
+
+        expect($tierlist->deleted_at)->not->toBeNull();
+    });
+
+    test('non-owner cannot delete a tier list from the card', function () {
+        $owner = kyle();
+        $visitor = User::factory()->createOne(['is_dev' => true]);
+        $tierlist = publicCompletedTierlist(['user_id' => $owner->getKey()]);
+
+        Livewire::actingAs($visitor)
+            ->test(TierlistCard::class, ['tierlist' => $tierlist])
+            ->call('destroy')
+            ->assertForbidden();
     });
 });

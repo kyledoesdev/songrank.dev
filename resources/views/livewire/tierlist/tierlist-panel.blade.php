@@ -1,15 +1,14 @@
 @use('App\Enums\TierlistType')
 
-<div class="bg-white shadow-md rounded-xl p-2">
-    <div class="px-2">
-        <h5 class="md:text-md mt-2">Tier Lists</h5>
+<x-card>
+    <x-card.header>
+        <h4 class="font-semibold text-gray-800">Tier Lists</h4>
         <p class="text-xs text-zinc-500 mt-0.5">
             Sort artists, albums or tracks into tiers and share the board.
         </p>
-    </div>
+    </x-card.header>
 
-    {{-- One card per type, so a spent allowance is visible before it is clicked. --}}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-2 mt-2">
+    <div class="grid grid-cols-1 gap-3 p-4">
         @foreach (TierlistType::cases() as $type)
             @php($limit = $this->limitFor($type))
             @php($count = $this->countFor($type))
@@ -21,8 +20,8 @@
                     @class([
                         'flex items-center gap-3 p-3 rounded-xl border-2 transition-all duration-300 hover:scale-101 hover:shadow-lg',
                         'border-purple-300 bg-purple-50 hover:border-purple-500' => $type === TierlistType::ARTIST,
-                        'border-blue-300 bg-blue-50 hover:border-blue-500' => $type === TierlistType::ALBUM,
-                        'border-green-300 bg-green-50 hover:border-green-500' => $type === TierlistType::TRACK,
+                        'border-green-300 bg-green-50 hover:border-green-500' => $type === TierlistType::ALBUM,
+                        'border-blue-300 bg-blue-50 hover:border-blue-500' => $type === TierlistType::TRACK,
                     ])
                 >
                     <i class="fa-solid {{ $type->icon() }} text-xl text-zinc-600"></i>
@@ -55,4 +54,4 @@
             @endif
         @endforeach
     </div>
-</div>
+</x-card>

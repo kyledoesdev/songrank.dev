@@ -1,4 +1,4 @@
-<div class="bg-white shadow-md rounded-xl p-2 sm:p-4 mt-4">
+<x-card class="p-2 sm:p-4 mt-4">
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-1 pb-3">
         <div class="min-w-0">
@@ -175,4 +175,4 @@
             </div>
         </div>
     @endif
-</div>
+</x-card>

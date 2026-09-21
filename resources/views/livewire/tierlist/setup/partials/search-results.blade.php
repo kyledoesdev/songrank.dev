@@ -1,7 +1,7 @@
 {{-- Livewire partial: expects $title, plus $bulkAction when the whole set can be added at once. --}}
 
 <div class="border border-gray-200 bg-white rounded-lg overflow-hidden">
-    <div class="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between gap-3">
+    <x-card.header class="flex items-center justify-between gap-3">
         <h4 class="font-semibold text-gray-800">{{ $title }}</h4>
 
         @isset($bulkAction)
@@ -14,7 +14,7 @@
                 Add all
             </button>
         @endisset
-    </div>
+    </x-card.header>
 
     <div class="card-scroller-half p-2" x-auto-animate>
         @forelse ($this->results() as $entry)

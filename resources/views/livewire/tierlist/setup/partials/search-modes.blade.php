@@ -7,7 +7,7 @@
     failed request cannot leave the pill lying about what mode we are in.
 --}}
 <div
-    class="px-2 pb-2 flex flex-wrap gap-2"
+    class="px-4 pt-2 pb-2 flex flex-wrap gap-2"
     x-data="{ active: @js($mode) }"
     x-effect="active = $wire.mode"
 >

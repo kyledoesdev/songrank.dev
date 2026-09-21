@@ -1,5 +1,5 @@
 <div>
-    <div class="bg-white shadow-md rounded-xl">
+    <x-card>
         @include('livewire.tierlist.setup.partials.setup-header', [
             'type' => $this->tierlistType(),
             'placeholder' => $randomArtist,
@@ -25,5 +25,5 @@
                 </div>
             </div>
         @endunless
-    </div>
+    </x-card>
 </div>

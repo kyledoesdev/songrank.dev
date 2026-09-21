@@ -1,5 +1,5 @@
 <div>
-    <div class="bg-white shadow-md rounded-xl">
+    <x-card>
         @include('livewire.tierlist.setup.partials.setup-header', [
             'type' => $this->tierlistType(),
             'placeholder' => $mode === 'artist' ? 'Search an artist to import their discography...' : 'Search for an album...',
@@ -24,9 +24,9 @@
                 <div class="md:col-span-2 grid grid-cols-1 lg:grid-cols-2 gap-4" x-auto-animate>
                     @if ($artistResults)
                         <div class="border border-gray-200 bg-white rounded-lg overflow-hidden">
-                            <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
+                            <x-card.header>
                                 <h4 class="font-semibold text-gray-800">Pick an artist</h4>
-                            </div>
+                            </x-card.header>
 
                             <div class="card-scroller-half p-2" x-auto-animate>
                                 @foreach ($artistResults as $artist)
@@ -71,5 +71,5 @@
                 </div>
             </div>
         @endunless
-    </div>
+    </x-card>
 </div>

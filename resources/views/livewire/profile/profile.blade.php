@@ -44,7 +44,10 @@
                 <div x-show="tab === 'tierlists'" x-cloak>
                     <div class="{{ $this->tierlists->count() > 1 ? 'grid grid-cols-1 md:grid-cols-2 gap-4 overflow-x-auto pt-2' : 'grid grid-cols-1 gap-4 overflow-x-auto pt-2' }}">
                         @foreach ($this->tierlists as $tierlist)
-                            <x-tierlists.card :tierlist="$tierlist" :key="'tierlist-card-'.$tierlist->getKey()" />
+                            <livewire:tierlist.card
+                                :key="'tierlist-card-'.$tierlist->getKey()"
+                                :tierlist="$tierlist"
+                            />
                         @endforeach
                     </div>
                 </div>

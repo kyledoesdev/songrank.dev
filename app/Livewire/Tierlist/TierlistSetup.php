@@ -7,19 +7,17 @@ use App\Livewire\Tierlist\Setup\AlbumSetup;
 use App\Livewire\Tierlist\Setup\ArtistSetup;
 use App\Livewire\Tierlist\Setup\TrackSetup;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 class TierlistSetup extends Component
 {
-    public TierlistType $type = TierlistType::ARTIST;
+    #[Url(nullable: true)]
+    public ?TierlistType $type = null;
 
-    /**
-     * The dashboard links straight to a type, so the chooser opens where the
-     * click pointed rather than always on artists.
-     */
     public function mount(): void
     {
-        $this->type = TierlistType::tryFrom(request()->string('type')->toString()) ?? $this->type;
+        $this->type ??= TierlistType::ARTIST;
     }
 
     public function render()

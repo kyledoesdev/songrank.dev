@@ -3,9 +3,9 @@
 
 {{-- Livewire partial: expects $type and $placeholder from the including setup view. --}}
 
-<div class="p-2 mb-2" x-auto-animate>
+<div x-auto-animate>
     @if ($this->tierlistLimitReached())
-        <div class="rounded-xl border border-purple-200 bg-purple-50 p-6 text-center">
+        <div class="rounded-xl border border-purple-200 bg-purple-50 p-6 m-2 text-center">
             <i class="fa fa-solid fa-star text-2xl text-purple-400"></i>
 
             <h5 class="mt-3 font-semibold text-zinc-800">
@@ -28,8 +28,8 @@
             </div>
         </div>
     @else
-        <div class="space-y-4 md:space-y-0">
-            <h5 class="md:text-md mt-2 mb-4 md:text-left">
+        <x-card.header>
+            <h5 class="text-sm text-zinc-600 mb-3">
                 Pick what you want to rank, fill up the board, then sort it into tiers.
             </h5>
 
@@ -46,8 +46,8 @@
                                 'flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all duration-300',
                                 'shadow-md cursor-pointer' => $tab === $type,
                                 'border-purple-500 bg-purple-100 text-purple-700' => $tab === $type && $tab === TierlistType::ARTIST,
-                                'border-blue-500 bg-blue-100 text-blue-700' => $tab === $type && $tab === TierlistType::ALBUM,
-                                'border-green-500 bg-green-100 text-green-700' => $tab === $type && $tab === TierlistType::TRACK,
+                                'border-green-500 bg-green-100 text-green-700' => $tab === $type && $tab === TierlistType::ALBUM,
+                                'border-blue-500 bg-blue-100 text-blue-700' => $tab === $type && $tab === TierlistType::TRACK,
                                 'border-zinc-300 bg-white text-zinc-500 hover:border-zinc-400 cursor-pointer' => $tab !== $type,
                             ])
                         >
@@ -85,6 +85,6 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </x-card.header>
     @endif
 </div>

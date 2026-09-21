@@ -75,8 +75,12 @@ class EditTierlist extends Component
 
     public function destroy(): void
     {
+        $user = $this->tierlist->user;
+
         $this->tierlist->delete();
 
-        $this->redirect(route('dashboard'));
+        session()->flash('success', 'Tier list removed successfully.');
+
+        $this->redirect(route('profile', ['id' => $user->spotify_id]));
     }
 }

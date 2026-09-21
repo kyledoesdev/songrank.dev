@@ -30,8 +30,8 @@ enum TierlistType: string
     {
         return match ($this) {
             self::ARTIST => 'purple',
-            self::ALBUM => 'blue',
-            self::TRACK => 'green',
+            self::ALBUM => 'green',
+            self::TRACK => 'blue',
         };
     }
 
@@ -39,8 +39,8 @@ enum TierlistType: string
     {
         return match ($this) {
             self::ARTIST => 'primary',
-            self::ALBUM => 'info',
-            self::TRACK => 'success',
+            self::ALBUM => 'success',
+            self::TRACK => 'info',
         };
     }
 

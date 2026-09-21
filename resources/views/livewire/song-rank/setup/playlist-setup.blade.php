@@ -1,5 +1,5 @@
 <div>
-    <div class="bg-white shadow-md rounded-xl">
+    <x-card>
         @include('livewire.song-rank.setup.partials.setup-header', [
             'type' => $this->rankingType(),
             'locked' => filled($selectedPlaylist),
@@ -37,5 +37,5 @@
                 </div>
             @endif
         </div>
-    </div>
+    </x-card>
 </div>

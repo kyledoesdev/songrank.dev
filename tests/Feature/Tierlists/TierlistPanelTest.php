@@ -35,7 +35,7 @@ describe('the panel on the dashboard', function () {
 describe('what the panel offers', function () {
     it('sends a spent type to billing instead of to the setup page', function () {
         $user = kyle();
-        Tierlist::factory()->for($user)->create(['type' => TierlistType::ARTIST->value]);
+        Tierlist::factory()->for($user)->count(3)->create(['type' => TierlistType::ARTIST->value]);
 
         Livewire::actingAs($user)
             ->test(TierlistPanel::class)

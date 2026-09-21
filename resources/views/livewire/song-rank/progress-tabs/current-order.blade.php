@@ -25,7 +25,7 @@
 
     @if($best_order)
         <div class="border border-gray-200 bg-white rounded-lg overflow-hidden">
-            <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
+            <x-card.header>
                 <h4 class="font-semibold text-gray-800">
                     Best <em>Predicted</em> Order So Far
                     <span class="font-normal text-sm ml-2 text-gray-600">
@@ -33,7 +33,7 @@
                     </span>
                 </h4>
                 <p class="text-xs text-gray-500 mt-1">This ordering will improve as you continue comparing</p>
-            </div>
+            </x-card.header>
 
             <div class="p-4">
                 <div class="space-y-1">

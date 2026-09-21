@@ -186,7 +186,7 @@ describe('starting the list', function () {
 describe('the allowance', function () {
     it('blocks a search once the type allowance is spent', function () {
         $user = kyle();
-        Tierlist::factory()->for($user)->create(['type' => TierlistType::ARTIST->value]);
+        Tierlist::factory()->for($user)->count(3)->create(['type' => TierlistType::ARTIST->value]);
 
         $component = Livewire::actingAs($user)
             ->test(ArtistSetup::class)
@@ -199,7 +199,7 @@ describe('the allowance', function () {
 
     it('leaves the other types alone', function () {
         $user = kyle();
-        Tierlist::factory()->for($user)->create(['type' => TierlistType::ARTIST->value]);
+        Tierlist::factory()->for($user)->count(3)->create(['type' => TierlistType::ARTIST->value]);
 
         $component = Livewire::actingAs($user)->test(AlbumSetup::class);
 
@@ -221,11 +221,11 @@ describe('the allowance', function () {
             ->call('addEntry', 'tame-impala-id')
             ->call('addEntry', 'foster-the-people-id');
 
-        Tierlist::factory()->for($user)->create(['type' => TierlistType::ARTIST->value]);
+        Tierlist::factory()->for($user)->count(3)->create(['type' => TierlistType::ARTIST->value]);
 
         $component->call('startTierlist')->assertNoRedirect();
 
-        expect(Tierlist::count())->toBe(1);
+        expect(Tierlist::count())->toBe(3);
     });
 
     it('stops the board filling past what the account allows', function () {

@@ -56,6 +56,7 @@ class Profile extends Component
     }
 
     #[Computed]
+    #[On('tierlists-updated')]
     public function tierlists(): Collection
     {
         if (Feature::inactive('tierlists')) {

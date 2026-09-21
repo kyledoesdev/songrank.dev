@@ -75,9 +75,9 @@ return [
 
     'tierlist_limits' => [
         'free' => [
-            'artist' => 1,
-            'album' => 1,
-            'track' => 1,
+            'artist' => 3,
+            'album' => 3,
+            'track' => 3,
         ],
         'pro' => [
             'artist' => null,

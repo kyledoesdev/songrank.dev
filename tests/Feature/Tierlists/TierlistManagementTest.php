@@ -130,7 +130,7 @@ describe('updating metadata', function () {
 });
 
 describe('deleting tier lists', function () {
-    test('owner can delete their tier list', function () {
+    test('owner can delete their tier list and is redirected to their profile', function () {
         $owner = kyle();
         $tierlist = publicCompletedTierlist(['user_id' => $owner->getKey()]);
 
@@ -139,7 +139,8 @@ describe('deleting tier lists', function () {
         Livewire::actingAs($owner)
             ->test(EditTierlist::class, ['id' => $tierlist->getKey()])
             ->call('destroy')
-            ->assertRedirect(route('dashboard'));
+            ->assertRedirect(route('profile', ['id' => $owner->spotify_id]))
+            ->assertSessionHas('success', 'Tier list removed successfully.');
 
         $tierlist->refresh();
 

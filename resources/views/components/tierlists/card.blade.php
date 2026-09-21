@@ -5,7 +5,7 @@
     $topItem = $tiers->first()?->items->first();
 @endphp
 
-<div class="bg-white shadow-md rounded-xl cursor-pointer hover:shadow-lg transition-all duration-300 p-4" onclick="window.location.href='{{ route('tierlist', ['id' => $tierlist->getKey()]) }}'">
+<x-card class="cursor-pointer hover:shadow-lg transition-all duration-300 p-4" onclick="window.location.href='{{ route('tierlist', ['id' => $tierlist->getKey()]) }}'">
     <div class="flex gap-4">
         {{-- Mini board preview --}}
         <div class="shrink-0 w-28 sm:w-32 flex flex-col gap-0.5">
@@ -88,4 +88,4 @@
             </div>
         </div>
     </div>
-</div>
+</x-card>

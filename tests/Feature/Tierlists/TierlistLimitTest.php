@@ -14,13 +14,13 @@ describe('the free allowance', function () {
     });
 
     it('stops at the limit for that type', function () {
-        $user = userWithTierlists(1, TierlistType::ARTIST);
+        $user = userWithTierlists(3, TierlistType::ARTIST);
 
         expect($user->canCreateTierlist(TierlistType::ARTIST))->toBeFalse();
     });
 
     it('counts each type on its own, so one spent allowance does not spend the others', function () {
-        $user = userWithTierlists(1, TierlistType::ARTIST);
+        $user = userWithTierlists(3, TierlistType::ARTIST);
 
         expect($user->canCreateTierlist(TierlistType::ARTIST))->toBeFalse()
             ->and($user->canCreateTierlist(TierlistType::ALBUM))->toBeTrue()
@@ -64,14 +64,14 @@ describe('counting', function () {
 
     it('counts unfinished lists too, since they occupy a slot all the same', function () {
         $user = User::factory()->createOne();
-        Tierlist::factory()->for($user)->create(['is_complete' => false]);
+        Tierlist::factory()->for($user)->count(3)->create(['is_complete' => false]);
 
-        expect($user->tierlistCount(TierlistType::ARTIST))->toBe(1)
+        expect($user->tierlistCount(TierlistType::ARTIST))->toBe(3)
             ->and($user->canCreateTierlist(TierlistType::ARTIST))->toBeFalse();
     });
 
     it('frees the slot again once a list is deleted', function () {
-        $user = userWithTierlists(1, TierlistType::ARTIST);
+        $user = userWithTierlists(3, TierlistType::ARTIST);
 
         $user->tierlists()->first()->delete();
 

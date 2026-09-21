@@ -1,4 +1,4 @@
-<div class="bg-white shadow-md rounded-xl p-4 animate-pulse">
+<x-card class="p-4 animate-pulse">
     <div class="flex gap-5">
         <div class="shrink-0">
             <div class="w-24 h-24 sm:w-28 sm:h-28 bg-gray-200 rounded-xl"></div>
@@ -24,4 +24,4 @@
             </div>
         </div>
     </div>
-</div>
+</x-card>

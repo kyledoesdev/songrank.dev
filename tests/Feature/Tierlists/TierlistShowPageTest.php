@@ -109,3 +109,47 @@ describe('the board', function () {
         get(route('tierlist', ['id' => $tierlist->getKey()]))->assertDontSee('Unranked');
     });
 });
+
+describe('author attribution', function () {
+    it('shows the tiered by banner for visitors', function () {
+        $owner = kyle();
+        $visitor = User::factory()->createOne(['is_dev' => true]);
+        $tierlist = publicCompletedTierlist(['user_id' => $owner->getKey()]);
+
+        actingAs($visitor)
+            ->get(route('tierlist', ['id' => $tierlist->getKey()]))
+            ->assertOk()
+            ->assertSee('Tiered by')
+            ->assertSee($owner->name);
+    });
+
+    it('hides the tiered by banner for the owner', function () {
+        $owner = kyle();
+        $tierlist = publicCompletedTierlist(['user_id' => $owner->getKey()]);
+
+        actingAs($owner)
+            ->get(route('tierlist', ['id' => $tierlist->getKey()]))
+            ->assertOk()
+            ->assertDontSee('Tiered by');
+    });
+});
+
+describe('comments', function () {
+    it('renders when comments are enabled', function () {
+        $tierlist = publicCompletedTierlist(['comments_enabled' => true]);
+
+        actingAs(kyle())
+            ->get(route('tierlist', ['id' => $tierlist->getKey()]))
+            ->assertOk()
+            ->assertSee('No comments yet');
+    });
+
+    it('is hidden when comments are disabled', function () {
+        $tierlist = publicCompletedTierlist(['comments_enabled' => false]);
+
+        actingAs(kyle())
+            ->get(route('tierlist', ['id' => $tierlist->getKey()]))
+            ->assertOk()
+            ->assertDontSee('No comments yet');
+    });
+});

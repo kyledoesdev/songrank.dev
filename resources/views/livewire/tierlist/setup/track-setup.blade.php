@@ -1,5 +1,5 @@
 <div>
-    <div class="bg-white shadow-md rounded-xl">
+    <x-card>
         @include('livewire.tierlist.setup.partials.setup-header', [
             'type' => $this->tierlistType(),
             'placeholder' => $mode === 'playlist' ? 'https://open.spotify.com/playlist/...' : 'Search for a track...',
@@ -24,9 +24,9 @@
                 <div class="md:col-span-2 grid grid-cols-1 lg:grid-cols-2 gap-4" x-auto-animate>
                     @if ($mode === 'playlist')
                         <div class="border border-gray-200 bg-white rounded-lg overflow-hidden">
-                            <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
+                            <x-card.header>
                                 <h4 class="font-semibold text-gray-800">Playlist</h4>
-                            </div>
+                            </x-card.header>
 
                             <div class="p-4" x-auto-animate>
                                 @if (filled($selectedPlaylist))
@@ -65,5 +65,5 @@
                 </div>
             </div>
         @endunless
-    </div>
+    </x-card>
 </div>

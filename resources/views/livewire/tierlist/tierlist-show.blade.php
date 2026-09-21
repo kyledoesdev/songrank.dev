@@ -28,6 +28,38 @@
 
         <hr>
 
+        @if (auth()->id() !== $tierlist->user_id)
+            <div class="mx-2 md:mx-4 mt-4 bg-primary-soft border border-primary-soft rounded-lg p-3 flex items-center gap-3">
+                @if ($tierlist->user->avatar)
+                    <img
+                        src="{{ $tierlist->user->avatar }}"
+                        alt="{{ $tierlist->user->name }}"
+                        class="h-10 w-10 rounded-full object-cover shrink-0"
+                    >
+                @else
+                    <div class="h-10 w-10 rounded-full bg-primary-muted flex items-center justify-center shrink-0">
+                        <i class="fa-regular fa-user text-primary-icon"></i>
+                    </div>
+                @endif
+
+                <div class="min-w-0 flex-1">
+                    <p class="text-sm font-medium text-zinc-800 truncate">
+                        Tiered by
+                        <a href="{{ route('profile', ['id' => $tierlist->user->spotify_id]) }}" class="text-primary hover:underline">
+                            {{ $tierlist->user->name }}
+                            <i class="fa fa-arrow-up-right-from-square text-blue-500 text-xs"></i>
+                        </a>
+                    </p>
+                    <p class="text-xs text-zinc-500 truncate" title="{{ $tierlist->formatted_completed_at }}">
+                        {{ $tierlist->items->count() }} {{ $tierlist->type->itemLabel() }}
+                        <span class="text-zinc-300 mx-1">|</span>
+                        <i class="fa-regular fa-clock mr-0.5"></i>
+                        {{ $tierlist->completed_at }}
+                    </p>
+                </div>
+            </div>
+        @endif
+
         {{-- The finished board. --}}
         <div class="mt-4 space-y-1">
             @foreach ($tierlist->placementTiers() as $tier)
@@ -64,6 +96,25 @@
                         @include('livewire.tierlist.partials.board-tile', ['item' => $item])
                     @endforeach
                 </div>
+            </div>
+        @endif
+
+        @if ($tierlist->is_complete && $tierlist->comments_enabled)
+            <div class="mx-4 pb-8">
+                @if ($tierlist->comments_replies_enabled)
+                    <livewire:comments
+                        :model="$tierlist"
+                        newest-first
+                        no-comments-text="No comments yet - you could be the first!"
+                    />
+                @else
+                    <livewire:comments
+                        :model="$tierlist"
+                        newest-first
+                        no-replies
+                        no-comments-text="No comments yet - you could be the first!"
+                    />
+                @endif
             </div>
         @endif
     </div>

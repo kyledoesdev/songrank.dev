@@ -6,7 +6,7 @@
 @php($limit = $this->bankLimit())
 
 <div class="border border-gray-200 bg-white rounded-lg overflow-hidden">
-    <div class="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between gap-3">
+    <x-card.header class="flex items-center justify-between gap-3">
         <h4 class="font-semibold text-gray-800">
             <i class="fa-solid {{ $type->icon() }} mr-1 text-zinc-400"></i>
             The Board
@@ -19,7 +19,7 @@
         ])>
             {{ $count }} / {{ $limit }} {{ $type->itemLabel() }}
         </span>
-    </div>
+    </x-card.header>
 
     <div class="card-scroller-half p-2" x-auto-animate>
         @forelse ($bank as $entry)

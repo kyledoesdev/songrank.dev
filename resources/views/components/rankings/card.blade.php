@@ -1,6 +1,6 @@
 @props(['ranking'])
 
-<div class="bg-white shadow-md rounded-xl cursor-pointer hover:shadow-lg transition-all duration-300 p-4" onclick="window.location.href='{{ route('ranking', ['id' => $ranking->getKey()]) }}'">
+<x-card class="cursor-pointer hover:shadow-lg transition-all duration-300 p-4" onclick="window.location.href='{{ route('ranking', ['id' => $ranking->getKey()]) }}'">
     <div class="flex gap-5">
         {{-- Cover + Spotify Logo --}}
         <div class="shrink-0">
@@ -74,4 +74,4 @@
             </div>
         </div>
     </div>
-</div>
+</x-card>
