@@ -3,11 +3,11 @@
 namespace App\Livewire\Tierlist;
 
 use App\Actions\Tierlists\CompleteTierlist;
-use App\Actions\Tierlists\DestroyTier;
 use App\Actions\Tierlists\MoveTierlistItem;
-use App\Actions\Tierlists\ReorderTiers;
-use App\Actions\Tierlists\StoreTier;
-use App\Actions\Tierlists\UpdateTier;
+use App\Actions\Tierlists\Tiers\DestroyTier;
+use App\Actions\Tierlists\Tiers\ReorderTiers;
+use App\Actions\Tierlists\Tiers\StoreTier;
+use App\Actions\Tierlists\Tiers\UpdateTier;
 use App\Livewire\Concerns\InteractsWithAlerts;
 use App\Models\Tier;
 use App\Models\Tierlist;
@@ -150,10 +150,14 @@ class TierlistBuilder extends Component
 
     public function confirmFinish(): void
     {
+        $message = auth()->user()->is_pro
+            ? "You can come back and rearrange it whenever you like — publishing just means it's finished enough to share."
+            : "Once published, only Song Rank Pro members can rearrange a finalized tier list.";
+
         $this->confirmAction(
             action: 'finish',
             title: 'Publish this tier list?',
-            message: "You can come back and rearrange it whenever you like — publishing just means it's finished enough to share.",
+            message: $message,
             confirmText: 'Publish it',
         );
     }

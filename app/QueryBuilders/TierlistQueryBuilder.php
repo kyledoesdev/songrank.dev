@@ -73,10 +73,10 @@ class TierlistQueryBuilder extends Builder
      * Just enough of the board to draw a card preview, without dragging every
      * tier of every list into a feed of twelve.
      */
-    public function withTopTier(int $items = 5): static
+    public function withTopTier(int $tiers = 5, int $items = 5): static
     {
         return $this->with([
-            'tiers' => fn (Relation $query) => $query->where('is_bank', false)->orderBy('position')->limit(1),
+            'tiers' => fn (Relation $query) => $query->where('is_bank', false)->orderBy('position')->limit($tiers),
             'tiers.items' => fn (Relation $query) => $query->orderBy('position')->limit($items),
             'tiers.items.entryable',
         ]);

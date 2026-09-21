@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Actions\Tierlists;
+namespace App\Actions\Tierlists\Tiers;
 
 use App\Models\Tier;
 use App\Models\Tierlist;

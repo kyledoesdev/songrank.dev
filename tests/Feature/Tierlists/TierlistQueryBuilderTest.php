@@ -95,14 +95,15 @@ describe('the profile feed', function () {
 });
 
 describe('card previews', function () {
-    it('loads only the top placement tier, never the bank', function () {
+    it('loads placement tiers but never the bank', function () {
         $tierlist = publicCompletedTierlist();
         TierlistItem::factory()->inTier($tierlist->bank)->create();
         TierlistItem::factory()->inTier($tierlist->placementTiers()->first())->create();
 
         $loaded = Tierlist::query()->withTopTier()->find($tierlist->getKey());
 
-        expect($loaded->tiers)->toHaveCount(1)
+        expect($loaded->tiers)->toHaveCount(5)
+            ->and($loaded->tiers->pluck('is_bank'))->each->toBeFalse()
             ->and($loaded->tiers->first()->name)->toBe('S')
             ->and($loaded->tiers->first()->items)->toHaveCount(1);
     });

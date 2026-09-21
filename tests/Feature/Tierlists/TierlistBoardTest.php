@@ -1,11 +1,11 @@
 <?php
 
 use App\Actions\Tierlists\CompleteTierlist;
-use App\Actions\Tierlists\DestroyTier;
 use App\Actions\Tierlists\MoveTierlistItem;
-use App\Actions\Tierlists\ReorderTiers;
-use App\Actions\Tierlists\StoreTier;
-use App\Actions\Tierlists\UpdateTier;
+use App\Actions\Tierlists\Tiers\DestroyTier;
+use App\Actions\Tierlists\Tiers\ReorderTiers;
+use App\Actions\Tierlists\Tiers\StoreTier;
+use App\Actions\Tierlists\Tiers\UpdateTier;
 use App\Models\Tier;
 use App\Models\Tierlist;
 use App\Models\TierlistItem;
