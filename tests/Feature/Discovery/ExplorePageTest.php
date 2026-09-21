@@ -1,7 +1,7 @@
 <?php
 
 use App\Actions\CompleteSongRankProcess;
-use App\Livewire\Explorer;
+use App\Livewire\Explorer\RankingsFeed;
 use App\Models\Artist;
 use App\Models\Playlist;
 use App\Models\Ranking;
@@ -107,7 +107,7 @@ describe('searching', function () {
 
         $otherRanking = publicCompletedRanking($other, ['name' => 'Other Ranking']);
 
-        Livewire::test(Explorer::class)
+        Livewire::test(RankingsFeed::class)
             ->set('search', 'Matching Artist')
             ->call('performSearch')
             ->assertSee($matchingRanking->name)
@@ -121,7 +121,7 @@ describe('searching', function () {
 
         $otherRanking = publicCompletedRanking(attributes: ['name' => 'Other Ranking']);
 
-        Livewire::test(Explorer::class)
+        Livewire::test(RankingsFeed::class)
             ->set('search', 'Chill Vibes')
             ->call('performSearch')
             ->assertSee($matchingRanking->name)
@@ -135,7 +135,7 @@ describe('searching', function () {
 
         $otherRanking = publicCompletedRanking(attributes: ['name' => 'Other Ranking']);
 
-        Livewire::test(Explorer::class)
+        Livewire::test(RankingsFeed::class)
             ->set('search', 'True Crime Weekly')
             ->call('performSearch')
             ->assertSee($matchingRanking->name)
