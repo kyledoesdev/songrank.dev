@@ -3,8 +3,11 @@
 namespace App\Livewire\Tierlist\Setup;
 
 use App\Actions\Playlists\ResolvePlaylist;
+use App\Actions\Spotify\GetArtistSongs;
 use App\Actions\Spotify\GetPlaylistTracks;
+use App\Actions\Spotify\SearchArtists;
 use App\Actions\Spotify\SearchTracks;
+use App\Actions\Tierlists\ResolveTierlistEntries;
 use App\Enums\TierlistType;
 use App\Livewire\Tierlist\Concerns\HasEntryBank;
 use App\Livewire\Tierlist\Concerns\HasTierlistFlashErrors;
@@ -20,10 +23,14 @@ class TrackSetup extends Component
     use HasTierlistFlashErrors;
     use HasTierlistForm;
 
-    /** 'track' searches songs one at a time; 'playlist' imports a whole one. */
+    /** 'track' searches one at a time; 'playlist' imports a whole one; 'artist' imports a discography. */
     public string $mode = 'track';
 
     public array $selectedPlaylist = [];
+
+    public ?array $selectedArtist = null;
+
+    public ?array $artistResults = null;
 
     public function render()
     {
@@ -35,24 +42,27 @@ class TrackSetup extends Component
         return TierlistType::TRACK;
     }
 
-    /**
-     * A list poured out of a playlist remembers which one. One assembled track
-     * by track came from nowhere in particular.
-     */
     public function source(): ?Model
     {
-        if (empty($this->selectedPlaylist)) {
-            return null;
+        if (filled($this->selectedPlaylist)) {
+            return (new ResolvePlaylist)->handle($this->selectedPlaylist);
         }
 
-        return (new ResolvePlaylist)->handle($this->selectedPlaylist);
+        if ($this->selectedArtist) {
+            return (new ResolveTierlistEntries)
+                ->handle(TierlistType::ARTIST, collect([$this->selectedArtist]))
+                ->first();
+        }
+
+        return null;
     }
 
     public function switchMode(string $mode): void
     {
         $this->mode = $mode;
         $this->searchResults = null;
-        $this->reset(['searchTerm', 'selectedPlaylist']);
+        $this->artistResults = null;
+        $this->reset(['searchTerm', 'selectedPlaylist', 'selectedArtist']);
     }
 
     public function search(): void
@@ -73,6 +83,12 @@ class TrackSetup extends Component
             return;
         }
 
+        if ($this->mode === 'artist') {
+            $this->searchForArtist();
+
+            return;
+        }
+
         $this->searchResults = (new SearchTracks)->handle(Auth::user(), $this->searchTerm);
 
         if (is_null($this->searchResults) || $this->searchResults->isEmpty()) {
@@ -80,17 +96,55 @@ class TrackSetup extends Component
         }
     }
 
+    public function loadDiscography(string $artistId): void
+    {
+        $this->selectedArtist = collect($this->artistResults)->firstWhere('id', $artistId);
+        $this->artistResults = null;
+
+        $songs = (new GetArtistSongs)->handle(Auth::user(), $artistId);
+
+        if (is_null($songs) || $songs->isEmpty()) {
+            $this->discographyUnavailable(data_get($this->selectedArtist, 'name', 'this artist'));
+            $this->selectedArtist = null;
+
+            return;
+        }
+
+        $this->addEntries(
+            $songs->map(fn (array $song) => [
+                'id' => $song['id'],
+                'name' => $song['name'],
+                'cover' => $song['cover'],
+                'artist_id' => $this->selectedArtist['id'],
+                'artist_name' => $this->selectedArtist['name'],
+                'album_name' => $song['album_name'] ?? null,
+            ])
+        );
+    }
+
     public function resetSetup(): void
     {
-        $this->reset(['searchTerm', 'selectedPlaylist']);
+        $this->reset(['searchTerm', 'selectedPlaylist', 'selectedArtist', 'artistResults']);
         $this->resetBank();
         $this->resetTierlistForm();
     }
 
-    /**
-     * A playlist import goes straight onto the board rather than into a result
-     * list — picking through a hundred tracks one at a time is not a flow.
-     */
+    private function searchForArtist(): void
+    {
+        $this->searchResults = null;
+        $this->selectedArtist = null;
+
+        $artists = (new SearchArtists)->handle(Auth::user(), $this->searchTerm);
+
+        if (is_null($artists) || $artists->isEmpty()) {
+            $this->nothingFound(TierlistType::ARTIST, $this->searchTerm);
+
+            return;
+        }
+
+        $this->artistResults = $artists->all();
+    }
+
     private function importPlaylist(): void
     {
         $this->searchResults = null;

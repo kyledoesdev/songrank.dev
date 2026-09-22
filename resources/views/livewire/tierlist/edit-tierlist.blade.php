@@ -133,7 +133,7 @@
                         @endforeach
                     </div>
 
-                    {{-- Full-board lock overlay --}}
+                    {{-- Lock overlay — scoped to the tier rows only --}}
                     <div
                         class="absolute inset-0 cursor-not-allowed flex items-center justify-center"
                         @mouseenter="showTooltip = true"
@@ -148,19 +148,14 @@
                             Upgrade to Song Rank Pro to edit your completed tier list
                         </div>
                     </div>
-
-                    {{-- Upgrade banner --}}
-                    <div class="mt-4 rounded-xl border border-purple-200 bg-purple-50 p-4 text-center">
-                        <i class="fa fa-solid fa-star text-xl text-purple-400"></i>
-                        <p class="mt-2 text-sm text-zinc-600">
-                            Want to rearrange entries on a finished tier list? Go Pro for full editing.
-                        </p>
-                        <a href="{{ route('billing') }}" class="inline-block mt-3 btn-primary px-4 py-2 text-sm">
-                            <i class="fa fa-solid fa-star mr-1"></i>
-                            Go Pro &mdash; $10 once
-                        </a>
-                    </div>
                 </div>
+
+                {{-- Upgrade banner --}}
+                <x-pro-upgrade-banner class="mt-4">
+                    <p class="mt-2 text-sm text-zinc-600">
+                        Want to rearrange entries on a finished tier list? Go Pro for full editing.
+                    </p>
+                </x-pro-upgrade-banner>
             @endif
         </div>
     @endif

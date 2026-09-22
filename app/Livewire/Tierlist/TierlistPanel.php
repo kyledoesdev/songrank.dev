@@ -4,7 +4,6 @@ namespace App\Livewire\Tierlist;
 
 use App\Enums\TierlistType;
 use App\Models\Tierlist;
-use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -17,23 +16,13 @@ class TierlistPanel extends Component
         return view('livewire.tierlist.tierlist-panel');
     }
 
-    #[Computed]
-    public function user(): User
-    {
-        return Auth::user();
-    }
-
     /**
-     * Every type's tally up front. Asking the allowance trait per type would
-     * count the table once to answer canCreate and again to answer countFor,
-     * six queries to draw three cards.
-     *
      * @return Collection<string, int>
      */
     #[Computed]
     public function counts(): Collection
     {
-        return Tierlist::query()->countsByTypeFor($this->user);
+        return Tierlist::query()->countsByTypeFor(Auth::user());
     }
 
     public function countFor(TierlistType $type): int
@@ -43,7 +32,7 @@ class TierlistPanel extends Component
 
     public function limitFor(TierlistType $type): ?int
     {
-        return $this->user->tierlistLimit($type);
+        return Auth::user()->tierlistLimit($type);
     }
 
     public function canCreate(TierlistType $type): bool
@@ -51,5 +40,26 @@ class TierlistPanel extends Component
         $limit = $this->limitFor($type);
 
         return is_null($limit) || $this->countFor($type) < $limit;
+    }
+
+    public function canCreateAny(): bool
+    {
+        return collect(TierlistType::cases())->contains(fn (TierlistType $type) => $this->canCreate($type));
+    }
+
+    public function totalCount(): int
+    {
+        return $this->counts->sum();
+    }
+
+    public function totalLimit(): int|string
+    {
+        $limits = collect(TierlistType::cases())->map(fn (TierlistType $type) => $this->limitFor($type));
+
+        if ($limits->contains(null)) {
+            return 'unlimited';
+        }
+
+        return $limits->sum();
     }
 }

@@ -5,9 +5,7 @@
 
 <div x-auto-animate>
     @if ($this->tierlistLimitReached())
-        <div class="rounded-xl border border-purple-200 bg-purple-50 p-6 m-2 text-center">
-            <i class="fa fa-solid fa-star text-2xl text-purple-400"></i>
-
+        <x-pro-upgrade-banner class="m-2">
             <h5 class="mt-3 font-semibold text-zinc-800">
                 You've used your {{ $type->label() }} tier list
             </h5>
@@ -17,16 +15,12 @@
                 Delete the one you have, or go Pro for unlimited lists of every type.
             </p>
 
-            <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
-                <a href="{{ route('billing') }}" class="btn-primary p-3">
-                    <i class="fa fa-solid fa-star mr-1"></i>
-                    Go Pro &mdash; $10 once
-                </a>
+            <x-slot:actions>
                 <a href="{{ route('dashboard') }}" class="text-sm px-3 py-2 rounded-lg bg-white border border-zinc-200 hover:border-zinc-300">
                     Manage your tier lists
                 </a>
-            </div>
-        </div>
+            </x-slot:actions>
+        </x-pro-upgrade-banner>
     @else
         <x-card.header>
             <h5 class="text-sm text-zinc-600 mb-3">
