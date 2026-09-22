@@ -31,7 +31,7 @@ class ShowResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::Microphone;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Song Rank';
+    protected static string|UnitEnum|null $navigationGroup = 'Spotify Entities';
 
     protected static ?string $recordTitleAttribute = 'name';
 

@@ -67,7 +67,7 @@ Route::middleware(Authenticate::class)->group(function () {
     Route::supportBubble();
 
     Route::middleware(IsDeveloper::class)->group(function () {
-        Route::get('health', HealthCheckResultsController::class);
+        Route::get('health', HealthCheckResultsController::class)->name('health');
     });
 });
 
