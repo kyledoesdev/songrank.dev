@@ -71,7 +71,7 @@
                         {{ $tier->name }}
                     </div>
 
-                    <div class="flex-1 flex flex-wrap gap-2 p-2 bg-zinc-50 min-h-20">
+                    <div class="flex-1 flex flex-wrap gap-2 p-2 bg-zinc-50 min-h-20 max-h-48 sm:max-h-56 overflow-y-auto">
                         @foreach ($tier->items as $item)
                             @include('livewire.tierlist.partials.board-tile', ['item' => $item])
                         @endforeach

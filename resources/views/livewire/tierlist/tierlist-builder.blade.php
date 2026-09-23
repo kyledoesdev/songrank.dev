@@ -79,7 +79,7 @@
                 </div>
 
                 <div
-                    class="flex-1 flex flex-wrap gap-2 p-2 bg-zinc-50 min-h-24"
+                    class="flex-1 flex flex-wrap gap-2 p-2 bg-zinc-50 min-h-24 max-h-56 sm:max-h-64 overflow-y-auto"
                     wire:sort="moveItem"
                     wire:sort:group="entries"
                     wire:sort:group-id="{{ $tier->getKey() }}"
@@ -139,40 +139,48 @@
         >
             <div class="absolute inset-0 bg-black/50" wire:click="cancelEdit"></div>
 
-            <div class="relative bg-white rounded-xl shadow-xl w-full max-w-sm p-4">
-                <h5 class="font-semibold text-zinc-800 mb-3">Tier settings</h5>
+            <x-card class="relative w-full max-w-sm">
+                <x-card.header class="flex items-center justify-between">
+                    <h5 class="font-semibold text-zinc-800">Tier Settings</h5>
+                </x-card.header>
 
-                <label class="text-sm text-zinc-600">Name</label>
-                <input
-                    type="text"
-                    class="w-full bg-zinc-100 rounded-lg p-2 mb-1 focus:ring-2 focus:ring-blue-400"
-                    wire:model="tierName"
-                    wire:keydown.enter="saveTier"
-                    maxlength="20"
-                    autofocus
-                />
-                @error('tierName') <p class="text-xs text-red-600 mb-2">{{ $message }}</p> @enderror
+                <div class="p-4 space-y-3">
+                    <div>
+                        <label class="text-sm text-zinc-600">Name</label>
+                        <input
+                            type="text"
+                            class="w-full bg-zinc-100 rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-400"
+                            wire:model="tierName"
+                            wire:keydown.enter="saveTier"
+                            maxlength="20"
+                            autofocus
+                        />
+                        @error('tierName') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
 
-                <label class="text-sm text-zinc-600 mt-2 block">Colour</label>
-                <input type="color" class="w-full h-10 rounded-lg cursor-pointer mb-1" wire:model="tierColor" />
-                @error('tierColor') <p class="text-xs text-red-600 mb-2">{{ $message }}</p> @enderror
+                    <div>
+                        <label class="text-sm text-zinc-600">Color</label>
+                        <input type="color" class="w-full h-10 rounded-lg cursor-pointer mt-1" wire:model="tierColor" />
+                        @error('tierColor') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
 
-                <div class="flex items-center justify-between gap-2 mt-4">
+                <x-card.footer class="flex items-center justify-between">
                     <button type="button" class="btn-danger px-3 py-1.5 text-sm" wire:click="deleteTier({{ $editingTierId }})">
                         <i class="fa-solid fa-trash-can mr-1"></i>
                         Delete tier
                     </button>
 
                     <div class="flex gap-2">
-                        <button type="button" class="text-sm px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 cursor-pointer" wire:click="cancelEdit">
-                            Cancel
+                        <button type="button" class="btn-secondary px-3 py-1.5 text-sm" wire:click="cancelEdit">
+                            <i class="fa-solid fa-xmark"></i>
                         </button>
                         <button type="button" class="btn-primary px-3 py-1.5 text-sm" wire:click="saveTier">
-                            Save
+                            <i class="fa-solid fa-check"></i>
                         </button>
                     </div>
-                </div>
-            </div>
+                </x-card.footer>
+            </x-card>
         </div>
     @endif
 </x-card>

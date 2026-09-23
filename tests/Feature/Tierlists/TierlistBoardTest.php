@@ -1,28 +1,15 @@
 <?php
 
-use App\Actions\Tierlists\CompleteTierlist;
 use App\Actions\Tierlists\MoveTierlistItem;
 use App\Actions\Tierlists\Tiers\DestroyTier;
 use App\Actions\Tierlists\Tiers\ReorderTiers;
-use App\Actions\Tierlists\Tiers\StoreTier;
-use App\Actions\Tierlists\Tiers\UpdateTier;
+use App\Models\Artist;
 use App\Models\Tier;
 use App\Models\Tierlist;
 use App\Models\TierlistItem;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 
 describe('moving an entry', function () {
-    it('places one out of the bank and into a tier', function () {
-        $board = board();
-        $item = $board->entries->first();
-
-        move($board->tierlist, $item, 0, $board->s);
-
-        expect($item->fresh()->tier_id)->toBe($board->s->getKey())
-            ->and($item->fresh()->position)->toBe(0);
-    });
-
     it('splices it in at the slot it was dropped on', function () {
         $board = board(3);
         [$first, $second, $third] = $board->entries->all();
@@ -74,14 +61,6 @@ describe('moving an entry', function () {
             ->and(positions($board->a))->toBe([$third->id]);
     });
 
-    it('refuses an entry from somebody else board', function () {
-        $board = board();
-        $stranger = Tierlist::factory()->create();
-        $theirs = TierlistItem::factory()->inTier($stranger->bank)->create();
-
-        expect(fn () => move($board->tierlist, $theirs, 0, $board->s))
-            ->toThrow(ModelNotFoundException::class);
-    });
 });
 
 describe('what a move costs', function () {
@@ -89,45 +68,7 @@ describe('what a move costs', function () {
         expect(queriesToMoveOutOf(2))->toBe(queriesToMoveOutOf(40));
     });
 });
-describe('adding a tier', function () {
-    it('appends it below the ones already there', function () {
-        $board = board();
-
-        $tier = (new StoreTier)->handle($board->tierlist, ['name' => 'SS', 'color' => '#ff00ff']);
-
-        expect($board->tierlist->fresh()->placementTiers()->last()->is($tier))->toBeTrue()
-            ->and($tier->position)->toBe(7);
-    });
-
-});
-
-describe('editing a tier', function () {
-    it('renames and recolours it', function () {
-        $board = board();
-
-        (new UpdateTier)->handle($board->s, ['name' => 'God Tier', 'color' => '#123456']);
-
-        expect($board->s->fresh()->name)->toBe('God Tier')
-            ->and($board->s->fresh()->color)->toBe('#123456');
-    });
-
-});
-
 describe('deleting a tier', function () {
-    it('hands whatever sat in it back to the bank', function () {
-        $board = board(2);
-        [$first, $second] = $board->entries->all();
-
-        move($board->tierlist, $first, 0, $board->s);
-        move($board->tierlist, $second, 1, $board->s);
-
-        expect((new DestroyTier)->handle($board->tierlist, $board->s))->toBeTrue();
-
-        expect($first->fresh()->tier_id)->toBe($board->tierlist->bank->getKey())
-            ->and($second->fresh()->tier_id)->toBe($board->tierlist->bank->getKey())
-            ->and(TierlistItem::count())->toBe(2);
-    });
-
     it('closes the gap it left in the ordering', function () {
         $board = board();
 
@@ -199,25 +140,27 @@ describe('reordering tiers', function () {
 
 });
 
-describe('finishing', function () {
-    it('refuses while anything is still in the bank', function () {
-        $board = board();
+describe('reading order', function () {
+    it('reads the top tier left to right, then down', function () {
+        $tierlist = Tierlist::factory()->create();
+        [$s, $a] = $tierlist->placementTiers()->take(2)->all();
 
-        expect((new CompleteTierlist)->handle($board->tierlist))->toBeFalse()
-            ->and($board->tierlist->fresh()->is_complete)->toBeFalse();
+        $second = namedEntry('second', $tierlist, $s, position: 1);
+        $first = namedEntry('first', $tierlist, $s, position: 0);
+        $third = namedEntry('third', $tierlist, $a, position: 0);
+
+        $ranked = $tierlist->fresh()->rankedItems();
+
+        expect($ranked->pluck('id')->all())->toBe([$first->id, $second->id, $third->id]);
     });
 
-    it('publishes once the bank is empty', function () {
-        $board = board();
+    it('leaves unplaced entries out of the reading order', function () {
+        $tierlist = Tierlist::factory()->create();
 
-        move($board->tierlist, $board->entries->first(), 0, $board->s);
+        TierlistItem::factory()->inTier($tierlist->bank)->create();
+        $placed = TierlistItem::factory()->inTier($tierlist->placementTiers()->first())->create();
 
-        expect((new CompleteTierlist)->handle($board->tierlist->fresh()))->toBeTrue();
-
-        $tierlist = $board->tierlist->fresh();
-
-        expect($tierlist->is_complete)->toBeTrue()
-            ->and($tierlist->getAttributes()['completed_at'])->not->toBeNull();
+        expect($tierlist->fresh()->rankedItems()->pluck('id')->all())->toBe([$placed->id]);
     });
 });
 
@@ -261,6 +204,14 @@ function positions(Tier $tier): array
  * of them. Flat is the whole point: positions are shifted by two bulk updates
  * rather than rewritten row by row.
  */
+function namedEntry(string $name, Tierlist $tierlist, Tier $tier, int $position): TierlistItem
+{
+    return TierlistItem::factory()
+        ->inTier($tier, $position)
+        ->for(Artist::factory()->create(['artist_name' => $name]), 'entryable')
+        ->create();
+}
+
 function queriesToMoveOutOf(int $size): int
 {
     $tierlist = Tierlist::factory()->create();

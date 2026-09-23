@@ -47,5 +47,8 @@
             class="w-20 h-20 sm:w-24 sm:h-24 rounded-xl border border-zinc-200 object-cover shadow-sm cursor-grab active:cursor-grabbing"
             draggable="false"
         >
+        <p class="mt-0.5 text-[10px] text-zinc-600 truncate text-center">
+            {{ $entry->name() }}
+        </p>
     @endif
 </div>

@@ -8,7 +8,7 @@ use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 
 describe('viewing the edit page', function () {
-    test('owner can view the edit page for a completed tier list', function () {
+    it('lets the owner view a completed tier list', function () {
         $owner = kyle();
         $tierlist = publicCompletedTierlist(['user_id' => $owner->getKey()]);
 
@@ -17,7 +17,7 @@ describe('viewing the edit page', function () {
             ->assertOk();
     });
 
-    test('owner can view the edit page for an in-progress tier list', function () {
+    it('lets the owner view an in-progress tier list', function () {
         $owner = kyle();
         $tierlist = Tierlist::factory()->for($owner)->create();
 
@@ -26,7 +26,7 @@ describe('viewing the edit page', function () {
             ->assertOk();
     });
 
-    test('non-owner cannot view the edit page', function () {
+    it('hides the page from a non-owner', function () {
         $tierlist = publicCompletedTierlist();
 
         actingAs(kyle())
@@ -34,7 +34,7 @@ describe('viewing the edit page', function () {
             ->assertNotFound();
     });
 
-    test('guest is redirected away', function () {
+    it('redirects a guest away', function () {
         $tierlist = publicCompletedTierlist();
 
         get(route('tierlist.edit', ['id' => $tierlist->getKey()]))
@@ -43,7 +43,7 @@ describe('viewing the edit page', function () {
 });
 
 describe('updating metadata', function () {
-    test('owner can update name and visibility', function () {
+    it('updates name and visibility', function () {
         $owner = kyle();
         $tierlist = publicCompletedTierlist([
             'user_id' => $owner->getKey(),
@@ -63,7 +63,7 @@ describe('updating metadata', function () {
         expect($tierlist->is_public)->toBeFalse();
     });
 
-    test('owner can toggle comment settings', function () {
+    it('toggles comment settings', function () {
         $owner = kyle();
         $tierlist = publicCompletedTierlist([
             'user_id' => $owner->getKey(),
@@ -84,7 +84,7 @@ describe('updating metadata', function () {
         expect($tierlist->comments_replies_enabled)->toBeTrue();
     });
 
-    test('name is required', function () {
+    it('requires a name', function () {
         $owner = kyle();
         $tierlist = publicCompletedTierlist(['user_id' => $owner->getKey()]);
 
@@ -95,7 +95,7 @@ describe('updating metadata', function () {
             ->assertHasErrors(['form.name' => 'required']);
     });
 
-    test('name cannot exceed 30 characters', function () {
+    it('rejects a name longer than thirty characters', function () {
         $owner = kyle();
         $tierlist = publicCompletedTierlist(['user_id' => $owner->getKey()]);
 
@@ -106,7 +106,7 @@ describe('updating metadata', function () {
             ->assertHasErrors(['form.name' => 'max']);
     });
 
-    test('non-owner cannot reach the edit component', function () {
+    it('hides the edit component from a non-owner', function () {
         $tierlist = publicCompletedTierlist();
 
         Livewire::actingAs(kyle())
@@ -114,7 +114,7 @@ describe('updating metadata', function () {
             ->assertNotFound();
     });
 
-    test('disabling comments also disables replies', function () {
+    it('disables replies when comments are turned off', function () {
         $owner = kyle();
         $tierlist = publicCompletedTierlist([
             'user_id' => $owner->getKey(),
@@ -130,7 +130,7 @@ describe('updating metadata', function () {
 });
 
 describe('deleting tier lists', function () {
-    test('owner can delete their tier list and is redirected to their profile', function () {
+    it('soft-deletes the tier list and redirects to the profile', function () {
         $owner = kyle();
         $tierlist = publicCompletedTierlist(['user_id' => $owner->getKey()]);
 
@@ -147,7 +147,7 @@ describe('deleting tier lists', function () {
         expect($tierlist->deleted_at)->not->toBeNull();
     });
 
-    test('non-owner cannot delete', function () {
+    it('hides the delete from a non-owner', function () {
         $tierlist = publicCompletedTierlist();
 
         Livewire::actingAs(kyle())
@@ -157,7 +157,7 @@ describe('deleting tier lists', function () {
 });
 
 describe('board editing gating', function () {
-    test('pro user sees the builder on a completed tier list edit page', function () {
+    it('shows the builder to a pro user on a completed list', function () {
         $user = proUser(['is_dev' => true]);
         $tierlist = publicCompletedTierlist(['user_id' => $user->getKey()]);
 
@@ -167,7 +167,7 @@ describe('board editing gating', function () {
             ->assertSeeLivewire('tierlist.tierlist-builder');
     });
 
-    test('free user sees locked board with upgrade prompt', function () {
+    it('shows a locked board with upgrade prompt to a free user', function () {
         $owner = kyle();
         $tierlist = publicCompletedTierlist(['user_id' => $owner->getKey()]);
 

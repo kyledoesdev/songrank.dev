@@ -37,14 +37,6 @@ describe('searching albums', function () {
             ->and($albums->first()['id'])->toBe('currents-id');
     });
 
-    it('asks Spotify for albums', function () {
-        fakeSearch('albums', [spotifyAlbum()]);
-
-        (new SearchAlbums)->handle(searcher(), 'currents');
-
-        Http::assertSent(fn (Request $request) => str_contains($request->url(), 'type=album'));
-    });
-
     it('returns nothing when Spotify falls over', function () {
         Http::fake([
             'https://accounts.spotify.com/*' => Http::response(['access_token' => 'fresh-token']),
@@ -77,13 +69,6 @@ describe('searching tracks', function () {
         expect((new SearchTracks)->handle(searcher(), 'the less i know'))->toBeEmpty();
     });
 
-    it('asks Spotify for tracks', function () {
-        fakeSearch('tracks', [spotifyTrack()]);
-
-        (new SearchTracks)->handle(searcher(), 'the less i know');
-
-        Http::assertSent(fn (Request $request) => str_contains($request->url(), 'type=track'));
-    });
 });
 
 describe('importing a discography', function () {

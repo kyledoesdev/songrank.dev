@@ -34,11 +34,14 @@ describe('the board a new list starts with', function () {
             ->and($tierlist->placementTiers()->every(fn ($tier) => $tier->items->isEmpty()))->toBeTrue();
     });
 
-    it('starts unfinished and unpublished', function () {
+    it('starts with sensible defaults', function () {
         $tierlist = storeTierlist();
 
         expect($tierlist->is_complete)->toBeFalse()
-            ->and($tierlist->getAttributes()['completed_at'])->toBeNull();
+            ->and($tierlist->getAttributes()['completed_at'])->toBeNull()
+            ->and($tierlist->is_public)->toBeFalse()
+            ->and($tierlist->comments_enabled)->toBeFalse()
+            ->and($tierlist->comments_replies_enabled)->toBeFalse();
     });
 });
 
@@ -122,13 +125,6 @@ describe('provenance and settings', function () {
             ->and($tierlist->comments_replies_enabled)->toBeFalse();
     });
 
-    it('keeps everything private and quiet by default', function () {
-        $tierlist = storeTierlist();
-
-        expect($tierlist->is_public)->toBeFalse()
-            ->and($tierlist->comments_enabled)->toBeFalse()
-            ->and($tierlist->comments_replies_enabled)->toBeFalse();
-    });
 });
 
 function storeTierlist(
