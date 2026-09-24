@@ -2,12 +2,15 @@
 
 namespace App\Livewire\Tierlist;
 
+use App\Livewire\Concerns\InteractsWithAlerts;
 use App\Models\Tierlist;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class Card extends Component
 {
+    use InteractsWithAlerts;
+
     public Tierlist $tierlist;
 
     public function render()
@@ -23,10 +26,6 @@ class Card extends Component
 
         $this->dispatch('tierlists-updated');
 
-        $this->js("
-            window.flash({
-                title: 'Tier List Deleted!',
-            });
-        ");
+        $this->flash('Tier List Deleted!');
     }
 }

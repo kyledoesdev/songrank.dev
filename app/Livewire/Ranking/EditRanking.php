@@ -3,6 +3,7 @@
 namespace App\Livewire\Ranking;
 
 use App\Actions\Rankings\UpdateRanking;
+use App\Livewire\Concerns\InteractsWithAlerts;
 use App\Livewire\Forms\RankingForm;
 use App\Models\Ranking;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +11,8 @@ use Livewire\Component;
 
 class EditRanking extends Component
 {
+    use InteractsWithAlerts;
+
     public ?Ranking $ranking;
 
     public RankingForm $form;
@@ -43,8 +46,6 @@ class EditRanking extends Component
 
         (new UpdateRanking)->handle(Auth::user(), $this->ranking, $this->form);
 
-        $this->js("window.flash({
-            title: 'Ranking Updated!',
-        })");
+        $this->flash('Ranking Updated!');
     }
 }

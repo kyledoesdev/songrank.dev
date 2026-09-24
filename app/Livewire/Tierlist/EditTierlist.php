@@ -58,9 +58,7 @@ class EditTierlist extends Component
             'comments_replies_enabled' => $this->form->comments_replies_enabled === '1' || $this->form->comments_replies_enabled === true,
         ]);
 
-        $this->js("window.flash({
-            title: 'Tier List Updated!',
-        })");
+        $this->flash('Tier List Updated!');
     }
 
     public function confirmDestroy(): void

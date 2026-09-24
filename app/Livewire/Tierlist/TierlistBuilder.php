@@ -84,7 +84,7 @@ class TierlistBuilder extends Component
 
         if ($this->tierlist->placementTiers()->count() >= $ceiling) {
             $this->flash(
-                title: 'That is as many tiers as a list takes.',
+                title: 'Too many tiers.',
                 message: "A tier list can hold {$ceiling} tiers. Rename one you aren't using instead.",
                 icon: 'error',
             );

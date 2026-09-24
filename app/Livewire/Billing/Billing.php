@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Billing;
 
+use App\Livewire\Concerns\InteractsWithAlerts;
 use App\Models\ProLicense;
 use App\Services\Billing\StripeReceiptService;
 use Illuminate\Support\Facades\Auth;
@@ -9,6 +10,8 @@ use Livewire\Component;
 
 class Billing extends Component
 {
+    use InteractsWithAlerts;
+
     public function render()
     {
         return view('livewire.billing.billing', [
@@ -47,24 +50,17 @@ class Billing extends Component
          * would be a lie the customer cannot act on.
          */
         if ($documents === []) {
-            $this->js("
-                window.flash({
-                    title: 'No receipt available yet.',
-                    message: 'Stripe has not issued an invoice for this purchase. Get in touch and we will sort it out.',
-                    icon: 'error',
-                });
-            ");
+            $this->flash(
+                'No receipt available yet.',
+                'Stripe has not issued an invoice for this purchase. Get in touch and we will sort it out.',
+                'error',
+            );
 
             return;
         }
 
         $license->update($documents);
 
-        $this->js("
-            window.flash({
-                title: 'Receipt refreshed.',
-                icon: 'success',
-            });
-        ");
+        $this->flash('Receipt refreshed.');
     }
 }
