@@ -101,9 +101,11 @@
                         <div class="flex items-center justify-center h-8 rounded-sm overflow-hidden shrink-0">
                             <img src="/images/logo.png" alt="Song Rank Logo" class="h-8 w-8 rounded-2xl" />
                         </div>
-                        <div class="text-sm font-medium truncate text-zinc-800 mx-2 cursor-pointer">
-                            {{ config('app.name') }}
-                        </div>
+                    </a>
+
+                    <a href="{{ auth()->check() ? route('dashboard') : route('welcome') }}" class="h-10 flex items-center me-4 rounded-lg cursor-pointer p-2 {{ Route::currentRouteName() == 'dashboard' ? 'bg-purple-100 border-b-3 border-purple-400' : 'bg-gray-100' }}">
+                        <i class="fa fa-house mr-1"></i>
+                        <span class="text-xs font-medium text-zinc-800 mx-1">Home</span>
                     </a>
 
                     <a href="{{ route('explore') }}" class="h-10 flex items-center me-4 rounded-lg cursor-pointer p-2 {{ Route::currentRouteName() == 'explore' ? 'bg-purple-100 border-b-3 border-purple-400' : 'bg-gray-100' }}">

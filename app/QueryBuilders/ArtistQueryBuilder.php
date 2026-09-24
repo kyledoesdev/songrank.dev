@@ -7,6 +7,17 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ArtistQueryBuilder extends Builder
 {
+    /**
+     * The name of an artist we hold a picture for, for search placeholders.
+     */
+    public function randomName(): ?string
+    {
+        return $this->newQuery()
+            ->whereNotNull('artist_img')
+            ->inRandomOrder()
+            ->first()?->artist_name;
+    }
+
     public function topArtists(int $limit = 10): static
     {
         return $this->newQuery()

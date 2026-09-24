@@ -30,7 +30,7 @@ class ArtistResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMusicalNote;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Song Rank';
+    protected static string|UnitEnum|null $navigationGroup = 'Spotify Entities';
 
     public static function table(Table $table): Table
     {

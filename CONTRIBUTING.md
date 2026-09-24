@@ -20,7 +20,7 @@ Open an issue describing the feature and the problem it solves before writing an
 
 ## Local Setup
 
-Standard Laravel 12 / PHP 8.4 app, served by [Laravel Herd](https://herd.laravel.com). Two project-specific notes: `composer install` needs Spatie satis credentials for the licensed packages, and authentication requires Spotify OAuth credentials (`SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REDIRECT_URI`) in your `.env`.
+Standard Laravel 13 / PHP 8.5 app, served locally at `https://song-ranker.test` (the domain registered as a Spotify redirect URI) — via [Laravel Herd](https://herd.laravel.com) on Windows/macOS, or a local HTTPS proxy such as Caddy in front of `php artisan serve` on Linux. Tests need a PHP `memory_limit` of at least 512M (the ranking export test builds an xlsx in memory). Two project-specific notes: `composer install` needs Spatie satis credentials for the licensed packages, and authentication requires Spotify OAuth credentials (`SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REDIRECT_URI`) in your `.env`.
 
 ## Testing
 

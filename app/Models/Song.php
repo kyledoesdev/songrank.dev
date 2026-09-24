@@ -5,12 +5,18 @@ namespace App\Models;
 use App\QueryBuilders\SongQueryBuilder;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[UseEloquentBuilder(SongQueryBuilder::class)]
 class Song extends Model
 {
+    use HasFactory;
+    use SoftDeletes;
+
     protected $fillable = [
         'ranking_id',
         'spotify_song_id',

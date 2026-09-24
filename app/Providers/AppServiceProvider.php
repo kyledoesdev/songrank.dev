@@ -5,10 +5,13 @@ namespace App\Providers;
 use App\Actions\Billing\HandleStripeWebhook;
 use App\Checks\StripeWebhookSecretCheck;
 use App\Enums\RankingType;
+use App\Enums\TierlistType;
+use App\Models\Album;
 use App\Models\ApplicationDashboard as Seo;
 use App\Models\Artist;
 use App\Models\Playlist;
 use App\Models\Show;
+use App\Models\Track;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\DevCommands;
@@ -57,10 +60,13 @@ class AppServiceProvider extends ServiceProvider
             $event->extendSocialite('spotify', Provider::class);
         });
 
+        /* Artist is shared: it is a ranking source and a tier list entry under the same key. */
         Relation::morphMap([
             RankingType::ARTIST->value => Artist::class,
             RankingType::PLAYLIST->value => Playlist::class,
             RankingType::SHOW->value => Show::class,
+            TierlistType::ALBUM->value => Album::class,
+            TierlistType::TRACK->value => Track::class,
         ]);
 
         $this->configureFeatures();
@@ -85,7 +91,7 @@ class AppServiceProvider extends ServiceProvider
         if (config('billing.tax.automatic')) {
             Cashier::calculateTaxes();
         }
-        
+
         Event::listen(WebhookReceived::class, HandleStripeWebhook::class);
     }
 
@@ -160,7 +166,7 @@ class AppServiceProvider extends ServiceProvider
             return;
         }
 
-        DevCommands::except('server');
+        DevCommands::except('server', 'logs');
         DevCommands::node('dev', 'vite')->yellow();
         DevCommands::artisan('queue:listen --tries=1 --timeout=0', 'queue')->purple();
         DevCommands::register(

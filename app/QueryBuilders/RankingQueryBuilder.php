@@ -37,6 +37,16 @@ class RankingQueryBuilder extends Builder
             ->orderByRaw('completed_at IS NULL DESC, completed_at DESC');
     }
 
+    public function forDashboard(User $user): static
+    {
+        return $this->newQuery()
+            ->where('user_id', $user->getKey())
+            ->with('user', 'source')
+            ->with('songs', fn ($query) => $query->where('rank', 1))
+            ->withCount('songs')
+            ->orderByRaw('completed_at IS NULL DESC, completed_at DESC');
+    }
+
     public function forNewsletter(): static
     {
         return $this->newQuery()
@@ -101,6 +111,11 @@ class RankingQueryBuilder extends Builder
     public function public(): static
     {
         return $this->where('is_public', true);
+    }
+
+    public function inProgress(): static
+    {
+        return $this->where('is_ranked', false);
     }
 
     public function completed(): static

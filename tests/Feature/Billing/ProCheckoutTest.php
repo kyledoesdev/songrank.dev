@@ -15,6 +15,7 @@ use function Pest\Laravel\post;
 beforeEach(function () {
     Feature::define('songrank-pro', true);
     config()->set('billing.pro.price_id', 'price_test_pro');
+    config()->set('cashier.secret', config('cashier.secret') ?: 'sk_test_dummy');
 });
 
 describe('starting a checkout', function () {

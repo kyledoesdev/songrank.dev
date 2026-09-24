@@ -9,6 +9,7 @@ use App\Filament\Resources\Users\Pages\ViewUser;
 use App\Filament\Resources\Users\RelationManagers\PreferencesRelationManager;
 use App\Filament\Resources\Users\RelationManagers\ProLicensesRelationManager;
 use App\Filament\Resources\Users\RelationManagers\RankingsRelationManager;
+use App\Filament\Resources\Users\RelationManagers\TierlistsRelationManager;
 use App\Models\User;
 use BackedEnum;
 use Carbon\Carbon;
@@ -36,7 +37,7 @@ class UserResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUser;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Song Rank';
+    protected static string|UnitEnum|null $navigationGroup = 'System';
 
     public static function form(Schema $schema): Schema
     {
@@ -163,6 +164,7 @@ class UserResource extends Resource
         return [
             RelationGroup::make('', [
                 RankingsRelationManager::class,
+                TierlistsRelationManager::class,
                 ProLicensesRelationManager::class,
                 PreferencesRelationManager::class,
             ]),

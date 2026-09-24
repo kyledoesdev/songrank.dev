@@ -3,6 +3,7 @@
 namespace App\Livewire\Profile;
 
 use App\Jobs\DeleteUserJob;
+use App\Livewire\Concerns\InteractsWithAlerts;
 use App\Models\Ranking;
 use App\Notifications\DownloadDataNotification;
 use Illuminate\Support\Facades\Auth;
@@ -13,6 +14,8 @@ use Livewire\Component;
 
 class Settings extends Component
 {
+    use InteractsWithAlerts;
+
     public function render()
     {
         return view('livewire.profile.settings');
@@ -24,13 +27,7 @@ class Settings extends Component
             $name => $value,
         ]);
 
-        $this->js("
-            window.flash({
-                title: 'Settings Updated!',
-                message: 'Your settings have been saved.',
-                icon: 'success'
-            });
-        ");
+        $this->flash('Settings Updated!', 'Your settings have been saved.');
     }
 
     public function destroy($userId)
@@ -67,12 +64,6 @@ class Settings extends Component
 
         dispatch(fn () => Notification::send($user, new DownloadDataNotification($rankings)));
 
-        $this->js("
-            window.flash({
-                title: 'Download Started!',
-                message: 'Your data download has started and will be emailed to you when it is complete.',
-                icon: 'success'
-            });
-        ");
+        $this->flash('Download Started!', 'Your data download has started and will be emailed to you when it is complete.');
     }
 }

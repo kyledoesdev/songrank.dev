@@ -11,8 +11,6 @@ use App\Livewire\Legal\Terms;
 use App\Livewire\Notifications\ShowAll as Notifications;
 use App\Livewire\Profile\Profile;
 use App\Livewire\Profile\Settings;
-use App\Livewire\Ranking\EditRanking;
-use App\Livewire\Ranking\Ranking;
 use App\Livewire\Welcome\Welcome;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Support\Facades\Route;
@@ -46,9 +44,6 @@ Route::livewire('/leaderboards', Leaderboards::class)
     ->name('leaderboards')
     ->withHead(title: 'Leaderboards');
 
-Route::livewire('/rank/{id}', Ranking::class)
-    ->name('ranking');
-
 Route::livewire('/profile/{id}', Profile::class)
     ->name('profile');
 
@@ -61,10 +56,6 @@ Route::middleware(Authenticate::class)->group(function () {
         ->name('dashboard')
         ->withHead(title: 'Dashboard');
 
-    Route::livewire('/rank/{id}/edit', EditRanking::class)
-        ->name('rank.edit')
-        ->withHead(title: 'Edit Ranking');
-
     Route::livewire('/settings', Settings::class)
         ->name('settings')
         ->withHead(title: 'Settings');
@@ -76,8 +67,10 @@ Route::middleware(Authenticate::class)->group(function () {
     Route::supportBubble();
 
     Route::middleware(IsDeveloper::class)->group(function () {
-        Route::get('health', HealthCheckResultsController::class);
+        Route::get('health', HealthCheckResultsController::class)->name('health');
     });
 });
 
+require __DIR__.'/rankings.php';
 require __DIR__.'/billing.php';
+require __DIR__.'/tierlists.php';

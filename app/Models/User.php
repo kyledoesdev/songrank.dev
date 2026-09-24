@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasRankingAllowance;
+use App\Models\Concerns\HasTierlistAllowance;
 use App\QueryBuilders\UserQueryBuilder;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -29,6 +30,7 @@ class User extends Authenticatable implements CanComment, FilamentUser
     use HasFeatures;
     use HasRankingAllowance;
     use HasStatsAfterEvents;
+    use HasTierlistAllowance;
     use InteractsWithComments;
     use Notifiable;
     use SoftDeletes;
@@ -85,6 +87,11 @@ class User extends Authenticatable implements CanComment, FilamentUser
     public function preferences(): HasOne
     {
         return $this->hasOne(UserPreference::class);
+    }
+
+    public function tierlists(): HasMany
+    {
+        return $this->hasMany(Tierlist::class);
     }
 
     public function proLicenses(): HasMany

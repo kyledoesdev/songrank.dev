@@ -7,11 +7,18 @@ use App\Livewire\SongRank\Setup\ArtistSetup;
 use App\Livewire\SongRank\Setup\PlaylistSetup;
 use App\Livewire\SongRank\Setup\ShowSetup;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 class SongRankSetup extends Component
 {
-    public RankingType $type = RankingType::ARTIST;
+    #[Url(nullable: true)]
+    public ?RankingType $type = null;
+
+    public function mount(): void
+    {
+        $this->type ??= RankingType::ARTIST;
+    }
 
     public function render()
     {

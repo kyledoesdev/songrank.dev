@@ -1,6 +1,6 @@
 @props(['title', 'icon', 'entries', 'countLabel'])
 
-<div class="bg-white shadow-md rounded-xl p-4">
+<x-card class="p-4">
     <h3 class="text-lg text-center k-line font-semibold mb-4">
         <i class="fa-solid {{ $icon }} text-primary-icon mr-1"></i>
         {{ $title }}
@@ -104,4 +104,4 @@
             @endforeach
         </ul>
     @endif
-</div>
+</x-card>

@@ -1,5 +1,5 @@
 <div>
-    <div class="bg-white shadow-md rounded-xl">
+    <x-card>
         @include('livewire.song-rank.setup.partials.setup-header', [
             'type' => $this->rankingType(),
             'locked' => filled($selectedArtist),
@@ -84,7 +84,7 @@
                                     ])
                                 @else
                                     <div class="border border-gray-200 bg-white rounded-lg overflow-hidden">
-                                        <div class="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center gap-3">
+                                        <x-card.header class="flex items-center gap-3">
                                             <h4 class="font-semibold text-gray-800">Featured On</h4>
 
                                             <x-toggle-switch
@@ -94,7 +94,7 @@
                                             >
                                                 Include
                                             </x-toggle-switch>
-                                        </div>
+                                        </x-card.header>
 
                                         <p class="p-4 text-sm text-zinc-500">
                                             {{ $selectedArtist['name'] }} appears on other artists' releases.
@@ -108,5 +108,5 @@
                 </div>
             @endif
         </div>
-    </div>
+    </x-card>
 </div>

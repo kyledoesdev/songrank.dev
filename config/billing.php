@@ -60,4 +60,44 @@ return [
         'pro' => null,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Tier List Limits
+    |--------------------------------------------------------------------------
+    |
+    | How many tier lists an account may own, per type. A map rather than a
+    | single number, so the free allowance can differ between artist, album
+    | and track lists without a migration. `null` means unlimited.
+    |
+    | These only apply once the `tierlists` feature is active for a user.
+    |
+    */
+
+    'tierlist_limits' => [
+        'free' => [
+            'artist' => 3,
+            'album' => 3,
+            'track' => 3,
+        ],
+        'pro' => [
+            'artist' => null,
+            'album' => null,
+            'track' => null,
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tier List Size
+    |--------------------------------------------------------------------------
+    |
+    | How many entries one list may hold. This one is never null: a board has
+    | to stay draggable, and every tile is an image the browser has to paint.
+    |
+    */
+
+    'tierlist_item_limits' => [
+        'free' => 100,
+        'pro' => 500,
+    ],
 ];
