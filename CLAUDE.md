@@ -40,7 +40,7 @@ Users authenticate with Spotify. A finished list of either kind can be made publ
 ## Tech Stack
 
 - **Backend:** PHP 8.4+ (8.5 locally and in CI), Laravel 13
-- **Frontend:** Livewire 4 with Blade templates, Alpine.js, Tailwind CSS v4, Vite
+- **Frontend:** Livewire 4 with Blade templates, Alpine.js, Tailwind CSS v4, Vite. sweetalert2 for dialogs. Flux UI (Pro) is installed, but **only** for session-flash toasts and the rich text editor
 - **Admin Panel:** Filament 5
 - **Auth:** Laravel Socialite with the Spotify provider
 - **Billing:** Laravel Cashier (Stripe), for a single one-time purchase
@@ -84,7 +84,16 @@ The primary UI layer. Each page is a Livewire component in `app/Livewire/`:
 - `Ranking/Ranking`, `Ranking/EditRanking`, `Tierlist/TierlistShow`, `Tierlist/EditTierlist` — view and manage one record
 - `Profile/Profile`, `Profile/Settings`, `Billing/Billing`, `Navigation`, `Notifications/ShowAll`
 
-Shared behaviour lives in traits rather than base classes: `Livewire/Concerns/InteractsWithAlerts` centralizes flash messaging for every component, and per-domain concerns sit in `SongRank/Concerns/` (`HasTrackList`, `HasRankingForm`, `HasSetupFlashErrors`) and `Tierlist/Concerns/` (`HasEntryBank`, `HasTierlistForm`, `HasTierlistFlashErrors`). Form objects are in `Livewire/Forms/`, and shared markup in `resources/views/livewire/{song-rank,tierlist}/setup/partials/`.
+Shared behaviour lives in traits rather than base classes: `Livewire/Concerns/InteractsWithAlerts` centralizes flash messaging for every component (see **Alerts** below), and per-domain concerns sit in `SongRank/Concerns/` (`HasTrackList`, `HasRankingForm`, `HasSetupFlashErrors`) and `Tierlist/Concerns/` (`HasEntryBank`, `HasTierlistForm`, `HasTierlistFlashErrors`). Form objects are in `Livewire/Forms/`, and shared markup in `resources/views/livewire/{song-rank,tierlist}/setup/partials/`.
+
+### Alerts
+
+Two separate things, deliberately not merged:
+
+- **`Livewire/Concerns/InteractsWithAlerts` is sweetalert2.** `flash()` and `confirmAction()` encode a payload and hand it to `resources/js/alerts.js` through `$this->js()`. A confirm calls back into the asking component by Livewire id. This is the dialog system; leave it alone.
+- **Session flashes are Flux toasts.** `App\Livewire\SessionToasts` is mounted once in the layout and raises a toast from `mount()` for `session('success')` and the error bag. `Flux::toast()` needs a live Livewire component to dispatch from, which a full page load otherwise has nowhere to find.
+
+Flux is installed for toasts and the review editor only. Nav, cards, buttons, inputs, dialogs and theming stay homegrown. Flux's dark theme is gated behind a `.dark` class the layout pins off, because this app is light only.
 
 ### Key Models and Relationships
 
@@ -157,6 +166,7 @@ Every change must be covered by a test. Three suites are registered in `phpunit.
 - **Feature** (`tests/Feature/`) — application behaviour; gets `RefreshDatabase`. Grouped by product area:
     - `Account/` — signed-in user's own surfaces (profile, settings, notification bell)
     - `Auth/` — Spotify OAuth login, callback and logout
+    - `System/` — application-wide plumbing rather than a product area (session toasts)
     - `Discovery/` — public browse surfaces (explore feeds, leaderboards)
     - `Pages/` — content-driven pages (about, faq, legal documents, error pages)
     - `Rankings/` — the core ranking domain (setup, algorithm, comments, export, management)
@@ -191,7 +201,7 @@ Additional conventions:
 
 `.github/workflows/tests.yml` runs on pushes to `master` and on every pull request:
 - PHP 8.5 with `memory_limit=512M`, Node 22
-- `composer install` needs the `SPATIE_LICENSE_EMAIL` and `SPATIE_LICENSE_KEY` secrets for Spatie Composer auth
+- `composer install` needs the `SPATIE_LICENSE_EMAIL` / `SPATIE_LICENSE_KEY` and `FLUX_LICENSE_EMAIL` / `FLUX_LICENSE_KEY` secrets for Composer auth against satis.spatie.be and composer.fluxui.dev
 - Builds Vite assets and installs Playwright browsers, then runs `php vendor/bin/pest --parallel` against SQLite
 
 ## Environment Setup

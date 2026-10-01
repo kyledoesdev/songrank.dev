@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap') layer(base);
 @import 'tailwindcss';
+@import '../../vendor/livewire/flux/dist/flux.css';
 @plugin '@tailwindcss/typography';
 
 @source '../../vendor/spatie/laravel-support-bubble/config/**/*.php';
