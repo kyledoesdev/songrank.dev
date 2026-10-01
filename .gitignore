@@ -18,7 +18,8 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-/.claude
+/.claude/*
+!/.claude/skills/
 .DS_Store
 .mcp.json
 boost.json

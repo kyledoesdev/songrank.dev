@@ -2,7 +2,7 @@
 
 ### Welcome to SongRank
 
-SongRank is a Spotify integrated Laravel application with over 2,200 users around the globe. SongRank allows users to create ranked lists of artists’ discographies & custom playlists using a head-to-head merge-sort pairwise comparison algorithm. SongRank also features interactive social features that encourage discovery and sharing.
+SongRank is a Spotify integrated Laravel application with over 2,200 users around the globe. SongRank allows users to create ranked lists of artists’ discographies, custom playlists & podcasts using a head-to-head merge-sort pairwise comparison algorithm. SongRank also features interactive social features that encourage discovery and sharing.
 
 ### Contributing
 

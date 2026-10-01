@@ -20,7 +20,7 @@ Open an issue describing the feature and the problem it solves before writing an
 
 ## Local Setup
 
-Standard Laravel 13 / PHP 8.5 app, served locally at `https://song-ranker.test` (the domain registered as a Spotify redirect URI) — via [Laravel Herd](https://herd.laravel.com) on Windows/macOS, or a local HTTPS proxy such as Caddy in front of `php artisan serve` on Linux. Tests need a PHP `memory_limit` of at least 512M (the ranking export test builds an xlsx in memory). Two project-specific notes: `composer install` needs Spatie satis credentials for the licensed packages, and authentication requires Spotify OAuth credentials (`SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REDIRECT_URI`) in your `.env`.
+Standard Laravel 13 / PHP 8.5 app, served locally at `https://song-ranker.test` (the domain registered as a Spotify redirect URI) — via [Laravel Herd](https://herd.laravel.com) on Windows/macOS, or a local HTTPS proxy such as Caddy in front of `php artisan serve` on Linux. Tests need a PHP `memory_limit` of at least 512M (the ranking export test builds an xlsx in memory). Two project-specific notes: `composer install` needs Spatie satis credentials for the licensed packages, and authentication requires Spotify OAuth credentials (`SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REDIRECT_URI`) in your `.env`. Everything else is optional — Stripe keys are only needed if you are working on billing.
 
 ## Testing
 
@@ -31,6 +31,8 @@ php artisan test
 ```
 
 Tests use an in-memory SQLite database, so no setup is required.
+
+The suite is split in three: `Feature` for application behaviour (grouped by product area), `Filament` for the admin panel (mirroring the `app/Filament/` directory structure), and `Platform` for codebase-wide checks such as architecture tests. Add your test to the directory that matches the area it covers.
 
 ## Coding Style
 
