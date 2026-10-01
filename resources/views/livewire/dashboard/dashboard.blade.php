@@ -5,6 +5,10 @@
         @feature('tierlists')
             <livewire:Tierlist.tierlist-panel />
         @endfeature
+
+        @feature('reviews')
+            <livewire:Reviews.review-panel />
+        @endfeature
     </div>
 
     <livewire:Dashboard.in-progress />

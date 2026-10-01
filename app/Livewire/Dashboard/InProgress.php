@@ -3,6 +3,7 @@
 namespace App\Livewire\Dashboard;
 
 use App\Models\Ranking;
+use App\Models\Review;
 use App\Models\Tierlist;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -45,8 +46,28 @@ class InProgress extends Component
             ->get();
     }
 
+    /**
+     * Unpublished drafts: the review equivalent of an unfinished board.
+     *
+     * @return Collection<int, Review>
+     */
+    #[Computed]
+    public function reviews(): Collection
+    {
+        if (Feature::inactive('reviews')) {
+            return collect();
+        }
+
+        return Review::query()
+            ->forDashboard(Auth::user())
+            ->drafts()
+            ->get();
+    }
+
     public function hasAnything(): bool
     {
-        return $this->rankings->isNotEmpty() || $this->tierlists->isNotEmpty();
+        return $this->rankings->isNotEmpty()
+            || $this->tierlists->isNotEmpty()
+            || $this->reviews->isNotEmpty();
     }
 }

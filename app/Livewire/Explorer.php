@@ -11,6 +11,7 @@ class Explorer extends Component
     {
         return view('livewire.explorer', [
             'showTierlists' => Feature::active('tierlists'),
+            'showReviews' => Feature::active('reviews'),
         ]);
     }
 }

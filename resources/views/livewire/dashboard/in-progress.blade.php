@@ -52,6 +52,12 @@
                 @foreach ($this->tierlists as $tierlist)
                     @include('livewire.tierlist.partials.tierlist-row', ['tierlist' => $tierlist])
                 @endforeach
+
+                @foreach ($this->reviews as $review)
+                    <div class="border rounded-xl" wire:key="review-{{ $review->getKey() }}">
+                        <livewire:reviews.card :review="$review" :key="'review-card-'.$review->getKey()" />
+                    </div>
+                @endforeach
             </div>
         </div>
     @endif

@@ -88,6 +88,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Review Limits
+    |--------------------------------------------------------------------------
+    |
+    | How many reviews an account may own, across every type. Not a map like
+    | the tier list allowance: five reviews is five reviews whether they are
+    | all albums or one of each. `null` means unlimited.
+    |
+    | These only apply once the `reviews` feature is active for a user.
+    |
+    */
+
+    'review_limits' => [
+        'free' => 5,
+        'pro' => null,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Tier List Size
     |--------------------------------------------------------------------------
     |
