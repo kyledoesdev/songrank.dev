@@ -1,6 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap') layer(base);
 @import 'tailwindcss';
+@import '../../vendor/livewire/flux/dist/flux.css';
 @plugin '@tailwindcss/typography';
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 @source '../../vendor/spatie/laravel-support-bubble/config/**/*.php';
 @source '../../vendor/spatie/laravel-support-bubble/resources/views/**/*.blade.php';
@@ -18,6 +21,7 @@
 @import './components/animations.css';
 @import './components/layout.css';
 @import './components/notification_bell.css';
+@import './components/flux.css';
 
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,

@@ -46,7 +46,6 @@
                     {{ $tier->name }}
                 </div>
 
-                {{-- Controls sit beside the tier rather than on top of its colour. --}}
                 <div class="w-7 shrink-0 flex flex-col items-center justify-center gap-1 bg-zinc-100 border-x border-zinc-200 text-zinc-400">
                     <button
                         type="button"

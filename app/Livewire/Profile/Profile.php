@@ -3,6 +3,7 @@
 namespace App\Livewire\Profile;
 
 use App\Models\Ranking;
+use App\Models\Review;
 use App\Models\Tierlist;
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -30,12 +31,14 @@ class Profile extends Component
     {
         $hasRankings = $this->rankings->isNotEmpty();
         $hasTierlists = $this->tierlists->isNotEmpty();
+        $hasReviews = $this->reviews->isNotEmpty();
 
         return view('livewire.profile.profile', [
             'name' => $this->possessiveName(),
             'hasRankings' => $hasRankings,
             'hasTierlists' => $hasTierlists,
-            'showTabs' => $hasRankings && $hasTierlists,
+            'hasReviews' => $hasReviews,
+            'showTabs' => collect([$hasRankings, $hasTierlists, $hasReviews])->filter()->count() > 1,
         ]);
     }
 
@@ -51,6 +54,19 @@ class Profile extends Component
     public function rankings(): Collection
     {
         return Ranking::query()
+            ->forProfilePage($this->user)
+            ->get();
+    }
+
+    #[Computed]
+    #[On('reviews-updated')]
+    public function reviews(): Collection
+    {
+        if (Feature::inactive('reviews')) {
+            return collect();
+        }
+
+        return Review::query()
             ->forProfilePage($this->user)
             ->get();
     }

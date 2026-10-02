@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Ranking;
+use App\Models\RankingSortingState;
 use App\Models\User;
 
 use function Pest\Laravel\actingAs;
@@ -79,5 +80,46 @@ describe('creator banner on the show page', function () {
             ->get(route('ranking', ['id' => $ranking->getKey()]))
             ->assertOk()
             ->assertDontSee('Ranked by');
+    });
+});
+
+describe('header actions on the show page', function () {
+    test('show the edit link to the owner', function () {
+        $owner = User::factory()->createOne();
+
+        $ranking = publicCompletedRanking(attributes: ['user_id' => $owner->getKey()]);
+
+        actingAs($owner)
+            ->get(route('ranking', ['id' => $ranking->getKey()]))
+            ->assertOk()
+            ->assertSee(route('rank.edit', ['id' => $ranking->getKey()]));
+    });
+
+    test('hide the edit link from everyone else', function () {
+        $ranking = publicCompletedRanking();
+
+        actingAs(User::factory()->createOne())
+            ->get(route('ranking', ['id' => $ranking->getKey()]))
+            ->assertOk()
+            ->assertDontSee(route('rank.edit', ['id' => $ranking->getKey()]));
+    });
+});
+
+describe('sorting process on the show page', function () {
+    test('shows the ranking name and a way home to an owner who has not finished', function () {
+        $owner = User::factory()->createOne();
+
+        $ranking = Ranking::factory()->create([
+            'user_id' => $owner->getKey(),
+            'name' => 'Unfinished Business',
+            'is_ranked' => false,
+        ]);
+
+        RankingSortingState::create(['ranking_id' => $ranking->getKey()]);
+
+        actingAs($owner)
+            ->get(route('ranking', ['id' => $ranking->getKey()]))
+            ->assertOk()
+            ->assertSeeInOrder(['Unfinished Business', 'Progress will be saved automatically', route('dashboard')]);
     });
 });

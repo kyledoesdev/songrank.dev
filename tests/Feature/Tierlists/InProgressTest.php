@@ -1,10 +1,12 @@
 <?php
 
 use App\Livewire\Dashboard\InProgress;
+use App\Livewire\Tierlist\Card as TierlistCard;
 use App\Livewire\Tierlist\TierlistPanel;
 use App\Models\Artist;
 use App\Models\Ranking;
 use App\Models\Tierlist;
+use App\Models\TierlistItem;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -40,15 +42,20 @@ describe('getting back to a list', function () {
             ->assertDontSee('Somebody Elses');
     });
 
-    it('draws the artwork of wherever a list came from', function () {
+    it('draws the same card as rankings and reviews, with what is placed so far', function () {
         $user = kyle();
+        $tierlist = Tierlist::factory()->for($user)->create();
         $artist = Artist::factory()->create(['artist_img' => 'https://example.test/art.png']);
 
-        Tierlist::factory()->for($user)->albums()->fromArtist($artist)->create();
+        TierlistItem::factory()
+            ->inTier($tierlist->placementTiers()->first())
+            ->create(['entryable_id' => $artist->getKey()]);
 
         Livewire::actingAs($user)
             ->test(InProgress::class)
-            ->assertSee('https://example.test/art.png', escape: false);
+            ->assertSeeLivewire(TierlistCard::class)
+            ->assertSee('https://example.test/art.png', escape: false)
+            ->assertSee('In Progress');
     });
 
     it('shows rankings and tier lists together', function () {

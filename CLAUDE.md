@@ -8,12 +8,13 @@ Everything above the `===` separator is hand-written project knowledge. The `<la
 
 ## Project Overview
 
-songrank.dev — a Laravel 13 application with two ways to order music:
+songrank.dev — a Laravel 13 application with two ways to order music, and one way to write about it:
 
 - **Rankings** turn a Spotify artist, playlist or podcast into a fully ordered list through pairwise comparisons driven by a merge-sort algorithm.
 - **Tier lists** place artists, albums or tracks into named tiers on a drag-and-drop board.
+- **Reviews** score one artist, album or track out of ten in half stars, with a written body.
 
-Users authenticate with Spotify. A finished list of either kind can be made public, browsed from the explore page, commented on and exported.
+Users authenticate with Spotify. A finished record of any kind can be made public, browsed from the explore page and commented on; rankings can also be exported.
 
 ## Commands
 
@@ -40,7 +41,7 @@ Users authenticate with Spotify. A finished list of either kind can be made publ
 ## Tech Stack
 
 - **Backend:** PHP 8.4+ (8.5 locally and in CI), Laravel 13
-- **Frontend:** Livewire 4 with Blade templates, Alpine.js, Tailwind CSS v4, Vite
+- **Frontend:** Livewire 4 with Blade templates, Alpine.js, Tailwind CSS v4, Vite. sweetalert2 for dialogs. Flux UI (Pro) is installed, but **only** for session-flash toasts and the rich text editor
 - **Admin Panel:** Filament 5
 - **Auth:** Laravel Socialite with the Spotify provider
 - **Billing:** Laravel Cashier (Stripe), for a single one-time purchase
@@ -54,17 +55,18 @@ Users authenticate with Spotify. A finished list of either kind can be made publ
 
 ### Routes
 
-`routes/web.php` holds the public and account routes, then requires one file per domain: `routes/rankings.php`, `routes/billing.php` and `routes/tierlists.php`. Pages are Livewire components registered with `Route::livewire()` and titled with `->withHead()`.
+`routes/web.php` holds the public and account routes, then requires one file per domain: `routes/rankings.php`, `routes/billing.php`, `routes/tierlists.php` and `routes/reviews.php`. Pages are Livewire components registered with `Route::livewire()` and titled with `->withHead()`.
 
-Flagged domains (`billing.php`, `tierlists.php`) are wrapped in `EnsureFeaturesAreActive`, which **404s rather than 403s** — an unreleased product should look absent, not forbidden. Developer-only routes use `IsDeveloper` from `kyledoesdev/essentials`.
+Flagged domains (`billing.php`, `tierlists.php`, `reviews.php`) are wrapped in `EnsureFeaturesAreActive`, which **404s rather than 403s** — an unreleased product should look absent, not forbidden. Developer-only routes use `IsDeveloper` from `kyledoesdev/essentials`.
 
-The show routes (`/rank/{id}`, `/tierlist/{id}`) are public because a finished, public list is meant to be shared; the component decides who may actually see each record (`canBeSeen()`), and serves the sorting process itself to an owner whose list is not finished yet.
+The show routes (`/rank/{id}`, `/tierlist/{id}`, `/review/{id}`) are public because a finished, public list is meant to be shared; the component decides who may actually see each record (`canBeSeen()`), and serves the sorting process itself to an owner whose list is not finished yet.
 
 ### Action Pattern
 
 Business logic lives in `app/Actions/` rather than in controllers or Livewire components, organized by domain:
 
 - `Actions/Rankings/` — ranking creation, update and deletion (`StoreArtistRanking`, `StorePlaylistRanking`, `StoreShowRanking`, `UpdateRanking`, `DestroyRanking`). `CompleteSongRankProcess` sits at the `app/Actions/` root rather than in here.
+- `Actions/Reviews/` — review lifecycle (`StoreReview`, `UpdateReview`, `PublishReview`, `DestroyReview`), `ResolveReviewSubject` for turning a search result into a local model, and `CleanReviewBody` (see **Reviews** below)
 - `Actions/Tierlists/` — list lifecycle (`StoreTierlist`, `CreateDefaultTiers`, `MoveTierlistItem`, `CompleteTierlist`, `ResolveTierlistEntries`), with tier CRUD under `Actions/Tierlists/Tiers/`
 - `Actions/Spotify/` — every Spotify API call (`SearchArtists`, `SearchAlbums`, `SearchTracks`, `GetArtistSongs`, `GetArtistAlbums`, `GetPlaylistTracks`, `GetShowEpisodes`, `RefreshToken`). `GetArtistAppearsOnSongs` is deliberately separate: featured tracks are expensive to fetch for prolific guests, so `count()` probes cheaply during artist selection and `handle()` only runs when the user toggles the featured list on
 - `Actions/Artists/`, `Actions/Playlists/` — resolve a Spotify payload into local models
@@ -79,12 +81,23 @@ The primary UI layer. Each page is a Livewire component in `app/Livewire/`:
 - `SongRank/SongRankProcess` — the core pair-comparison UI, with `SongRank/ProgressTabs/` and `SongRankProgressModal` beside it
 - `Tierlist/TierlistSetup` — the same shell pattern for `TierlistType`, dispatching to `Tierlist/Setup/{Artist,Album,Track}Setup`
 - `Tierlist/TierlistBuilder` — the drag-and-drop board; `Tierlist/TierlistPanel` is its read-only counterpart
+- `Reviews/ReviewSetup` — the same shell pattern for `ReviewType`, dispatching to `Reviews/Setup/{Artist,Album,Track}Setup`. Setup only picks the subject and the settings; the review is written in `Reviews/EditReview`, which is both the draft editor and the edit page
+- `Reviews/ReviewShow`, `Reviews/ReviewPanel` (dashboard) and `Reviews/Card`
 - `Dashboard/Dashboard` and `Dashboard/InProgress` — the user's rankings and lists
-- `Explorer`, with `Explorer/RankingsFeed` and `Explorer/TierlistsFeed` — browse public records
+- `Explorer`, with `Explorer/RankingsFeed`, `Explorer/TierlistsFeed` and `Explorer/ReviewsFeed` — browse public records. The three feeds share `Livewire/Concerns/HasInfiniteFeed`
 - `Ranking/Ranking`, `Ranking/EditRanking`, `Tierlist/TierlistShow`, `Tierlist/EditTierlist` — view and manage one record
 - `Profile/Profile`, `Profile/Settings`, `Billing/Billing`, `Navigation`, `Notifications/ShowAll`
 
-Shared behaviour lives in traits rather than base classes: `Livewire/Concerns/InteractsWithAlerts` centralizes flash messaging for every component, and per-domain concerns sit in `SongRank/Concerns/` (`HasTrackList`, `HasRankingForm`, `HasSetupFlashErrors`) and `Tierlist/Concerns/` (`HasEntryBank`, `HasTierlistForm`, `HasTierlistFlashErrors`). Form objects are in `Livewire/Forms/`, and shared markup in `resources/views/livewire/{song-rank,tierlist}/setup/partials/`.
+Shared behaviour lives in traits rather than base classes: `Livewire/Concerns/InteractsWithAlerts` centralizes flash messaging for every component (see **Alerts** below), and per-domain concerns sit in `SongRank/Concerns/` (`HasTrackList`, `HasRankingForm`, `HasSetupFlashErrors`) `Tierlist/Concerns/` (`HasEntryBank`, `HasTierlistForm`, `HasTierlistFlashErrors`) and `Reviews/Concerns/` (`HasReviewSubject`, `HasReviewForm`, `HasReviewFlashErrors`). Form objects are in `Livewire/Forms/`, and shared markup in `resources/views/livewire/{song-rank,tierlist}/setup/partials/`.
+
+### Alerts
+
+Two separate things, deliberately not merged:
+
+- **`Livewire/Concerns/InteractsWithAlerts` is sweetalert2.** `flash()` and `confirmAction()` encode a payload and hand it to `resources/js/alerts.js` through `$this->js()`. A confirm calls back into the asking component by Livewire id. This is the dialog system; leave it alone.
+- **Session flashes are Flux toasts.** `App\Livewire\SessionToasts` is mounted once in the layout and raises a toast from `mount()` for `session('success')` and the error bag. `Flux::toast()` needs a live Livewire component to dispatch from, which a full page load otherwise has nowhere to find.
+
+Flux is installed for toasts and the review editor only. Nav, cards, buttons, inputs, dialogs and theming stay homegrown. Flux's dark theme is gated behind a `.dark` class the layout pins off, because this app is light only.
 
 ### Key Models and Relationships
 
@@ -92,9 +105,10 @@ Shared behaviour lives in traits rather than base classes: `Livewire/Concerns/In
 - `Ranking` → belongs to `User`, has many `Song`, has one `RankingSortingState`, and has a polymorphic **`source()`** — an `Artist`, `Playlist` or `Show`. There are no per-type foreign keys any more; anything needing the source reads `source`, and `RankingType` says which kind it is
 - `Tierlist` → belongs to `User`, has many `Tier` (the first of which is the bank) and many `TierlistItem`. Its `source()` is polymorphic too, but records **provenance only** — a list assembled from search has none
 - `TierlistItem` → belongs to a `Tier` and morphs to an `entryable`: an `Artist`, `Album` or `Track`
+- `Review` → belongs to `User` and morphs to a `subject`: an `Artist`, `Album` or `Track`. Soft deletes, so one-review-per-subject is enforced in `HasReviewSubject` rather than by a unique index
 - `Song` → `featured_artist` marks tracks the ranked artist only guests on; for those rows `artist_id` points at the track's *primary* artist, while every other row's `artist_id` is the artist the *ranking* belongs to
 - `RankingSortingState` — persists merge-sort algorithm state so rankings can be resumed across sessions
-- `Artist`, `Album`, `Track`, `Playlist` and `Show` all implement `Contracts/SpotifyEntity` (`name()`, `cover()`, `spotifyId()`, `spotifyUrl()`) — that shared shape is what lets a ranking source, a tier list source and a tier list entry each be any of them
+- `Artist`, `Album`, `Track`, `Playlist` and `Show` all implement `Contracts/SpotifyEntity` (`name()`, `cover()`, `spotifyId()`, `spotifyUrl()`) — that shared shape is what lets a ranking source, a tier list source, a tier list entry and a review subject each be any of them
 
 ### Custom Query Builders
 
@@ -102,7 +116,7 @@ Every model with non-trivial reads has a builder in `app/QueryBuilders/`, attach
 
 ### Enums
 
-`App\Enums\RankingType` and `App\Enums\TierlistType` carry their own presentation (`label()`, `icon()`, `color()`, `filamentColor()`), so neither Blade nor Filament needs to match on a raw string. Billing enums live under `Enums/Billing/`.
+`App\Enums\RankingType`, `App\Enums\TierlistType` and `App\Enums\ReviewType` carry their own presentation (`label()`, `icon()`, `color()`, `filamentColor()`), so neither Blade nor Filament needs to match on a raw string. Billing enums live under `Enums/Billing/`.
 
 ### Global Helpers
 
@@ -110,7 +124,7 @@ Every model with non-trivial reads has a builder in `app/QueryBuilders/`, attach
 
 ## Feature Flags
 
-Two Pennant flags, both currently `is_dev` only: `songrank-pro` (`app/Features/SongRankPro.php`) and `tierlists` (`app/Features/Tierlists.php`). `pennant:purge` is a routine deploy step. A flag is a rollout switch and nothing more — it never answers "has this person paid?" (see Song Rank Pro below).
+Three Pennant flags, all currently `is_dev` only: `songrank-pro` (`app/Features/SongRankPro.php`), `tierlists` (`app/Features/Tierlists.php`) and `reviews` (`app/Features/Reviews.php`). A flag resolves false for a guest, so a flagged show route 404s for guests until the flag is released. `pennant:purge` is a routine deploy step. A flag is a rollout switch and nothing more — it never answers "has this person paid?" (see Song Rank Pro below).
 
 ## Tier Lists
 
@@ -118,6 +132,15 @@ Two Pennant flags, both currently `is_dev` only: `songrank-pro` (`app/Features/S
 - The board's shape is `config/tierlists.php`: `max_tiers`, the `default_tiers` every new list starts from, and the **bank**. The bank is a tier row like any other so that every item carries a tier id and every drag target is uniform — but it always sits at position zero, cannot be renamed, reordered or deleted, and must be emptied before a list can be finished (`Tierlist::bankIsEmpty()`).
 - Per-type list limits live in `config/billing.php` under `tierlist_limits`, and the per-list entry ceiling under `tierlist_item_limits`. That second one is **never null**: a board has to stay draggable, and every tile is an image the browser has to paint.
 - `TierlistBuilder` keeps Spotify embeds off by default — every player is a cross-origin document to build.
+
+## Reviews
+
+- Three types (`ReviewType`: artist, album, track). One `stars` column holds the score in half steps from 0 to 10; the "8.5/10" form is the same value formatted by `Review::score()`, not a second column.
+- A review starts as a **draft** and publishing is one way (`PublishReview` never moves `published_at`). Settings stay editable by the owner; the content (stars and body) is editable after publishing only on a Pro account — `EditReview::canEditContent()` decides, and the server ignores submitted content when it says no.
+- Free accounts get five reviews in total across every type (`config/billing.php` → `review_limits`); drafts count, and deleting frees a slot.
+- **The body is user-authored HTML rendered unescaped.** `CleanReviewBody` is the only way in: `symfony/html-sanitizer` with an explicit allowlist first, then Blasp on the text *between* tags only (Blasp mangles tag characters). It also derives `body_text`, the plain copy used for search and excerpts. Anything that writes `body` must go through it — the Filament form deliberately has no body or stars field.
+- Sharing is X, Bluesky and copy-link (`ShareTarget`), plus review-specific OG/Twitter tags from `laravel/head` — only when the review is public.
+- `DeleteUserJob` deletes a user's reviews and tier lists along with their rankings; a soft-deleted author left behind breaks pages that read `->user`.
 
 ## Song Rank Pro (Billing)
 
@@ -157,10 +180,12 @@ Every change must be covered by a test. Three suites are registered in `phpunit.
 - **Feature** (`tests/Feature/`) — application behaviour; gets `RefreshDatabase`. Grouped by product area:
     - `Account/` — signed-in user's own surfaces (profile, settings, notification bell)
     - `Auth/` — Spotify OAuth login, callback and logout
+    - `System/` — application-wide plumbing rather than a product area (session toasts)
     - `Discovery/` — public browse surfaces (explore feeds, leaderboards)
     - `Pages/` — content-driven pages (about, faq, legal documents, error pages)
     - `Rankings/` — the core ranking domain (setup, algorithm, comments, export, management)
     - `Tierlists/` — the tier list domain (setup, builder, board, limits, management)
+    - `Reviews/` — the review domain (setup, creation, limits, body cleaning, management, show page, comments)
     - `Billing/` — Song Rank Pro: checkout, Stripe webhooks, licences, the billing page
 - **Filament** (`tests/Filament/`) — the admin panel; gets `RefreshDatabase`. **Mirrors the `app/Filament/` directory structure**, so a test sits at the same path as the code it covers:
     - `app/Filament/Resources/Rankings/…` → `tests/Filament/Resources/Rankings/…`
@@ -171,7 +196,7 @@ Every change must be covered by a test. Three suites are registered in `phpunit.
 Anything under `app/Filament/` is tested in the **Filament** suite, not `Feature`. Everything else goes in the `Feature/` directory matching its product area; add a new subdirectory only when an area has no existing home.
 
 #### Testing Flagged Features and the Admin Panel
-- Both `songrank-pro` and `tierlists` resolve on `is_dev`, so a test touching either needs a user carrying that flag — `kyle()` is the project's only admin persona, and `proUser()` builds an `is_dev` user holding an active licence
+- `songrank-pro`, `tierlists` and `reviews` all resolve on `is_dev`, so a test touching any of them needs a user carrying that flag — `kyle()` is the project's only admin persona, and `proUser()` builds an `is_dev` user holding an active licence
 - The admin panel is gated the same way, so act as `kyle()` there too
 - Filament pages and widgets are Livewire components — test them with `Livewire::actingAs($user)->test(ListRankings::class)`, passing `['record' => $model->getKey()]` for view/edit pages
 
@@ -185,13 +210,13 @@ Every Pest test file follows this order, top to bottom:
 Additional conventions:
 - Use `Pest\Laravel` functions (`get()`, `actingAs()`, `assertGuest()`, ...) instead of `$this->get()` etc. — Intelephense cannot resolve `$this` inside Pest closures
 - Avoid `$this->property` state in `beforeEach()` for the same reason; prefer helper functions
-- Cross-file helpers live in `tests/Helpers/`, grouped by the domain they build for (`users.php`, `rankings.php`, `tierlists.php`, `spotify.php`) and required from `tests/Pest.php`. Helper function names are global, so they must be unique across the whole suite; anything used by a single test file still lives at the bottom of that file
+- Cross-file helpers live in `tests/Helpers/`, grouped by the domain they build for (`users.php`, `rankings.php`, `tierlists.php`, `reviews.php`, `spotify.php`) and required from `tests/Pest.php`. `alerts.php` holds `alertsFrom()`, which reads the sweetalert2 `flash`/`confirm` payloads a component sent on its last request. Helper function names are global, so they must be unique across the whole suite; anything used by a single test file still lives at the bottom of that file
 
 ## CI/CD
 
 `.github/workflows/tests.yml` runs on pushes to `master` and on every pull request:
 - PHP 8.5 with `memory_limit=512M`, Node 22
-- `composer install` needs the `SPATIE_LICENSE_EMAIL` and `SPATIE_LICENSE_KEY` secrets for Spatie Composer auth
+- `composer install` needs the `SPATIE_LICENSE_EMAIL` / `SPATIE_LICENSE_KEY` and `FLUX_LICENSE_EMAIL` / `FLUX_LICENSE_KEY` secrets for Composer auth against satis.spatie.be and composer.fluxui.dev
 - Builds Vite assets and installs Playwright browsers, then runs `php vendor/bin/pest --parallel` against SQLite
 
 ## Environment Setup

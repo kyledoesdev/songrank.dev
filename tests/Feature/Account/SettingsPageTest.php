@@ -1,8 +1,12 @@
 <?php
 
 use App\Jobs\DeleteUserJob;
+use App\Livewire\Explorer\ReviewsFeed;
+use App\Livewire\Explorer\TierlistsFeed;
 use App\Livewire\Profile\Settings;
 use App\Models\Ranking;
+use App\Models\Review;
+use App\Models\Tierlist;
 use App\Models\User;
 use App\Notifications\DownloadDataNotification;
 use Illuminate\Support\Facades\Notification;
@@ -80,6 +84,35 @@ describe('account deletion', function () {
 
         expect(User::find($user->getKey()))->toBeNull();
         expect(Ranking::whereIn('id', $rankingIds)->count())->toBe(0);
+    });
+
+    test('account deletion also deletes their tier lists and reviews', function () {
+        $user = User::factory()->createOne();
+        $tierlist = publicCompletedTierlist(['user_id' => $user->getKey()]);
+        $review = Review::factory()->for($user)->published()->public()->createOne();
+
+        DeleteUserJob::dispatchSync($user);
+
+        expect(Tierlist::find($tierlist->getKey()))->toBeNull();
+        expect(Review::find($review->getKey()))->toBeNull();
+    });
+
+    test('a deleted author no longer breaks the explore feeds', function () {
+        $tierlist = publicCompletedTierlist();
+        $review = Review::factory()->published()->public()->createOne();
+
+        DeleteUserJob::dispatchSync($tierlist->user);
+        DeleteUserJob::dispatchSync($review->user);
+
+        Livewire::actingAs(kyle())
+            ->test(TierlistsFeed::class)
+            ->assertOk()
+            ->assertDontSee($tierlist->name);
+
+        Livewire::actingAs(kyle())
+            ->test(ReviewsFeed::class)
+            ->assertOk()
+            ->assertDontSee($review->name);
     });
 
     test('account deletion erases spotify tokens and technical data', function () {

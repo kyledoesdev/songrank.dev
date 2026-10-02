@@ -239,6 +239,20 @@ describe('lazy loading featured tracks', function () {
     });
 });
 
+describe('filter modals with featured tracks loaded', function () {
+    test('render once, so a filters button opens a single modal', function () {
+        $component = artistSetup()->set('appearsOnCount', 1);
+
+        $component->call('removeTrack', $component->get('selectedTracks')->first()['uuid']);
+
+        $html = $component->html();
+
+        expect(substr_count($html, '@open-album-modal.window'))->toBe(1);
+        expect(substr_count($html, '@open-removed-tracks-modal.window'))->toBe(1);
+        expect(substr_count($html, "\$dispatch('open-album-modal')"))->toBe(2);
+    });
+});
+
 // -- Helpers --
 
 function fakeAppearsOnApi(): void

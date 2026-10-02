@@ -3,6 +3,7 @@
 use App\Enums\TierlistType;
 use App\Models\ProLicense;
 use App\Models\Ranking;
+use App\Models\Review;
 use App\Models\Tierlist;
 use App\Models\User;
 
@@ -54,6 +55,18 @@ function userWithTierlists(int $count, TierlistType $type = TierlistType::ARTIST
         ->count($count)
         ->for($user)
         ->create(['type' => $type->value]);
+
+    return $user;
+}
+
+/**
+ * A user sitting on exactly $count reviews, for allowance assertions.
+ */
+function userWithReviews(int $count, array $attributes = []): User
+{
+    $user = User::factory()->createOne($attributes);
+
+    Review::factory()->count($count)->for($user)->create();
 
     return $user;
 }

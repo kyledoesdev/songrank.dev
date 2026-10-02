@@ -4,9 +4,13 @@ namespace App\Filament\Resources\Comments\Schemas;
 
 use App\Filament\Resources\Comments\CommentResource;
 use App\Filament\Resources\Rankings\RankingResource;
+use App\Filament\Resources\Reviews\ReviewResource;
+use App\Filament\Resources\Tierlists\TierlistResource;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\Comment;
 use App\Models\Ranking;
+use App\Models\Review;
+use App\Models\Tierlist;
 use Filament\Infolists\Components\KeyValueEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
@@ -81,11 +85,13 @@ class CommentInfolist
             ]);
     }
 
-    /** `commentable` is polymorphic: a comment hangs off a ranking, or off another comment when it is a reply. */
+    /** `commentable` is polymorphic: a comment hangs off a ranking, tier list or review, or off another comment when it is a reply. */
     protected static function commentableLabel(Comment $record): ?string
     {
         return match (true) {
-            $record->commentable instanceof Ranking => $record->commentable->name,
+            $record->commentable instanceof Ranking,
+            $record->commentable instanceof Tierlist,
+            $record->commentable instanceof Review => $record->commentable->name,
             $record->commentable instanceof Comment => "Comment #{$record->commentable->getKey()}",
             default => null,
         };
@@ -95,6 +101,8 @@ class CommentInfolist
     {
         return match (true) {
             $record->commentable instanceof Ranking => RankingResource::getUrl('view', ['record' => $record->commentable]),
+            $record->commentable instanceof Tierlist => TierlistResource::getUrl('view', ['record' => $record->commentable]),
+            $record->commentable instanceof Review => ReviewResource::getUrl('view', ['record' => $record->commentable]),
             $record->commentable instanceof Comment => CommentResource::getUrl('view', ['record' => $record->commentable]),
             default => null,
         };

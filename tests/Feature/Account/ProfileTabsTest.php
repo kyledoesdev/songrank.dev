@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Tierlist\Card as TierlistCard;
+use App\Models\Review;
 use App\Models\Tierlist;
 use App\Models\User;
 use Livewire\Livewire;
@@ -132,6 +133,94 @@ describe('profile tabs', function () {
             ->get(route('profile', ['id' => $owner->spotify_id]))
             ->assertOk()
             ->assertDontSee('Tier Lists');
+    });
+});
+
+describe('the reviews tab', function () {
+    test('sits beside the other tabs without an empty rankings tab', function () {
+        $owner = kyle();
+
+        publicCompletedTierlist(['user_id' => $owner->getKey()]);
+        publicPublishedReview(['user_id' => $owner->getKey()]);
+
+        actingAs($owner)
+            ->get(route('profile', ['id' => $owner->spotify_id]))
+            ->assertOk()
+            ->assertSee("tab = 'reviews'", escape: false)
+            ->assertSee("tab = 'tierlists'", escape: false)
+            ->assertDontSee("@click=\"tab = 'rankings'\"", escape: false);
+    });
+
+    test('visitors see only public published reviews', function () {
+        $owner = kyle();
+
+        publicPublishedReview(['user_id' => $owner->getKey(), 'name' => 'Out In The Open']);
+        Review::factory()->for($owner)->published()->createOne(['name' => 'Kept Private']);
+        Review::factory()->for($owner)->public()->createOne(['name' => 'Still Drafting']);
+
+        actingAs(User::factory()->createOne(['is_dev' => true]))
+            ->get(route('profile', ['id' => $owner->spotify_id]))
+            ->assertOk()
+            ->assertSee('Out In The Open')
+            ->assertDontSee('Kept Private')
+            ->assertDontSee('Still Drafting');
+    });
+
+    test('owner sees their own drafts and private reviews', function () {
+        $owner = kyle();
+
+        Review::factory()->for($owner)->published()->createOne(['name' => 'Kept Private']);
+        Review::factory()->for($owner)->createOne(['name' => 'Still Drafting']);
+
+        actingAs($owner)
+            ->get(route('profile', ['id' => $owner->spotify_id]))
+            ->assertOk()
+            ->assertSee('Kept Private')
+            ->assertSee('Still Drafting');
+    });
+
+    test('counts published reviews on the profile card', function () {
+        $owner = kyle();
+
+        Review::factory()->for($owner)->published()->count(2)->create();
+        Review::factory()->for($owner)->createOne();
+
+        actingAs($owner)
+            ->get(route('profile', ['id' => $owner->spotify_id]))
+            ->assertOk()
+            ->assertSeeInOrder(['Reviews', '2']);
+    });
+
+    test('is hidden when the feature flag is inactive', function () {
+        $owner = User::factory()->createOne();
+
+        publicPublishedReview(['user_id' => $owner->getKey(), 'name' => 'Out In The Open']);
+
+        actingAs($owner)
+            ->get(route('profile', ['id' => $owner->spotify_id]))
+            ->assertOk()
+            ->assertDontSee('Out In The Open')
+            ->assertDontSee("tab = 'reviews'", escape: false);
+    });
+
+    test('owner sees the edit and delete buttons on their review cards', function () {
+        $owner = kyle();
+        $review = publicPublishedReview(['user_id' => $owner->getKey()]);
+
+        actingAs($owner)
+            ->get(route('profile', ['id' => $owner->spotify_id]))
+            ->assertSee(route('review.edit', ['id' => $review->getKey()]))
+            ->assertSee('Delete Review');
+    });
+
+    test('visitors do not see the edit and delete buttons', function () {
+        $owner = kyle();
+        $review = publicPublishedReview(['user_id' => $owner->getKey()]);
+
+        actingAs(User::factory()->createOne(['is_dev' => true]))
+            ->get(route('profile', ['id' => $owner->spotify_id]))
+            ->assertDontSee(route('review.edit', ['id' => $review->getKey()]))
+            ->assertDontSee('Delete Review');
     });
 });
 

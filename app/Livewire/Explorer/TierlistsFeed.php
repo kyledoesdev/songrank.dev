@@ -2,15 +2,15 @@
 
 namespace App\Livewire\Explorer;
 
+use App\Livewire\Concerns\HasInfiniteFeed;
 use App\Models\Tierlist;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 class TierlistsFeed extends Component
 {
-    public ?string $search = null;
-
-    public int $perPage = 12;
+    use HasInfiniteFeed;
 
     public function render()
     {
@@ -20,7 +20,7 @@ class TierlistsFeed extends Component
     }
 
     #[Computed]
-    public function tierlists()
+    public function tierlists(): Collection
     {
         return Tierlist::query()
             ->forExplorePage($this->search)
@@ -28,31 +28,8 @@ class TierlistsFeed extends Component
             ->get();
     }
 
-    #[Computed]
-    public function hasMorePages(): bool
+    protected function feedItems(): Collection
     {
-        return $this->tierlists->count() === $this->perPage;
-    }
-
-    #[Computed]
-    public function isFiltered(): bool
-    {
-        return filled($this->search);
-    }
-
-    public function loadMore(): void
-    {
-        $this->perPage += 12;
-    }
-
-    public function performSearch(): void
-    {
-        $this->perPage = 12;
-    }
-
-    public function resetSearch(): void
-    {
-        $this->search = null;
-        $this->perPage = 12;
+        return $this->tierlists;
     }
 }

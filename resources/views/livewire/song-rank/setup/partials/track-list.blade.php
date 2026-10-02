@@ -6,7 +6,6 @@
     $toggle ??= null;
     $searchPlaceholder ??= 'Search tracks...';
     $scroller ??= 'card-scroller';
-    $albums ??= null;
 
     $tracks = collect($tracks);
 
@@ -136,12 +135,4 @@
             No {{ $type->itemLabel() }} match your search.
         </p>
     </div>
-
-    @include('livewire.song-rank.setup.partials.album-filters', ['albums' => $albums])
-
-    @if (count($this->removedTrackUuids) > 0)
-        @include('livewire.song-rank.setup.partials.removed-tracks', [
-            'removedTracks' => $this->removedTracks(),
-        ])
-    @endif
 </div>

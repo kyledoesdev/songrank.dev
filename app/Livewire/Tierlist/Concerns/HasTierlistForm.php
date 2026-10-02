@@ -54,7 +54,7 @@ trait HasTierlistForm
         $this->confirmAction(
             action: 'startTierlist',
             title: 'Start this tier list?',
-            message: "You're starting with {$count} {$label}. Once the board is built you won't be able to add any more — you can still move them between tiers, reorder them, and rename or recolour the tiers themselves.",
+            message: "You're starting with {$count} {$label}. Once the board is built you won't be able to add any more — you can still move them between tiers, reorder them, and rename or recolor the tiers themselves.",
             confirmText: "Let's build it",
         );
     }

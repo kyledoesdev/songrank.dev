@@ -3,7 +3,6 @@
 use App\Livewire\Tierlist\TierlistBuilder;
 use App\Models\Tierlist;
 use App\Models\TierlistItem;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
@@ -53,16 +52,20 @@ describe('dragging', function () {
         $board = builder();
         $theirs = TierlistItem::factory()->inTier(Tierlist::factory()->create()->bank)->create();
 
-        expect(fn () => $board->component->call('moveItem', $theirs->getKey(), 0, $board->tier->getKey()))
-            ->toThrow(ModelNotFoundException::class);
+        $board->component->call('moveItem', $theirs->getKey(), 0, $board->tier->getKey())
+            ->assertNotFound();
+
+        expect($theirs->fresh()->tier_id)->not->toBe($board->tier->getKey());
     });
 
     it('will not drop an entry into a tier on another board', function () {
         $board = builder();
         $theirTier = Tierlist::factory()->create()->placementTiers()->first();
 
-        expect(fn () => $board->component->call('moveItem', $board->item->getKey(), 0, $theirTier->getKey()))
-            ->toThrow(ModelNotFoundException::class);
+        $board->component->call('moveItem', $board->item->getKey(), 0, $theirTier->getKey())
+            ->assertNotFound();
+
+        expect($board->item->fresh()->tier_id)->not->toBe($theirTier->getKey());
     });
 });
 
@@ -84,7 +87,7 @@ describe('tiers', function () {
         expect($board->tierlist->fresh()->placementTiers())->toHaveCount(6);
     });
 
-    it('renames and recolours one', function () {
+    it('renames and recolors one', function () {
         $board = builder();
 
         $board->component
@@ -99,7 +102,7 @@ describe('tiers', function () {
             ->and($board->tier->fresh()->color)->toBe('#123456');
     });
 
-    it('rejects a colour that is not a hex colour', function () {
+    it('rejects a color that is not a hex color', function () {
         $board = builder();
 
         $board->component
@@ -144,8 +147,8 @@ describe('tiers', function () {
     it('will not delete the bank', function () {
         $board = builder();
 
-        expect(fn () => $board->component->call('deleteTier', $board->tierlist->bank->getKey()))
-            ->toThrow(ModelNotFoundException::class);
+        $board->component->call('deleteTier', $board->tierlist->bank->getKey())
+            ->assertNotFound();
 
         expect($board->tierlist->fresh()->bank)->not->toBeNull();
     });
@@ -153,15 +156,17 @@ describe('tiers', function () {
     it('will not rename the bank', function () {
         $board = builder();
 
-        expect(fn () => $board->component->call('editTier', $board->tierlist->bank->getKey()))
-            ->toThrow(ModelNotFoundException::class);
+        $board->component->call('editTier', $board->tierlist->bank->getKey())
+            ->assertNotFound();
+
+        expect($board->tierlist->bank->fresh()->name)->toBe(config('tierlists.bank.name'));
     });
 
     it('will not shuffle the bank up the board', function () {
         $board = builder();
 
-        expect(fn () => $board->component->call('moveTier', $board->tierlist->bank->getKey(), 'down'))
-            ->toThrow(ModelNotFoundException::class);
+        $board->component->call('moveTier', $board->tierlist->bank->getKey(), 'down')
+            ->assertNotFound();
 
         expect($board->tierlist->bank->fresh()->position)->toBe(0);
     });
@@ -170,8 +175,10 @@ describe('tiers', function () {
         $board = builder();
         $theirTier = Tierlist::factory()->create()->placementTiers()->first();
 
-        expect(fn () => $board->component->call('deleteTier', $theirTier->getKey()))
-            ->toThrow(ModelNotFoundException::class);
+        $board->component->call('deleteTier', $theirTier->getKey())
+            ->assertNotFound();
+
+        expect($theirTier->fresh())->not->toBeNull();
     });
 });
 

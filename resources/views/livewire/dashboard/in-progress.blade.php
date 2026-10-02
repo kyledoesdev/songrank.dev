@@ -44,13 +44,15 @@
         <div x-show="tab === 'in-progress'" class="p-4">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" x-auto-animate>
                 @foreach ($this->rankings as $ranking)
-                    <div class="border rounded-xl" wire:key="ranking-{{ $ranking->getKey() }}">
-                        <livewire:ranking.card :ranking="$ranking" :key="'ranking-card-'.$ranking->getKey()" />
-                    </div>
+                    <livewire:ranking.card :ranking="$ranking" :key="'ranking-card-'.$ranking->getKey()" />
                 @endforeach
 
                 @foreach ($this->tierlists as $tierlist)
-                    @include('livewire.tierlist.partials.tierlist-row', ['tierlist' => $tierlist])
+                    <livewire:tierlist.card :tierlist="$tierlist" :key="'tierlist-card-'.$tierlist->getKey()" />
+                @endforeach
+
+                @foreach ($this->reviews as $review)
+                    <livewire:reviews.card :review="$review" :key="'review-card-'.$review->getKey()" />
                 @endforeach
             </div>
         </div>

@@ -66,7 +66,6 @@
                             'title' => ucfirst($this->rankingType()->itemLabel()),
                             'keyPrefix' => 'track',
                             'scroller' => 'card-scroller-half',
-                            'albums' => $this->albums(),
                         ])
 
                         @if ($appearsOnCount > 0)
@@ -106,6 +105,14 @@
                         @endif
                     </div>
                 </div>
+
+                @include('livewire.song-rank.setup.partials.album-filters', ['albums' => $this->albums()])
+
+                @if (count($this->removedTrackUuids) > 0)
+                    @include('livewire.song-rank.setup.partials.removed-tracks', [
+                        'removedTracks' => $this->removedTracks(),
+                    ])
+                @endif
             @endif
         </div>
     </x-card>

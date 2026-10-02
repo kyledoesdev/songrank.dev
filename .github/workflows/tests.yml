@@ -29,6 +29,9 @@ jobs:
       - name: Configure Spatie Composer Auth
         run: composer config http-basic.satis.spatie.be ${{ secrets.SPATIE_LICENSE_EMAIL }} ${{ secrets.SPATIE_LICENSE_KEY }}
 
+      - name: Configure Flux Composer Auth
+        run: composer config http-basic.composer.fluxui.dev ${{ secrets.FLUX_LICENSE_EMAIL }} ${{ secrets.FLUX_LICENSE_KEY }}
+
       - name: Install Dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 

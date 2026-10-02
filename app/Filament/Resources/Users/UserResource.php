@@ -9,6 +9,7 @@ use App\Filament\Resources\Users\Pages\ViewUser;
 use App\Filament\Resources\Users\RelationManagers\PreferencesRelationManager;
 use App\Filament\Resources\Users\RelationManagers\ProLicensesRelationManager;
 use App\Filament\Resources\Users\RelationManagers\RankingsRelationManager;
+use App\Filament\Resources\Users\RelationManagers\ReviewsRelationManager;
 use App\Filament\Resources\Users\RelationManagers\TierlistsRelationManager;
 use App\Models\User;
 use BackedEnum;
@@ -165,6 +166,7 @@ class UserResource extends Resource
             RelationGroup::make('', [
                 RankingsRelationManager::class,
                 TierlistsRelationManager::class,
+                ReviewsRelationManager::class,
                 ProLicensesRelationManager::class,
                 PreferencesRelationManager::class,
             ]),
