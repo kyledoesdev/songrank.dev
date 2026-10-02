@@ -1,4 +1,5 @@
 <div>
+    <x-welcome.top-bar />
     <x-welcome.hero :content="$content" />
 
     <section>
@@ -14,6 +15,7 @@
     <x-welcome.how-it-works :content="$content" />
     <x-welcome.everything-you-can-rank :content="$content" />
     <x-welcome.community :content="$content" />
+    <x-welcome.pricing :content="$content" :features="$planFeatures" />
     {{-- <x-welcome.testimonials /> --}}
     <x-welcome.about-developer :content="$content" />
     <x-welcome.call-to-action :content="$content" />

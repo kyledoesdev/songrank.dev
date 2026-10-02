@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\SpotifyAuthenticationService;
 use GuzzleHttp\Exception\ClientException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Kyledoesdev\Essentials\Stats\LoginStat;
@@ -12,8 +13,12 @@ use Laravel\Socialite\Two\InvalidStateException;
 
 class SpotifyAuthController extends Controller
 {
-    public function login()
+    public function login(Request $request)
     {
+        if ($request->query('to') === 'billing') {
+            redirect()->setIntendedUrl(route('billing'));
+        }
+
         return Socialite::driver('spotify')
             ->scopes(['user-read-email'])
             ->redirect();
@@ -39,7 +44,7 @@ class SpotifyAuthController extends Controller
 
         LoginStat::increase();
 
-        return redirect(route('dashboard'));
+        return redirect()->intended(route('dashboard'));
     }
 
     public function logout()

@@ -10,15 +10,18 @@ describe('the free plan view', function () {
         Livewire::actingAs(User::factory()->createOne())
             ->test(Billing::class)
             ->assertSee('Free Plan')
-            ->assertSee('Go Pro')
+            ->assertSee('Unlock forever')
             ->assertSee(route('billing.checkout'), escape: false);
     });
 
-    it('says what the money buys, without promising a feature set yet', function () {
+    it('compares the two plans', function () {
         Livewire::actingAs(User::factory()->createOne())
             ->test(Billing::class)
-            ->assertSee('What Pro Includes')
-            ->assertSee('No subscription');
+            ->assertSee('Your current plan')
+            ->assertSee(config('app.name').' Pro')
+            ->assertSee('100 rankings')
+            ->assertSee('Unlimited rankings')
+            ->assertSee('once, no subscription');
     });
 
     it('does not report ranking usage — that card belongs to the dashboard', function () {
@@ -34,7 +37,8 @@ describe('the Pro view', function () {
         Livewire::actingAs(proUser())
             ->test(Billing::class)
             ->assertSee(config('app.name').' Pro')
-            ->assertDontSee('Go Pro');
+            ->assertDontSee('Unlock forever')
+            ->assertDontSee('Your current plan');
     });
 
     it('thanks the buyer rather than listing entitlements', function () {
@@ -125,6 +129,8 @@ describe('a refunded licence', function () {
         Livewire::actingAs($user)
             ->test(Billing::class)
             ->assertSee('Free Plan')
-            ->assertSee('Refunded');
+            ->assertSee('Your Previous Purchase')
+            ->assertSee('Refunded')
+            ->assertSee('Unlock forever');
     });
 });

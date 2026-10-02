@@ -1,38 +1,32 @@
 @props(['content'])
 
+@php
+    $items = [
+        ['key' => 'explore', 'icon' => 'fa-globe'],
+        ['key' => 'share', 'icon' => 'fa-share-nodes'],
+        ['key' => 'embed', 'icon' => 'fa-code'],
+        ['key' => 'comment', 'icon' => 'fa-comments'],
+        ['key' => 'react', 'icon' => 'fa-face-smile'],
+    ];
+@endphp
+
 <section class="py-16 px-4">
     <div class="max-w-6xl mx-auto">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div>
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6">{{ $content->firstWhere('slug', 'community-title')->text }}</h2>
-                <div class="space-y-6">
-                    <div class="flex gap-4 items-start">
-                        <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
-                            <i class="fa-solid fa-globe text-lg text-gray-900"></i>
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-5">{{ $content->get('community-title') }}</h2>
+                <div class="space-y-5">
+                    @foreach ($items as $item)
+                        <div class="flex gap-3 items-start">
+                            <div class="shrink-0 w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                                <i class="fa-solid {{ $item['icon'] }} text-sm text-gray-900"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-gray-900">{{ $content->get("community-{$item['key']}-title") }}</h4>
+                                <p class="text-sm text-gray-800/60">{{ $content->get("community-{$item['key']}-text") }}</p>
+                            </div>
                         </div>
-                        <div>
-                            <h4 class="font-bold text-gray-900">{{ $content->firstWhere('slug', 'community-explore-title')->text }}</h4>
-                            <p class="text-gray-800/60">{{ $content->firstWhere('slug', 'community-explore-text')->text }}</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-4 items-start">
-                        <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
-                            <i class="fa-solid fa-comments text-lg text-gray-900"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-gray-900">{{ $content->firstWhere('slug', 'community-comment-title')->text }}</h4>
-                            <p class="text-gray-800/60">{{ $content->firstWhere('slug', 'community-comment-text')->text }}</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-4 items-start">
-                        <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
-                            <i class="fa-solid fa-face-smile text-lg text-gray-900"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-gray-900">{{ $content->firstWhere('slug', 'community-react-title')->text }}</h4>
-                            <p class="text-gray-800/60">{{ $content->firstWhere('slug', 'community-react-text')->text }}</p>
-                        </div>
-                    </div>
+                    @endforeach
                 </div>
             </div>
 

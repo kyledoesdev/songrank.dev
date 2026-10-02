@@ -67,6 +67,11 @@ class ReviewQueryBuilder extends Builder
         return $this->where('type', $type->value);
     }
 
+    public function publicPublishedCount(): int
+    {
+        return (int) (round($this->newQuery()->published()->public()->count() / 25) * 25);
+    }
+
     public function explorableCount(): int
     {
         return $this->newQuery()->public()->published()->count();

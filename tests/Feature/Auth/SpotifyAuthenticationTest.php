@@ -27,6 +27,32 @@ describe('redirecting to spotify', function () {
     });
 });
 
+describe('returning to where the user was headed', function () {
+    test('a guest upgrading to pro lands on the billing page after logging in', function () {
+        get(route('spotify.login', ['to' => 'billing']));
+
+        fakeSpotifyLogin(id: 'spotify-abc', email: 'new@example.com');
+
+        get(route('spotify.process_login'))->assertRedirect(route('billing'));
+    });
+
+    test('a guest stopped at a signed-in page is sent back to it', function () {
+        get(route('billing'))->assertRedirect(route('welcome'));
+
+        fakeSpotifyLogin(id: 'spotify-abc', email: 'new@example.com');
+
+        get(route('spotify.process_login'))->assertRedirect(route('billing'));
+    });
+
+    test('an unknown destination falls back to the dashboard', function () {
+        get(route('spotify.login', ['to' => 'https://evil.example.com']));
+
+        fakeSpotifyLogin(id: 'spotify-abc', email: 'new@example.com');
+
+        get(route('spotify.process_login'))->assertRedirect(route('dashboard'));
+    });
+});
+
 describe('failed callbacks', function () {
     test('an invalid oauth state sends the user back to the welcome page', function () {
         fakeSpotifyCallbackFailure(new InvalidStateException);
