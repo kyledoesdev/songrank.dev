@@ -67,18 +67,6 @@ class ReviewQueryBuilder extends Builder
         return $this->where('type', $type->value);
     }
 
-    public function highestRated(int $limit = 10): static
-    {
-        return $this->newQuery()
-            ->public()
-            ->published()
-            ->whereNotNull('stars')
-            ->with('user', 'subject')
-            ->orderByDesc('stars')
-            ->orderBy('published_at', 'desc')
-            ->limit($limit);
-    }
-
     public function explorableCount(): int
     {
         return $this->newQuery()->public()->published()->count();

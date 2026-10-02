@@ -39,7 +39,7 @@ class TierlistQueryBuilder extends Builder
     {
         return $this->newQuery()
             ->where('user_id', $user->getKey())
-            ->with('source')
+            ->with('user', 'source')
             ->withTopTier()
             ->withCount('items')
             ->orderByRaw('completed_at IS NULL DESC, completed_at DESC');

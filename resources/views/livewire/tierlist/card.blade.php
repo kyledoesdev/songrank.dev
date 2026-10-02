@@ -1,5 +1,5 @@
 <div
-    class="relative"
+    class="relative h-full"
     :key="'card-'.$tierlist->getKey()"
 >
     <x-tierlists.card :tierlist="$tierlist" />

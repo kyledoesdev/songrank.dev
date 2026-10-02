@@ -1,5 +1,5 @@
 <div
-    class="relative"
+    class="relative h-full"
     :key="'review-card-'.$review->getKey()"
 >
     <x-reviews.card :review="$review" />

@@ -1,6 +1,6 @@
 @props(['review'])
 
-<x-card class="cursor-pointer hover:shadow-lg transition-all duration-300 p-4" onclick="window.location.href='{{ route($review->is_published ? 'review' : 'review.edit', ['id' => $review->getKey()]) }}'">
+<x-card class="h-full cursor-pointer hover:shadow-lg transition-all duration-300 p-4" onclick="window.location.href='{{ route($review->is_published ? 'review' : 'review.edit', ['id' => $review->getKey()]) }}'">
     <div class="flex gap-4">
         <div class="shrink-0">
             <img

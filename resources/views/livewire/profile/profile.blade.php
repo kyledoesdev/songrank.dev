@@ -6,15 +6,18 @@
             {{-- Tab bar — only when both types have content --}}
             @if ($showTabs)
                 <div class="bg-white rounded-lg shadow-md p-2 flex gap-2 mb-4">
-                    <button
-                        class="px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors"
-                        :class="tab === 'rankings' ? 'bg-zinc-100 text-zinc-800' : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-50'"
-                        @click="tab = 'rankings'"
-                    >
-                        <i class="fa-solid fa-trophy mr-1"></i>
-                        Rankings
-                        <span class="ml-1 text-xs text-zinc-400">({{ $this->rankings->count() }})</span>
-                    </button>
+                    @if ($hasRankings)
+                        <button
+                            class="px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors"
+                            :class="tab === 'rankings' ? 'bg-zinc-100 text-zinc-800' : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-50'"
+                            @click="tab = 'rankings'"
+                        >
+                            <i class="fa-solid fa-trophy mr-1"></i>
+                            Rankings
+                            <span class="ml-1 text-xs text-zinc-400">({{ $this->rankings->count() }})</span>
+                        </button>
+                    @endif
+
                     @if ($hasTierlists)
                         <button
                             class="px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors"

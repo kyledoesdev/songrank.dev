@@ -1,5 +1,5 @@
 <div
-    class="relative"
+    class="relative h-full"
     :key="'card-'.$ranking->getKey()"
 >
     <x-rankings.card :ranking="$ranking" />
