@@ -32,7 +32,7 @@
         >
             <div class="flex items-center justify-between h-16 px-4 border-b">
                 <a href="{{ auth()->check() ? route('dashboard') : route('welcome') }}" class="flex items-center">
-                    <img src="/images/logo.png" alt="Song Rank Logo" class="h-8 w-8 rounded-lg" />
+                    <img src="{{ logo() }}" alt="{{ config('app.name') }} Logo" class="h-8 w-8 rounded-lg" />
                     <span class="text-sm font-medium text-zinc-800 ml-2">{{ config('app.name') }}</span>
                 </a>
                 <button x-on:click="sidebarOpen = false" class="text-gray-500 hover:text-gray-700">
@@ -60,14 +60,12 @@
                             Profile
                         </a>
                     @endif --}}
-                    @feature('songrank-pro')
-                        @if (Route::currentRouteName() != 'billing')
-                            <a href="{{ route('billing') }}" class="flex items-center px-3 py-2 text-sm font-medium text-zinc-800 rounded-md hover:bg-gray-100">
-                                <i class="fa fa-credit-card mr-3"></i>
-                                Billing
-                            </a>
-                        @endif
-                    @endfeature
+                    @if (Route::currentRouteName() != 'billing')
+                        <a href="{{ route('billing') }}" class="flex items-center px-3 py-2 text-sm font-medium text-zinc-800 rounded-md hover:bg-gray-100">
+                            <i class="fa fa-credit-card mr-3"></i>
+                            Billing
+                        </a>
+                    @endif
                     @if (Route::currentRouteName() != 'settings')
                         <a href="{{ route('settings') }}" class="flex items-center px-3 py-2 text-sm font-medium text-zinc-800 rounded-md hover:bg-gray-100">
                             <i class="fa fa-cog mr-3"></i>
@@ -99,7 +97,7 @@
                 <div class="flex items-center">
                     <a href="{{ auth()->check() ? route('dashboard') : route('welcome') }}" class="h-10 flex items-center me-4">
                         <div class="flex items-center justify-center h-8 rounded-sm overflow-hidden shrink-0">
-                            <img src="/images/logo.png" alt="Song Rank Logo" class="h-8 w-8 rounded-2xl" />
+                            <img src="{{ logo() }}" alt="{{ config('app.name') }} Logo" class="h-8 w-8 rounded-2xl" />
                         </div>
                     </a>
 
@@ -174,14 +172,12 @@
                                         Profile
                                     </a>
                                 @endif
-                                @feature('songrank-pro')
-                                    @if (Route::currentRouteName() != 'billing')
-                                        <a href="{{ route('billing') }}" class="flex items-center gap-2 w-full first-of-type:rounded-t-md last-of-type:rounded-b-md px-4 py-2.5 text-left text-sm hover:bg-gray-50 disabled:text-gray-500">
-                                            <i class="fa fa-solid fa-credit-card"></i>
-                                            Billing
-                                        </a>
-                                    @endif
-                                @endfeature
+                                @if (Route::currentRouteName() != 'billing')
+                                    <a href="{{ route('billing') }}" class="flex items-center gap-2 w-full first-of-type:rounded-t-md last-of-type:rounded-b-md px-4 py-2.5 text-left text-sm hover:bg-gray-50 disabled:text-gray-500">
+                                        <i class="fa fa-solid fa-credit-card"></i>
+                                        Billing
+                                    </a>
+                                @endif
                                 @if (Route::currentRouteName() != 'settings')
                                     <a href="{{ route('settings') }}" class="flex items-center gap-2 w-full first-of-type:rounded-t-md last-of-type:rounded-b-md px-4 py-2.5 text-left text-sm hover:bg-gray-50 disabled:text-gray-500">
                                         <i class="fa fa-solid fa-cog"></i>
@@ -212,7 +208,7 @@
             </button>
             
             <a href="{{ auth()->check() ? route('dashboard') : route('welcome') }}" class="flex items-center">
-                <img src="/images/logo.png" alt="Song Rank Logo" class="h-8 w-8 rounded-2xl" />
+                <img src="{{ logo() }}" alt="{{ config('app.name') }} Logo" class="h-8 w-8 rounded-2xl" />
                 <span class="text-sm font-medium text-zinc-800 ml-2">{{ config('app.name') }}</span>
             </a>
 

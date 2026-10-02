@@ -20,7 +20,7 @@ class RedirectIfAlreadyPro
         if (Auth::check() && Auth::user()->is_pro) {
             return redirect()
                 ->route('billing')
-                ->with('success', 'You already have Song Rank Pro.');
+                ->with('success', 'You already have '.config('app.name').' Pro.');
         }
 
         return $next($request);

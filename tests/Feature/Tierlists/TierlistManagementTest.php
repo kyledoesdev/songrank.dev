@@ -174,7 +174,7 @@ describe('board editing gating', function () {
         Livewire::actingAs($owner)
             ->test(EditTierlist::class, ['id' => $tierlist->getKey()])
             ->assertSee('Read-only')
-            ->assertSee('Upgrade to Song Rank Pro')
+            ->assertSee('Upgrade to '.config('app.name').' Pro')
             ->assertDontSeeLivewire('tierlist.tierlist-builder');
     });
 });

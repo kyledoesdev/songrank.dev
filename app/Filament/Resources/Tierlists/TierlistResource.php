@@ -45,7 +45,10 @@ class TierlistResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::Squares2x2;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Song Rank';
+    public static function getNavigationGroup(): string|UnitEnum|null
+    {
+        return config('app.name');
+    }
 
     public static function form(Schema $schema): Schema
     {

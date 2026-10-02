@@ -38,7 +38,10 @@ class RankingResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::ListBullet;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Song Rank';
+    public static function getNavigationGroup(): string|UnitEnum|null
+    {
+        return config('app.name');
+    }
 
     public static function form(Schema $schema): Schema
     {

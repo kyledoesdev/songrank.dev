@@ -43,18 +43,18 @@
     @if ($this->hasAnything())
         <div x-show="tab === 'in-progress'" class="p-4">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" x-auto-animate>
-                @foreach ($this->rankings as $ranking)
-                    <livewire:ranking.card :ranking="$ranking" :key="'ranking-card-'.$ranking->getKey()" />
-                @endforeach
+                @foreach ($this->items as $item)
+                    @php [$card, $props] = $this->card($item); @endphp
 
-                @foreach ($this->tierlists as $tierlist)
-                    <livewire:tierlist.card :tierlist="$tierlist" :key="'tierlist-card-'.$tierlist->getKey()" />
-                @endforeach
-
-                @foreach ($this->reviews as $review)
-                    <livewire:reviews.card :review="$review" :key="'review-card-'.$review->getKey()" />
+                    @livewire($card, $props, key($card.'-'.$item->getKey()))
                 @endforeach
             </div>
         </div>
+
+        @if ($this->items->hasPages())
+            <x-card.footer x-show="tab === 'in-progress'">
+                {{ $this->items->links('pagination.minimal') }}
+            </x-card.footer>
+        @endif
     @endif
 </x-card>

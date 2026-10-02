@@ -33,7 +33,7 @@
 
         <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
             <p style="margin: 0 0 16px 0; color: #374151;">
-                Thanks for using Song Rank!<br>
+                Thanks for using {{ config('app.name') }}!<br>
                 {{ config('app.name') }}
             </p>
             

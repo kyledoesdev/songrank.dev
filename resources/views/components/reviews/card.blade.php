@@ -36,7 +36,7 @@
                 <i class="fa-regular fa-clock mr-0.5"></i>
                 {{ $review->published_at }}
 
-                @if (($review->comments_count ?? 0) > 0)
+                @if ($review->comments_count > 0)
                     <span class="text-zinc-300 mx-1">|</span>
                     <i class="fa-regular fa-comment mr-0.5"></i>
                     {{ $review->comments_count }}

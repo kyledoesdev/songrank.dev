@@ -5,7 +5,6 @@ use App\Jobs\DeleteUserJob;
 use App\Livewire\Billing\Billing;
 use App\Models\ProLicense;
 use App\Models\User;
-use Laravel\Pennant\Feature;
 use Livewire\Livewire;
 
 use function Pest\Laravel\assertDatabaseHas;
@@ -74,16 +73,12 @@ describe('deleting a Pro account', function () {
 
 describe('the settings warning', function () {
     it('tells a Pro user their licence goes with the account', function () {
-        Feature::define('songrank-pro', true);
-
         Livewire::actingAs(proUser())
             ->test(Billing::class)
             ->assertSee('Deleting your account ends it');
     });
 
     it('says nothing of the sort to a free user', function () {
-        Feature::define('songrank-pro', true);
-
         Livewire::actingAs(User::factory()->createOne())
             ->test(Billing::class)
             ->assertDontSee('Deleting your account ends it');

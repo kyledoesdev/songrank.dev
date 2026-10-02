@@ -5,7 +5,6 @@ use App\Livewire\SongRank\Setup\PlaylistSetup;
 use App\Livewire\SongRank\Setup\ShowSetup;
 use App\Models\Ranking;
 use App\Models\User;
-use Laravel\Pennant\Feature;
 use Livewire\Livewire;
 
 describe('the ranking allowance', function () {
@@ -57,7 +56,6 @@ describe('the ranking allowance', function () {
 
 describe('the setup screen at the limit', function () {
     beforeEach(function () {
-        Feature::define('songrank-pro', true);
         config()->set('billing.ranking_limits.free', 2);
     });
 
@@ -95,20 +93,10 @@ describe('the setup screen at the limit', function () {
                 ->assertSee('Go Pro');
         }
     });
-
-    it('does not block anyone while the feature is inactive', function () {
-        Feature::define('songrank-pro', false);
-
-        Livewire::actingAs(userWithRankings(50))
-            ->test(ArtistSetup::class)
-            ->assertSee('Choose a ranking type to get started')
-            ->assertDontSee('Go Pro');
-    });
 });
 
 describe('the search guard', function () {
     beforeEach(function () {
-        Feature::define('songrank-pro', true);
         config()->set('billing.ranking_limits.free', 2);
     });
 

@@ -2,18 +2,12 @@
 
 use App\Livewire\Reviews\ReviewPanel;
 use App\Models\Review;
-use App\Models\User;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 
 describe('the panel on the dashboard', function () {
-    it('stays off the dashboard while the feature is off', function () {
-        actingAs(User::factory()->createOne());
-
-        get(route('dashboard'))->assertDontSee('Say what you actually thought');
-    });
 
     it('appears for somebody the feature is on for, offering every type', function () {
         actingAs(kyle());
@@ -27,14 +21,14 @@ describe('the panel on the dashboard', function () {
 });
 
 describe('what the panel offers', function () {
-    it('counts what has been written and what is left', function () {
+    it('counts what has been used against the limit', function () {
         $user = kyle();
         Review::factory()->for($user)->count(2)->create();
 
         Livewire::actingAs($user)
             ->test(ReviewPanel::class)
-            ->assertSee('2 written')
-            ->assertSee('3 left');
+            ->assertSee('2 / 5 used')
+            ->assertDontSee('go Pro for more');
     });
 
     it('sends a spent allowance to billing instead of to setup', function () {
@@ -44,12 +38,14 @@ describe('what the panel offers', function () {
             ->test(ReviewPanel::class)
             ->assertDontSee(route('reviews.create', ['type' => 'album']), escape: false)
             ->assertSee(route('billing'), escape: false)
-            ->assertSee('0 left');
+            ->assertSee('5 / 5 used')
+            ->assertSee('go Pro for more');
     });
 
     it('says unlimited for a pro account', function () {
         Livewire::actingAs(proUser(['is_dev' => true]))
             ->test(ReviewPanel::class)
-            ->assertSee('unlimited left');
+            ->assertSee('Unlimited reviews')
+            ->assertDontSee('used');
     });
 });

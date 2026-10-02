@@ -138,7 +138,7 @@
                             class="bg-zinc-800 text-white text-xs rounded-lg px-3 py-2 shadow-lg"
                         >
                             <i class="fa fa-solid fa-lock mr-1"></i>
-                            Upgrade to Song Rank Pro to edit your completed tier list
+                            Upgrade to {{ config('app.name') }} Pro to edit your completed tier list
                         </div>
                     </div>
                 </div>

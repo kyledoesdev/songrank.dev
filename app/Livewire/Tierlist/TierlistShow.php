@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Tierlist;
 
+use App\Actions\Tierlists\ApplyTierlistShareTags;
 use App\Models\Tierlist;
 use Laravel\Head\Facades\Head;
 use Livewire\Component;
@@ -22,6 +23,10 @@ class TierlistShow extends Component
         }
 
         Head::title($this->tierlist->name);
+
+        if ($this->tierlist->is_public && $this->tierlist->is_complete) {
+            (new ApplyTierlistShareTags)->handle($this->tierlist);
+        }
     }
 
     public function render()

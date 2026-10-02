@@ -42,6 +42,11 @@ class Album extends Model implements SpotifyEntity
         return $this->morphMany(TierlistItem::class, 'entryable');
     }
 
+    public function reviews(): MorphMany
+    {
+        return $this->morphMany(Review::class, 'subject');
+    }
+
     /* Contracts */
 
     public function cover(): ?string

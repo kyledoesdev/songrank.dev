@@ -3,10 +3,7 @@
 use App\Livewire\Billing\Billing;
 use App\Models\ProLicense;
 use App\Models\User;
-use Laravel\Pennant\Feature;
 use Livewire\Livewire;
-
-beforeEach(fn () => Feature::define('songrank-pro', true));
 
 describe('the free plan view', function () {
     it('shows what the plan is called and how to upgrade', function () {
@@ -36,14 +33,14 @@ describe('the Pro view', function () {
     it('names the plan and drops the upgrade call to action', function () {
         Livewire::actingAs(proUser())
             ->test(Billing::class)
-            ->assertSee('Song Rank Pro')
+            ->assertSee(config('app.name').' Pro')
             ->assertDontSee('Go Pro');
     });
 
     it('thanks the buyer rather than listing entitlements', function () {
         Livewire::actingAs(proUser())
             ->test(Billing::class)
-            ->assertSee('Thanks for supporting SongRank')
+            ->assertSee('Thanks for supporting '.config('app.name'))
             ->assertDontSee('of 100');
     });
 

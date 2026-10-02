@@ -23,6 +23,6 @@ class EnsureUserIsPro
 
         return redirect()
             ->route('billing')
-            ->with('success', 'That feature is part of Song Rank Pro.');
+            ->with('success', 'That feature is part of '.config('app.name').' Pro.');
     }
 }

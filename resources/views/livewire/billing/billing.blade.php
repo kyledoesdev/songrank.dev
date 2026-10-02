@@ -7,7 +7,7 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <h4 class="text-lg font-semibold text-slate-900">
-                            {{ Auth::user()->is_pro ? 'Song Rank Pro' : 'Free Plan' }}
+                            {{ Auth::user()->is_pro ? config('app.name').' Pro' : 'Free Plan' }}
                         </h4>
 
                         @if (Auth::user()->is_pro)
@@ -20,7 +20,7 @@
 
                     <p class="text-sm text-slate-600 mt-1">
                         @if (Auth::user()->is_pro)
-                            Thanks for supporting SongRank. Everything we build for Pro is included on this license.
+                            Thanks for supporting {{ config('app.name') }}. Everything we build for Pro is included on this license.
                         @endif
                     </p>
 

@@ -18,4 +18,14 @@ class AlbumQueryBuilder extends Builder
     {
         return (int) (round($this->newQuery()->tierlisted()->distinct('album_id')->count() / 25) * 25);
     }
+
+    public function topReviewed(int $limit = 10): static
+    {
+        return $this->newQuery()
+            ->whereHas('reviews', fn (Builder $query) => $query->public()->published())
+            ->withCount(['reviews' => fn (Builder $query) => $query->public()->published()])
+            ->orderByDesc('reviews_count')
+            ->orderBy('name')
+            ->limit($limit);
+    }
 }

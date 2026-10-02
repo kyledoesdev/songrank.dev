@@ -3,7 +3,6 @@
 use App\Enums\Billing\ProLicenseStatus;
 use App\Models\ProLicense;
 use App\Models\User;
-use Laravel\Pennant\Feature;
 use Stripe\Checkout\Session;
 use Stripe\Customer;
 use Stripe\StripeClient;
@@ -13,7 +12,6 @@ use function Pest\Laravel\assertDatabaseCount;
 use function Pest\Laravel\post;
 
 beforeEach(function () {
-    Feature::define('songrank-pro', true);
     config()->set('billing.pro.price_id', 'price_test_pro');
     config()->set('cashier.secret', config('cashier.secret') ?: 'sk_test_dummy');
 });
@@ -128,7 +126,7 @@ describe('returning from Stripe', function () {
         actingAs($user)
             ->get(route('billing.success', ['session_id' => 'cs_test_songrank']))
             ->assertRedirect(route('billing'))
-            ->assertSessionHas('success', 'Welcome to Song Rank Pro!');
+            ->assertSessionHas('success', 'Welcome to '.config('app.name').' Pro!');
 
         expect($license->fresh()->status)->toBe(ProLicenseStatus::ACTIVE)
             ->and($user->fresh()->is_pro)->toBeTrue();

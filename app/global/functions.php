@@ -22,6 +22,11 @@ function random_artist(): string
     );
 }
 
+function logo(): string
+{
+    return asset(auth()->user()?->is_pro ? 'images/pro-logo.png' : 'images/logo.png');
+}
+
 function short_number(int $number): string
 {
     return match (true) {

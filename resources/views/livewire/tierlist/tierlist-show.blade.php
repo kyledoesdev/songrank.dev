@@ -15,6 +15,14 @@
                 </div>
 
                 <div class="flex items-center shrink-0">
+                    @if ($tierlist->is_public)
+                        <x-share-buttons
+                            :url="route('tierlist', ['id' => $tierlist->getKey()])"
+                            :text="$tierlist->shareText()"
+                            :embed="$tierlist->embedCode()"
+                        />
+                    @endif
+
                     @if (auth()->id() === $tierlist->user_id)
                         <a href="{{ route('tierlist.edit', ['id' => $tierlist->getKey()]) }}" class="btn-secondary my-0 px-2 py-1" title="Edit">
                             <i class="fa fa-solid fa-pencil text-sm"></i>
@@ -83,7 +91,7 @@
                 @endforeach
             </div>
 
-            @if ($tierlist->bank?->items->isNotEmpty())
+            @if ($tierlist->bank->items->isNotEmpty())
                 <div class="mt-4 rounded-lg border border-zinc-200 overflow-hidden">
                     <div class="px-4 py-2 bg-gray-50 border-b border-zinc-200">
                         <h4 class="font-semibold text-gray-800 text-sm">

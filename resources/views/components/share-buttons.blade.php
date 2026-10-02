@@ -1,15 +1,10 @@
 @use('App\Enums\ShareTarget')
 
-@props(['review'])
-
-@php
-    $url = route('review', ['id' => $review->getKey()]);
-    $text = $review->shareText();
-@endphp
+@props(['url', 'text', 'embed' => null])
 
 <div
     {{ $attributes->class(['relative']) }}
-    x-data="{ open: false, copied: false }"
+    x-data="{ open: false, copied: false, embedCopied: false }"
     @click.outside="open = false"
     @keydown.escape.window="open = false"
 >
@@ -45,5 +40,17 @@
             <i class="fa-solid fa-check w-4 text-center text-green-500" style="display: none" x-show="copied"></i>
             <span x-text="copied ? 'Link copied' : 'Copy link'">Copy link</span>
         </button>
+
+        @if ($embed)
+            <button
+                type="button"
+                class="flex w-full items-center gap-2 px-3 py-2 text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                @click="navigator.clipboard.writeText(@js($embed)).then(() => { embedCopied = true; setTimeout(() => { embedCopied = false; open = false }, 1200) })"
+            >
+                <i class="fa-solid fa-code w-4 text-center" x-show="! embedCopied"></i>
+                <i class="fa-solid fa-check w-4 text-center text-green-500" style="display: none" x-show="embedCopied"></i>
+                <span x-text="embedCopied ? 'Embed copied' : 'Copy embed code'">Copy embed code</span>
+            </button>
+        @endif
     </div>
 </div>

@@ -39,7 +39,7 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 NavigationGroup::make('Billing')
                     ->collapsible(),
-                NavigationGroup::make('Song Rank')
+                NavigationGroup::make(config('app.name'))
                     ->collapsible(),
                 NavigationGroup::make('Spotify Entities')
                     ->collapsible(),

@@ -43,12 +43,12 @@ class ProPurchaseReceipt extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => 'Welcome to Song Rank Pro! Your license is active.',
+            'message' => 'Welcome to '.config('app.name').' Pro! Your license is active.',
             'url' => route('billing'),
             'entity' => [
                 'type' => 'pro_license',
                 'uuid' => $this->license->uuid,
-                'name' => 'Song Rank Pro',
+                'name' => config('app.name').' Pro',
             ],
         ];
     }

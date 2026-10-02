@@ -6,7 +6,6 @@ use App\Livewire\Concerns\InteractsWithAlerts;
 use App\Livewire\Forms\RankingForm;
 use App\Models\Ranking;
 use Illuminate\Support\Facades\Auth;
-use Laravel\Pennant\Feature;
 
 trait HasRankingForm
 {
@@ -52,10 +51,6 @@ trait HasRankingForm
 
     public function rankingLimitReached(): bool
     {
-        if (Feature::inactive('songrank-pro')) {
-            return false;
-        }
-
         return ! Auth::user()->canCreateRanking();
     }
 

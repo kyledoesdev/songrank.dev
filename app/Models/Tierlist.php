@@ -121,7 +121,7 @@ class Tierlist extends Model
 
     public function bankIsEmpty(): bool
     {
-        return $this->bank?->items->isEmpty() ?? true;
+        return $this->bank->items->isEmpty();
     }
 
     /**
@@ -136,6 +136,62 @@ class Tierlist extends Model
         return $this->placementTiers()
             ->flatMap(fn (Tier $tier) => $tier->items->sortBy('position'))
             ->values();
+    }
+
+    /**
+     * The top tier's entries, the part of a board people are actually sharing.
+     *
+     * @return Collection<int, TierlistItem>
+     */
+    public function topTierItems(): Collection
+    {
+        return $this->placementTiers()
+            ->first(fn (Tier $tier) => $tier->items->isNotEmpty())
+            ->items
+            ->sortBy('position')
+            ->values();
+    }
+
+    public function shareCover(): ?string
+    {
+        return $this->topTierItems()->first()->entryable->cover();
+    }
+
+    public function shareDescription(): string
+    {
+        $names = $this->topTierItems()
+            ->take(3)
+            ->map(fn (TierlistItem $item) => $item->entryable->name())
+            ->join(', ');
+
+        return "Top tier: {$names}. A tier list by {$this->type->label()} from {$this->user->name} on ".config('app.name');
+    }
+
+    /**
+     * The sentence a share button pre-fills. Networks append the link.
+     */
+    public function shareText(): string
+    {
+        return "{$this->name} — my tier list by {$this->type->label()} on ".config('app.name');
+    }
+
+    /**
+     * The snippet another site pastes in. The link under the frame is plain
+     * markup on their page, so it counts as a link to the list where the
+     * iframe's own links do not.
+     */
+    public function embedCode(): string
+    {
+        $embedUrl = route('tierlist.embed', ['id' => $this->getKey()]);
+        $listUrl = route('tierlist', ['id' => $this->getKey()]);
+        $name = e($this->name);
+        $appName = e(config('app.name'));
+        $appUrl = config('app.url');
+
+        return <<<HTML
+            <iframe src="{$embedUrl}" title="{$name}" width="100%" height="220" style="border:0;border-radius:12px;max-width:560px" loading="lazy"></iframe>
+            <p style="font-size:12px;margin:4px 0 0"><a href="{$listUrl}">{$name}</a> &middot; a tier list on <a href="{$appUrl}">{$appName}</a></p>
+            HTML;
     }
 
     public function canBeEdited(): bool

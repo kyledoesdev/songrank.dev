@@ -5,12 +5,12 @@
         {{-- Cover + Spotify Logo --}}
         <div class="shrink-0">
             <img
-                src="{{ $ranking->source?->cover() }}"
+                src="{{ $ranking->source->cover() }}"
                 class="w-24 h-24 sm:w-28 sm:h-28 rounded-xl border border-zinc-200 object-cover shadow-sm"
-                alt="{{ $ranking->source?->name() }}"
+                alt="{{ $ranking->source->name() }}"
             >
             <div class="mt-2 relative z-10">
-                <x-spotify-logo :url="$ranking->source?->spotifyUrl()" />
+                <x-spotify-logo :url="$ranking->source->spotifyUrl()" />
             </div>
         </div>
 
@@ -29,7 +29,7 @@
 
             {{-- Source Name --}}
             <p class="text-sm text-zinc-500 mb-3 truncate">
-                {{ $ranking->source?->name() }}
+                {{ $ranking->source->name() }}
             </p>
 
             {{-- Stats Pills --}}
@@ -37,7 +37,7 @@
                 {{-- Top Song --}}
                 <span class="inline-flex items-center gap-1.5 text-xs bg-zinc-100 text-zinc-600 px-2.5 py-1 rounded-lg">
                     <i class="fa-regular fa-star text-amber-500"></i>
-                    {{ $ranking->is_ranked ? Str::limit($ranking->songs->first()?->title, 20) : 'N/A' }}
+                    {{ $ranking->is_ranked ? Str::limit($ranking->songs->first()->title, 20) : 'N/A' }}
                 </span>
 
                 {{-- Track Count --}}

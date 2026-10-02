@@ -152,7 +152,7 @@ class TierlistBuilder extends Component
     {
         $message = auth()->user()->is_pro
             ? "You can come back and rearrange it whenever you like — publishing just means it's finished enough to share."
-            : "Once published, only Song Rank Pro members can rearrange a finalized tier list.";
+            : 'Once published, only '.config('app.name').' Pro members can rearrange a finalized tier list.';
 
         $this->confirmAction(
             action: 'finish',

@@ -10,10 +10,6 @@ class Reviews
 {
     public function resolve(?User $user): bool
     {
-        if (is_null($user)) {
-            return false;
-        }
-
-        return $user->is_dev;
+        return ! is_null($user);
     }
 }

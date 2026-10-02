@@ -7,7 +7,6 @@ use App\Livewire\Tierlist\Setup\TrackSetup;
 use App\Livewire\Tierlist\TierlistSetup;
 use App\Models\Artist;
 use App\Models\Tierlist;
-use App\Models\User;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
@@ -34,11 +33,6 @@ describe('following a type link', function () {
 });
 
 describe('reaching the page', function () {
-    it('is not there at all while the feature is off', function () {
-        actingAs(User::factory()->createOne());
-
-        get(route('tierlists.create'))->assertNotFound();
-    });
 
     it('opens for somebody the feature is on for', function () {
         actingAs(kyle());

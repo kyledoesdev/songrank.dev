@@ -37,7 +37,7 @@
             </div>
 
             <div class="rounded-2xl border border-white/10 shadow-xl overflow-hidden">
-                <img src="{{ asset('images/ranking.gif') }}" alt="SongRank ranking demo" class="w-full h-auto">
+                <img src="{{ asset('images/ranking.gif') }}" alt="{{ config('app.name') }} ranking demo" class="w-full h-auto">
             </div>
         </div>
     </div>

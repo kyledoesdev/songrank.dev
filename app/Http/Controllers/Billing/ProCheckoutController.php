@@ -63,7 +63,7 @@ class ProCheckoutController extends Controller
 
         return redirect()
             ->route('billing')
-            ->with('success', 'Welcome to Song Rank Pro!');
+            ->with('success', 'Welcome to '.config('app.name').' Pro!');
     }
 
     /**

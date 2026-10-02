@@ -7,8 +7,11 @@ use App\Enums\TierlistType;
 use App\Models\Artist;
 use App\Models\Playlist;
 use App\Models\Tierlist;
+use App\Models\TierlistItem;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\Sequence;
+use Illuminate\Database\Eloquent\Relations\Relation;
 
 /**
  * @extends Factory<Tierlist>
@@ -53,12 +56,28 @@ class TierlistFactory extends Factory
 
     /* States */
 
+    /**
+     * A finished board always holds at least two placed entries: setup will not
+     * start a list with fewer, and it cannot be finished with any left unplaced.
+     * They go in the bottom tier so a test's own picks still lead the board.
+     */
     public function complete(): static
     {
         return $this->state([
             'is_complete' => true,
             'completed_at' => now(),
-        ]);
+        ])->afterCreating(function (Tierlist $tierlist) {
+            $bottomTier = $tierlist->tiers()->reorder('position', 'desc')->first();
+
+            TierlistItem::factory()
+                ->count(2)
+                ->inTier($bottomTier)
+                ->sequence(fn (Sequence $sequence) => ['position' => $sequence->index])
+                ->create([
+                    'entryable_type' => $tierlist->type->value,
+                    'entryable_id' => Relation::getMorphedModel($tierlist->type->value)::factory(),
+                ]);
+        });
     }
 
     public function public(): static

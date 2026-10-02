@@ -26,9 +26,12 @@ class CommentResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Song Rank';
-
     protected static ?string $recordTitleAttribute = 'id';
+
+    public static function getNavigationGroup(): string|UnitEnum|null
+    {
+        return config('app.name');
+    }
 
     /** Edit only. Comments are never created here: there is no create page or action. */
     public static function form(Schema $schema): Schema

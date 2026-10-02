@@ -50,7 +50,7 @@ describe('the explore feed', function () {
         $tierlist = publicCompletedTierlist();
         TierlistItem::factory()->count(3)->inTier($tierlist->bank)->create();
 
-        expect(Tierlist::query()->forExplorePage()->first()->items_count)->toBe(3);
+        expect(Tierlist::query()->forExplorePage()->first()->items_count)->toBe(5);
     });
 
     it('reports how many lists are explorable', function () {

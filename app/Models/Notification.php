@@ -46,7 +46,7 @@ class Notification extends DatabaseNotification
     {
         return match ($this->type) {
             NewCommentOnRanking::class => ($this->user_name ?? 'Someone').' commented on '.($this->entity['name'] ?? 'your ranking'),
-            ProPurchaseReceipt::class => $this->message ?? 'Welcome to Song Rank Pro!',
+            ProPurchaseReceipt::class => $this->message ?? 'Welcome to '.config('app.name').' Pro!',
             default => 'You have a new notification',
         };
     }

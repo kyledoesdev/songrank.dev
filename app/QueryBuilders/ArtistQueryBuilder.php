@@ -41,4 +41,14 @@ class ArtistQueryBuilder extends Builder
             ->orderBy('artists.artist_name', 'asc')
             ->limit($limit);
     }
+
+    public function topReviewed(int $limit = 10): static
+    {
+        return $this->newQuery()
+            ->whereHas('reviews', fn (Builder $query) => $query->public()->published())
+            ->withCount(['reviews' => fn (Builder $query) => $query->public()->published()])
+            ->orderByDesc('reviews_count')
+            ->orderBy('artist_name')
+            ->limit($limit);
+    }
 }

@@ -8,7 +8,6 @@ use App\Filament\Resources\Shows\Pages\ViewShow;
 use App\Filament\Resources\Shows\RelationManagers\RankingsRelationManager;
 use App\Models\Show;
 use BackedEnum;
-use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
@@ -98,7 +97,6 @@ class ShowResource extends Resource
             ->filters([])
             ->recordActions([
                 ViewAction::make(),
-                DeleteAction::make(),
             ])
             ->toolbarActions([]);
     }

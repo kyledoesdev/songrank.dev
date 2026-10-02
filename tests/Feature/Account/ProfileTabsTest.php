@@ -122,18 +122,6 @@ describe('profile tabs', function () {
             ->assertSee('Complete List')
             ->assertSee('My WIP List');
     });
-
-    test('tier list tab is hidden when the feature flag is inactive', function () {
-        $owner = User::factory()->createOne();
-
-        publicCompletedRanking(attributes: ['user_id' => $owner->getKey()]);
-        publicCompletedTierlist(['user_id' => $owner->getKey()]);
-
-        actingAs($owner)
-            ->get(route('profile', ['id' => $owner->spotify_id]))
-            ->assertOk()
-            ->assertDontSee('Tier Lists');
-    });
 });
 
 describe('the reviews tab', function () {
@@ -189,18 +177,6 @@ describe('the reviews tab', function () {
             ->get(route('profile', ['id' => $owner->spotify_id]))
             ->assertOk()
             ->assertSeeInOrder(['Reviews', '2']);
-    });
-
-    test('is hidden when the feature flag is inactive', function () {
-        $owner = User::factory()->createOne();
-
-        publicPublishedReview(['user_id' => $owner->getKey(), 'name' => 'Out In The Open']);
-
-        actingAs($owner)
-            ->get(route('profile', ['id' => $owner->spotify_id]))
-            ->assertOk()
-            ->assertDontSee('Out In The Open')
-            ->assertDontSee("tab = 'reviews'", escape: false);
     });
 
     test('owner sees the edit and delete buttons on their review cards', function () {

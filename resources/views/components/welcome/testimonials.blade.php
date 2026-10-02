@@ -17,7 +17,7 @@
                             <p class="text-xs text-gray-800/50">@username</p>
                         </div>
                     </div>
-                    <p class="text-gray-800/60 italic">"This is a placeholder for a future testimonial from a real SongRank user."</p>
+                    <p class="text-gray-800/60 italic">"This is a placeholder for a future testimonial from a real {{ config('app.name') }} user."</p>
                 </div>
             @endfor
         </div>

@@ -2,7 +2,6 @@
 
 use App\Livewire\Dashboard\InProgress;
 use App\Models\Review;
-use App\Models\User;
 use Livewire\Livewire;
 
 describe('getting back to a draft', function () {
@@ -31,14 +30,5 @@ describe('getting back to a draft', function () {
         Livewire::actingAs(kyle())
             ->test(InProgress::class)
             ->assertDontSee('Somebody Elses');
-    });
-
-    it('leaves drafts out while the feature is off', function () {
-        $user = User::factory()->createOne();
-        Review::factory()->for($user)->createOne(['name' => 'Half Written']);
-
-        Livewire::actingAs($user)
-            ->test(InProgress::class)
-            ->assertDontSee('Half Written');
     });
 });

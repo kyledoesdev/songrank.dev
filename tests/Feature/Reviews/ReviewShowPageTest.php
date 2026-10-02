@@ -46,18 +46,10 @@ describe('who can see a review', function () {
             ->assertNotFound();
     });
 
-    it('is not there while the feature is off', function () {
+    it('opens for guests once it is public and published', function () {
         $review = publicPublishedReview();
 
-        actingAs(User::factory()->createOne())
-            ->get(route('review', ['id' => $review->getKey()]))
-            ->assertNotFound();
-    });
-
-    it('is not there for guests while the feature is dev only', function () {
-        $review = publicPublishedReview();
-
-        get(route('review', ['id' => $review->getKey()]))->assertNotFound();
+        get(route('review', ['id' => $review->getKey()]))->assertOk();
     });
 });
 
@@ -137,7 +129,7 @@ describe('sharing', function () {
 
         actingAs(kyle())
             ->get(route('review', ['id' => $review->getKey()]))
-            ->assertSee("Album review by {$review->user->name} on Song Rank");
+            ->assertSee("Album review by {$review->user->name} on ".config('app.name'));
     });
 
     it('offers a link to post on each network', function () {
@@ -150,7 +142,7 @@ describe('sharing', function () {
             $response->assertSee($target->intentUrl($review->shareText(), $url));
         }
 
-        expect($review->shareText())->toBe('Currents — 8.5/10 — my album review on Song Rank');
+        expect($review->shareText())->toBe('Currents — 8.5/10 — my album review on '.config('app.name'));
     });
 
     it('gives a private review only the site\'s default preview and no share buttons', function () {

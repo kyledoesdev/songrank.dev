@@ -3,18 +3,12 @@
 use App\Enums\TierlistType;
 use App\Livewire\Tierlist\TierlistPanel;
 use App\Models\Tierlist;
-use App\Models\User;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 
 describe('the panel on the dashboard', function () {
-    it('stays off the dashboard while the feature is off', function () {
-        actingAs(User::factory()->createOne());
-
-        get(route('dashboard'))->assertDontSee('Tier Lists');
-    });
 
     it('appears for somebody the feature is on for, offering every type', function () {
         actingAs(kyle());

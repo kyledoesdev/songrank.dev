@@ -18,6 +18,6 @@ View your billing details
     Your invoice is on your billing page, and Stripe has emailed you a payment receipt separately.
 </p>
 
-Thanks for supporting SongRank!<br>
+Thanks for supporting {{ config('app.name') }}!<br>
 {{ config('app.name') }}
 @endcomponent

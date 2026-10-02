@@ -5,7 +5,6 @@ use App\Livewire\Explorer\ReviewsFeed;
 use App\Livewire\Explorer\TierlistsFeed;
 use App\Models\Review;
 use App\Models\Tierlist;
-use App\Models\User;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
@@ -36,23 +35,6 @@ describe('explore tabs', function () {
             ->assertOk()
             ->assertSee("tab = 'reviews'", escape: false)
             ->assertSeeLivewire(ReviewsFeed::class);
-    });
-
-    test('reviews tab is hidden when feature flag is inactive', function () {
-        actingAs(User::factory()->createOne())
-            ->get(route('explore'))
-            ->assertOk()
-            ->assertDontSee("tab = 'reviews'", escape: false)
-            ->assertDontSeeLivewire(ReviewsFeed::class);
-    });
-
-    test('tier lists tab is hidden when feature flag is inactive', function () {
-        $user = User::factory()->createOne();
-
-        actingAs($user)
-            ->get(route('explore'))
-            ->assertOk()
-            ->assertDontSee("tab = 'tierlists'", escape: false);
     });
 });
 

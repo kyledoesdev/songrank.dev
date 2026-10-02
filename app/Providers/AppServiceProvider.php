@@ -26,7 +26,6 @@ use Laravel\Head\Enums\TwitterCard;
 use Laravel\Head\Facades\Head;
 use Laravel\Head\HeadBuilder;
 use Laravel\Pennant\Feature;
-use Laravel\Pennant\Middleware\EnsureFeaturesAreActive;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use SocialiteProviders\Spotify\Provider;
 use Spatie\Health\Checks\Checks\DatabaseCheck;
@@ -79,11 +78,6 @@ class AppServiceProvider extends ServiceProvider
     private function configureFeatures(): void
     {
         Feature::discover();
-
-        /* Unreleased features should look absent, not forbidden. */
-        EnsureFeaturesAreActive::whenInactive(
-            fn () => abort(404)
-        );
     }
 
     private function configureBilling(): void

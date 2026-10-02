@@ -39,9 +39,14 @@
 
     <x-card.footer>
         <p class="text-xs text-zinc-500">
-            {{ $this->count }} written
-            <span class="text-zinc-300 mx-1">|</span>
-            {{ $this->remaining() ?? 'unlimited' }} left
+            @if (is_null(auth()->user()->reviewLimit()))
+                Unlimited reviews
+            @else
+                {{ $this->count }} / {{ auth()->user()->reviewLimit() }} used
+                @unless (auth()->user()->canCreateReview())
+                    &mdash; <a href="{{ route('billing') }}" class="text-purple-600 hover:underline">go Pro for more</a>
+                @endunless
+            @endif
         </p>
     </x-card.footer>
 </x-card>

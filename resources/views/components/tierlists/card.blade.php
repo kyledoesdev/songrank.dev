@@ -1,38 +1,12 @@
 @props(['tierlist'])
 
 @php
-    $tiers = $tierlist->tiers;
-    $topItem = $tiers->first()?->items->first();
+    $topItem = $tierlist->tiers->first()->items->first();
 @endphp
 
 <x-card class="h-full cursor-pointer hover:shadow-lg transition-all duration-300 p-4" onclick="window.location.href='{{ route('tierlist', ['id' => $tierlist->getKey()]) }}'">
     <div class="flex gap-4">
-        {{-- Mini board preview --}}
-        <div class="shrink-0 w-28 sm:w-32 flex flex-col gap-0.5">
-            @forelse ($tiers as $tier)
-                <div class="flex items-stretch rounded overflow-hidden">
-                    <div
-                        class="w-5 shrink-0 flex items-center justify-center text-[8px] font-bold text-zinc-800"
-                        style="background-color: {{ $tier->color }}"
-                    >
-                        {{ Str::limit($tier->name, 2, '') }}
-                    </div>
-                    <div class="flex-1 flex gap-px bg-zinc-100 min-h-5">
-                        @foreach ($tier->items->take(5) as $item)
-                            <img
-                                src="{{ $item->entryable?->cover() }}"
-                                class="w-5 h-5 object-cover"
-                                alt="{{ $item->entryable?->name() }}"
-                            >
-                        @endforeach
-                    </div>
-                </div>
-            @empty
-                <div class="w-full h-24 rounded bg-zinc-100 flex items-center justify-center">
-                    <i class="fa-solid {{ $tierlist->type->icon() }} text-zinc-300 text-lg"></i>
-                </div>
-            @endforelse
-        </div>
+        <x-tierlists.mini-board :tierlist="$tierlist" class="shrink-0 w-28 sm:w-32" />
 
         {{-- Content --}}
         <div class="flex-1 min-w-0">
@@ -52,7 +26,7 @@
                 @if ($topItem)
                     <span class="inline-flex items-center gap-1.5 text-xs bg-zinc-100 text-zinc-600 px-2 py-1 rounded">
                         <i class="fa-regular fa-star text-amber-500"></i>
-                        {{ Str::limit($topItem->entryable?->name(), 20) }}
+                        {{ Str::limit($topItem->entryable->name(), 20) }}
                     </span>
                 @endif
 

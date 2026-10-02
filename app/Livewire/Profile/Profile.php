@@ -9,7 +9,6 @@ use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Laravel\Head\Facades\Head;
-use Laravel\Pennant\Feature;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -62,10 +61,6 @@ class Profile extends Component
     #[On('reviews-updated')]
     public function reviews(): Collection
     {
-        if (Feature::inactive('reviews')) {
-            return collect();
-        }
-
         return Review::query()
             ->forProfilePage($this->user)
             ->get();
@@ -75,10 +70,6 @@ class Profile extends Component
     #[On('tierlists-updated')]
     public function tierlists(): Collection
     {
-        if (Feature::inactive('tierlists')) {
-            return collect();
-        }
-
         return Tierlist::query()
             ->forProfilePage($this->user)
             ->get();

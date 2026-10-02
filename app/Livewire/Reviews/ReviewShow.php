@@ -48,7 +48,7 @@ class ReviewShow extends Component
     {
         $title = $this->review->shareTitle();
         $description = $this->review->shareDescription();
-        $cover = $this->review->subject?->cover();
+        $cover = $this->review->subject->cover();
 
         Head::description($description);
 
@@ -66,8 +66,8 @@ class ReviewShow extends Component
         );
 
         if (filled($cover)) {
-            Head::ogImage($cover, alt: $this->review->subject?->name());
-            Head::twitterImage($cover, alt: $this->review->subject?->name());
+            Head::ogImage($cover, alt: $this->review->subject->name());
+            Head::twitterImage($cover, alt: $this->review->subject->name());
         }
     }
 }

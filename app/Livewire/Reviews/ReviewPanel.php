@@ -19,11 +19,4 @@ class ReviewPanel extends Component
     {
         return Review::query()->where('user_id', Auth::id())->count();
     }
-
-    public function remaining(): ?int
-    {
-        $limit = Auth::user()->reviewLimit();
-
-        return is_null($limit) ? null : max(0, $limit - $this->count);
-    }
 }

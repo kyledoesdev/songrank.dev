@@ -16,11 +16,6 @@ use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 
 describe('reaching the page', function () {
-    it('is not there at all while the feature is off', function () {
-        actingAs(User::factory()->createOne());
-
-        get(route('reviews.create'))->assertNotFound();
-    });
 
     it('opens for somebody the feature is on for', function () {
         actingAs(kyle());

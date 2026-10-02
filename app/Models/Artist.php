@@ -43,6 +43,11 @@ class Artist extends Model implements SpotifyEntity
         return $this->morphMany(Ranking::class, 'source', 'type', 'source_id');
     }
 
+    public function reviews(): MorphMany
+    {
+        return $this->morphMany(Review::class, 'subject');
+    }
+
     public function cover(): ?string
     {
         return $this->artist_img;

@@ -46,6 +46,20 @@ class TierlistQueryBuilder extends Builder
     }
 
     /**
+     * Only what anyone could open anyway: an embed is served to whoever loads
+     * the page it sits on, not to the list's owner.
+     */
+    public function forEmbed(): static
+    {
+        return $this->newQuery()
+            ->public()
+            ->completed()
+            ->with('user')
+            ->withTopTier(tiers: config('tierlists.max_tiers'))
+            ->withCount('items');
+    }
+
+    /**
      * How many lists this user holds of each type, in one query rather than one
      * per type. Types they have none of are simply absent.
      *

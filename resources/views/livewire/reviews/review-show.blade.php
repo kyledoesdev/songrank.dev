@@ -13,7 +13,10 @@
 
                 <div class="flex items-center shrink-0">
                     @if ($review->is_public)
-                        <x-reviews.share-buttons :review="$review" />
+                        <x-share-buttons
+                            :url="route('review', ['id' => $review->getKey()])"
+                            :text="$review->shareText()"
+                        />
                     @endif
 
                     @if (auth()->id() === $review->user_id)

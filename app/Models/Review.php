@@ -140,7 +140,7 @@ class Review extends Model
      */
     public function shareTitle(): string
     {
-        $subject = $this->subject?->name() ?? $this->name;
+        $subject = $this->subject->name();
 
         return $this->hasScore()
             ? "{$subject} — {$this->score()}/10"
@@ -149,7 +149,7 @@ class Review extends Model
 
     public function shareDescription(): string
     {
-        return $this->excerpt(180) ?? "{$this->type->label()} review by {$this->user->name} on Song Rank";
+        return $this->excerpt(180) ?? "{$this->type->label()} review by {$this->user->name} on ".config('app.name');
     }
 
     /**
@@ -157,7 +157,7 @@ class Review extends Model
      */
     public function shareText(): string
     {
-        return "{$this->shareTitle()} — my {$this->type->subjectLabel()} review on Song Rank";
+        return "{$this->shareTitle()} — my {$this->type->subjectLabel()} review on ".config('app.name');
     }
 
     public function canBeSeen(): bool

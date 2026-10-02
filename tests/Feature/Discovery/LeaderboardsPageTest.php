@@ -1,11 +1,15 @@
 <?php
 
+use App\Enums\ReviewType;
 use App\Livewire\Leaderboards;
+use App\Models\Album;
 use App\Models\Artist;
 use App\Models\Playlist;
 use App\Models\Ranking;
+use App\Models\Review;
 use App\Models\Show;
 use App\Models\Song;
+use App\Models\Track;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -180,3 +184,87 @@ describe('rankings with most songs', function () {
                 && $entries->first()['count'] == 500);
     });
 });
+
+describe('review leaderboards', function () {
+    test('are visible to guests', function () {
+        get(route('leaderboards'))
+            ->assertOk()
+            ->assertSee("tab === 'reviews'", escape: false)
+            ->assertSee('Top Reviewed Artists')
+            ->assertSee('Top Reviewed Albums')
+            ->assertSee('Top Reviewed Tracks');
+    });
+
+    test('appear under their own tab for users with the reviews feature', function () {
+        actingAs(kyle())
+            ->get(route('leaderboards'))
+            ->assertOk()
+            ->assertSee("tab === 'reviews'", escape: false)
+            ->assertSee('Top Reviewed Artists')
+            ->assertSee('Top Reviewed Albums')
+            ->assertSee('Top Reviewed Tracks');
+    });
+
+    test('artists are ordered by public published review count', function () {
+        $first = Artist::factory()->create(['artist_name' => 'Most Reviewed']);
+        $second = Artist::factory()->create(['artist_name' => 'Less Reviewed']);
+
+        reviewOf($first);
+        reviewOf($first);
+        reviewOf($second);
+
+        Livewire::actingAs(kyle())
+            ->test(Leaderboards::class)
+            ->assertViewHas('topReviewedArtists', fn ($entries) => $entries->pluck('name')->all() === ['Most Reviewed', 'Less Reviewed']
+                && $entries->first()['count'] == 2);
+    });
+
+    test('albums credit their artist', function () {
+        $artist = Artist::factory()->create(['artist_name' => 'Album Artist']);
+        $album = Album::factory()->create(['name' => 'Great Album', 'artist_id' => $artist->getKey()]);
+
+        reviewOf($album);
+
+        Livewire::actingAs(kyle())
+            ->test(Leaderboards::class)
+            ->assertViewHas('topReviewedAlbums', fn ($entries) => $entries->first()['name'] === 'Great Album'
+                && $entries->first()['subtitle'] === 'Album Artist');
+    });
+
+    test('tracks are ordered by review count', function () {
+        $first = Track::factory()->create(['name' => 'Big Single']);
+        $second = Track::factory()->create(['name' => 'Deep Cut']);
+
+        reviewOf($second);
+        reviewOf($first);
+        reviewOf($first);
+
+        Livewire::actingAs(kyle())
+            ->test(Leaderboards::class)
+            ->assertViewHas('topReviewedTracks', fn ($entries) => $entries->pluck('name')->all() === ['Big Single', 'Deep Cut']);
+    });
+
+    test('drafts and private reviews do not count', function () {
+        $album = Album::factory()->create();
+
+        Review::factory()->public()->create(['subject_id' => $album->getKey()]);
+        Review::factory()->published()->create(['subject_id' => $album->getKey()]);
+
+        Livewire::actingAs(kyle())
+            ->test(Leaderboards::class)
+            ->assertViewHas('topReviewedAlbums', fn ($entries) => $entries->isEmpty());
+    });
+});
+
+function reviewOf(Artist|Album|Track $subject): Review
+{
+    $type = match (true) {
+        $subject instanceof Artist => ReviewType::ARTIST,
+        $subject instanceof Album => ReviewType::ALBUM,
+        $subject instanceof Track => ReviewType::TRACK,
+    };
+
+    return Review::factory()->ofType($type)->published()->public()->create([
+        'subject_id' => $subject->getKey(),
+    ]);
+}

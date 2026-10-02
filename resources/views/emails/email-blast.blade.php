@@ -12,6 +12,6 @@
     Login to {{ config('app.name') }}
 @endcomponent
 
-Thanks for using Song Rank!<br>
+Thanks for using {{ config('app.name') }}!<br>
 {{ config('app.name') }}
 @endcomponent

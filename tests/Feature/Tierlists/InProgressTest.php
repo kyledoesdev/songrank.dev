@@ -5,9 +5,9 @@ use App\Livewire\Tierlist\Card as TierlistCard;
 use App\Livewire\Tierlist\TierlistPanel;
 use App\Models\Artist;
 use App\Models\Ranking;
+use App\Models\Review;
 use App\Models\Tierlist;
 use App\Models\TierlistItem;
-use App\Models\User;
 use Livewire\Livewire;
 
 describe('getting back to a list', function () {
@@ -74,15 +74,37 @@ describe('getting back to a list', function () {
             ->test(InProgress::class)
             ->assertDontSee('Pick up where you left off');
     });
+});
 
-    it('leaves tier lists out while the feature is off', function () {
-        $user = User::factory()->createOne();
-        Tierlist::factory()->for($user)->create(['name' => 'Hidden List']);
-        Ranking::factory()->for($user)->create(['name' => 'A Ranking', 'is_ranked' => false]);
+describe('paging through it', function () {
+    it('shows six at a time across every kind, most recently touched first', function () {
+        $user = kyle();
+
+        foreach (range(1, 3) as $day) {
+            Ranking::factory()->for($user)->create(['name' => "Ranking {$day}", 'is_ranked' => false, 'updated_at' => now()->subDays($day)]);
+            Tierlist::factory()->for($user)->create(['name' => "Tier List {$day}", 'updated_at' => now()->subDays($day)]);
+        }
+
+        Review::factory()->for($user)->create(['name' => 'Oldest Draft', 'updated_at' => now()->subDays(10)]);
 
         Livewire::actingAs($user)
             ->test(InProgress::class)
-            ->assertSee('A Ranking')
-            ->assertDontSee('Hidden List');
+            ->assertSee('Ranking 1')
+            ->assertSee('Tier List 3')
+            ->assertDontSee('Oldest Draft')
+            ->assertSee('1 / 2')
+            ->tap(fn ($component) => expect($component->instance()->items->total())->toBe(7))
+            ->call('nextPage', 'in-progress')
+            ->assertSee('Oldest Draft')
+            ->assertDontSee('Ranking 1');
+    });
+
+    it('does not show page links when everything fits on one page', function () {
+        $user = kyle();
+        Ranking::factory()->for($user)->count(6)->create(['is_ranked' => false]);
+
+        Livewire::actingAs($user)
+            ->test(InProgress::class)
+            ->assertDontSee('Pagination Navigation');
     });
 });

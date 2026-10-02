@@ -28,14 +28,6 @@ describe('reaching the edit page', function () {
             ->assertNotFound();
     });
 
-    it('is not there while the feature is off', function () {
-        $review = Review::factory()->createOne();
-
-        actingAs($review->user)
-            ->get(route('review.edit', ['id' => $review->getKey()]))
-            ->assertNotFound();
-    });
-
     it('sends a guest away', function () {
         $review = publicPublishedReview();
 

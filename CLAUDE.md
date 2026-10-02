@@ -57,7 +57,7 @@ Users authenticate with Spotify. A finished record of any kind can be made publi
 
 `routes/web.php` holds the public and account routes, then requires one file per domain: `routes/rankings.php`, `routes/billing.php`, `routes/tierlists.php` and `routes/reviews.php`. Pages are Livewire components registered with `Route::livewire()` and titled with `->withHead()`.
 
-Flagged domains (`billing.php`, `tierlists.php`, `reviews.php`) are wrapped in `EnsureFeaturesAreActive`, which **404s rather than 403s** — an unreleased product should look absent, not forbidden. Developer-only routes use `IsDeveloper` from `kyledoesdev/essentials`.
+Developer-only routes use `IsDeveloper` from `kyledoesdev/essentials`.
 
 The show routes (`/rank/{id}`, `/tierlist/{id}`, `/review/{id}`) are public because a finished, public list is meant to be shared; the component decides who may actually see each record (`canBeSeen()`), and serves the sorting process itself to an owner whose list is not finished yet.
 
@@ -124,7 +124,7 @@ Every model with non-trivial reads has a builder in `app/QueryBuilders/`, attach
 
 ## Feature Flags
 
-Three Pennant flags, all currently `is_dev` only: `songrank-pro` (`app/Features/SongRankPro.php`), `tierlists` (`app/Features/Tierlists.php`) and `reviews` (`app/Features/Reviews.php`). A flag resolves false for a guest, so a flagged show route 404s for guests until the flag is released. `pennant:purge` is a routine deploy step. A flag is a rollout switch and nothing more — it never answers "has this person paid?" (see Song Rank Pro below).
+Three Pennant flags: `songrank-pro` (`app/Features/SongRankPro.php`), `tierlists` (`app/Features/Tierlists.php`) and `reviews` (`app/Features/Reviews.php`). All three are released — each resolves true for any signed-in user and false for a guest — and nothing in the app checks them any more; what a free account can do is limited by Pro, not by a flag. `pennant:purge` is a routine deploy step. A flag is a rollout switch and nothing more — it never answers "has this person paid?" (see Song Rank Pro below).
 
 ## Tier Lists
 
@@ -144,7 +144,7 @@ Three Pennant flags, all currently `is_dev` only: `songrank-pro` (`app/Features/
 
 ## Song Rank Pro (Billing)
 
-A one-time $10 purchase, gated by the `songrank-pro` Pennant flag.
+A one-time $10 purchase.
 
 Two separate concepts, deliberately never merged:
 
@@ -195,9 +195,9 @@ Every change must be covered by a test. Three suites are registered in `phpunit.
 
 Anything under `app/Filament/` is tested in the **Filament** suite, not `Feature`. Everything else goes in the `Feature/` directory matching its product area; add a new subdirectory only when an area has no existing home.
 
-#### Testing Flagged Features and the Admin Panel
-- `songrank-pro`, `tierlists` and `reviews` all resolve on `is_dev`, so a test touching any of them needs a user carrying that flag — `kyle()` is the project's only admin persona, and `proUser()` builds an `is_dev` user holding an active licence
-- The admin panel is gated the same way, so act as `kyle()` there too
+#### Testing Pro and the Admin Panel
+- No feature flag needs setting up in a test: every domain is open to any signed-in user. `proUser()` builds a user holding an active licence
+- The admin panel is gated on `is_dev`, so act as `kyle()` — the project's only admin persona — there
 - Filament pages and widgets are Livewire components — test them with `Livewire::actingAs($user)->test(ListRankings::class)`, passing `['record' => $model->getKey()]` for view/edit pages
 
 #### Test File Structure

@@ -1,20 +1,10 @@
-@use('Laravel\Pennant\Feature')
-
 <div class="mt-4 space-y-6">
-    <div @class([
-        'grid grid-cols-1 gap-6',
-        'lg:grid-cols-2' => Feature::active('tierlists') !== Feature::active('reviews'),
-        'lg:grid-cols-3' => Feature::active('tierlists') && Feature::active('reviews'),
-    ])>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <livewire:SongRank.ranking-panel />
 
-        @feature('tierlists')
-            <livewire:Tierlist.tierlist-panel />
-        @endfeature
+        <livewire:Tierlist.tierlist-panel />
 
-        @feature('reviews')
-            <livewire:Reviews.review-panel />
-        @endfeature
+        <livewire:Reviews.review-panel />
     </div>
 
     <livewire:Dashboard.in-progress />
