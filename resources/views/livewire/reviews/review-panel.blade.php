@@ -4,7 +4,7 @@
     <x-card.header>
         <h4 class="font-semibold text-gray-800">Reviews</h4>
         <p class="text-xs text-zinc-500 mt-0.5">
-            Say what you actually thought, and put a number on it.
+            Share what you think with the community.
         </p>
     </x-card.header>
 

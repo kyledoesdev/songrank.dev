@@ -4,7 +4,7 @@
     <x-card.header>
         <h4 class="font-semibold text-gray-800">Tier Lists</h4>
         <p class="text-xs text-zinc-500 mt-0.5">
-            Sort artists, albums or tracks into tiers and share the board.
+            Sort artists, albums or tracks into a classic tier list.
         </p>
     </x-card.header>
 

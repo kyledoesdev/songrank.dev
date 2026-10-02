@@ -4,7 +4,7 @@
     <x-card.header>
         <h4 class="font-semibold text-gray-800">Rankings</h4>
         <p class="text-xs text-zinc-500 mt-0.5">
-            Rank songs with head-to-head comparisons using our merge-sort algorithm.
+            Rank songs via head-to-head comparisons.
         </p>
     </x-card.header>
 
