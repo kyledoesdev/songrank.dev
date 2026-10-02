@@ -149,6 +149,7 @@ describe('revoking a licence', function () {
         $license = ProLicense::factory()->refunded()->create();
 
         Livewire::test(ListProLicenses::class)
+            ->filterTable('hide_refunded', false)
             ->assertActionHidden(TestAction::make('revoke')->table($license));
     });
 });

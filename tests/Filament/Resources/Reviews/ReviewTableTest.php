@@ -40,7 +40,7 @@ describe('review table', function () {
 
         Livewire::actingAs(kyle())
             ->test(ListReviews::class)
-            ->filterTable('hide_drafts', false)
+            ->filterTable('hide_incomplete', false)
             ->assertCanSeeTableRecords([$published, $draft]);
     });
 

@@ -14,8 +14,6 @@ class RankingsCreatedWidget extends ChartWidget
 
     protected ?string $heading = 'Rankings Stats';
 
-    protected static ?int $sort = 3;
-
     protected function getData(): array
     {
         $trendConfig = $this->getTrendConfig();

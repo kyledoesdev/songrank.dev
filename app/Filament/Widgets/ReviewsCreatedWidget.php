@@ -3,34 +3,34 @@
 namespace App\Filament\Widgets;
 
 use App\Filament\Concerns\HasDateFilters;
-use App\Models\Tierlist;
+use App\Models\Review;
 use Filament\Widgets\ChartWidget;
 use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
 
-class TierlistsCreatedWidget extends ChartWidget
+class ReviewsCreatedWidget extends ChartWidget
 {
     use HasDateFilters;
 
-    protected ?string $heading = 'Tier List Stats';
+    protected ?string $heading = 'Review Stats';
 
     protected function getData(): array
     {
         $trendConfig = $this->getTrendConfig();
 
-        $created = Trend::model(Tierlist::class)
+        $created = Trend::model(Review::class)
             ->between(start: $trendConfig['start'], end: $trendConfig['end'])
             ->{$trendConfig['period']}()
             ->count();
 
-        $deleted = Trend::query(Tierlist::onlyTrashed())
+        $deleted = Trend::query(Review::onlyTrashed())
             ->dateColumn('deleted_at')
             ->between(start: $trendConfig['start'], end: $trendConfig['end'])
             ->{$trendConfig['period']}()
             ->count();
 
-        $completed = Trend::query(Tierlist::query()->whereNotNull('completed_at'))
-            ->dateColumn('completed_at')
+        $published = Trend::query(Review::query()->whereNotNull('published_at'))
+            ->dateColumn('published_at')
             ->between(start: $trendConfig['start'], end: $trendConfig['end'])
             ->{$trendConfig['period']}()
             ->count();
@@ -38,18 +38,18 @@ class TierlistsCreatedWidget extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Tier Lists Created',
+                    'label' => 'Reviews Created',
                     'data' => $created->map(fn (TrendValue $value) => $value->aggregate),
                     'borderColor' => '#86efac',
                 ],
                 [
-                    'label' => 'Tier Lists Deleted',
+                    'label' => 'Reviews Deleted',
                     'data' => $deleted->map(fn (TrendValue $value) => $value->aggregate),
                     'borderColor' => '#f87171',
                 ],
                 [
-                    'label' => 'Tier Lists Completed',
-                    'data' => $completed->map(fn (TrendValue $value) => $value->aggregate),
+                    'label' => 'Reviews Published',
+                    'data' => $published->map(fn (TrendValue $value) => $value->aggregate),
                     'borderColor' => '#c084fc',
                 ],
             ],

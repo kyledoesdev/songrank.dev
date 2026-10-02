@@ -14,8 +14,6 @@ class UserPlatformWidget extends ChartWidget
 
     protected ?string $maxHeight = '300px';
 
-    protected static ?int $sort = 5;
-
     protected ?string $pollingInterval = null;
 
     /** iOS reports no platform client hint, so those users are read off the user agent instead. */

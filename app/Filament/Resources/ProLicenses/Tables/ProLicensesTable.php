@@ -78,6 +78,7 @@ class ProLicensesTable
             ->defaultSort('created_at', 'desc')
             ->searchable()
             ->filters([
+                ...self::hideStatusFilters(),
                 SelectFilter::make('status')
                     ->options(fn (): array => collect(ProLicenseStatus::cases())
                         ->mapWithKeys(fn (ProLicenseStatus $case): array => [$case->value => $case->label()])
@@ -126,5 +127,24 @@ class ProLicensesTable
                     ->successNotificationTitle('License revoked.'),
             ])
             ->toolbarActions([]);
+    }
+
+    /**
+     * A toggle per status other than active, all on by default, so the table
+     * opens on live licences and each kind can be brought back on its own.
+     *
+     * @return list<Filter>
+     */
+    private static function hideStatusFilters(): array
+    {
+        return collect(ProLicenseStatus::cases())
+            ->reject(fn (ProLicenseStatus $status): bool => $status === ProLicenseStatus::ACTIVE)
+            ->map(fn (ProLicenseStatus $status): Filter => Filter::make("hide_{$status->value}")
+                ->label("Hide {$status->label()}")
+                ->toggle()
+                ->default()
+                ->query(fn (Builder $query): Builder => $query->where('status', '!=', $status)))
+            ->values()
+            ->all();
     }
 }

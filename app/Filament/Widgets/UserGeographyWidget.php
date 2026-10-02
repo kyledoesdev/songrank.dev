@@ -14,8 +14,6 @@ class UserGeographyWidget extends ChartWidget
 
     public ?string $filter = 'continent';
 
-    protected static ?int $sort = 4;
-
     protected ?string $pollingInterval = null;
 
     protected function getFilters(): ?array

@@ -13,8 +13,6 @@ use Spatie\Stats\Models\StatsEvent;
 
 class LoginsWidget extends StatsOverviewWidget
 {
-    protected static ?int $sort = 1;
-
     protected ?string $heading = 'User Stats';
 
     protected ?string $pollingInterval = null;

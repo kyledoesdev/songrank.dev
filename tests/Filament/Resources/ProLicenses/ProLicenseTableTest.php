@@ -57,9 +57,35 @@ describe('the licence table', function () {
         $refunded = ProLicense::factory()->refunded()->create();
 
         Livewire::test(ListProLicenses::class)
+            ->filterTable('hide_refunded', false)
             ->filterTable('status', ProLicenseStatus::REFUNDED->value)
             ->assertCanSeeTableRecords([$refunded])
             ->assertCanNotSeeTableRecords([$active]);
+    });
+
+    it('opens on active licences only', function () {
+        $active = ProLicense::factory()->active()->create();
+        $hidden = collect([
+            ProLicense::factory()->pending()->create(),
+            ProLicense::factory()->abandoned()->create(),
+            ProLicense::factory()->refunded()->create(),
+            ProLicense::factory()->revoked()->create(),
+        ]);
+
+        Livewire::test(ListProLicenses::class)
+            ->assertCanSeeTableRecords([$active])
+            ->assertCanNotSeeTableRecords($hidden);
+    });
+
+    it('brings a hidden status back when its toggle is turned off', function () {
+        $active = ProLicense::factory()->active()->create();
+        $abandoned = ProLicense::factory()->abandoned()->create();
+        $revoked = ProLicense::factory()->revoked()->create();
+
+        Livewire::test(ListProLicenses::class)
+            ->filterTable('hide_abandoned', false)
+            ->assertCanSeeTableRecords([$active, $abandoned])
+            ->assertCanNotSeeTableRecords([$revoked]);
     });
 
     it('links the buyer name to their user record', function () {

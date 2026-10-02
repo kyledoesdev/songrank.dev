@@ -87,6 +87,15 @@ class ReviewQueryBuilder extends Builder
         return $this->where('is_published', false);
     }
 
+    /**
+     * A review is finished once it is published, so this matches what
+     * `completed()` means for rankings and tier lists.
+     */
+    public function completed(): static
+    {
+        return $this->published();
+    }
+
     public function published(): static
     {
         return $this->where('is_published', true);

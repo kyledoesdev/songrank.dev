@@ -4,7 +4,7 @@ namespace App\Filament\Resources\Reviews;
 
 use App\Enums\ReviewType;
 use App\Filament\Concerns\HasCachedNavigationBadge;
-use App\Filament\Resources\Reviews\Filters\PublishedFilter;
+use App\Filament\Filters\HideIncompleteFilter;
 use App\Filament\Resources\Reviews\Pages\EditReview;
 use App\Filament\Resources\Reviews\Pages\ListReviews;
 use App\Filament\Resources\Reviews\Pages\ViewReview;
@@ -61,7 +61,7 @@ class ReviewResource extends Resource
     {
         return ReviewTable::configure($table)
             ->filters([
-                PublishedFilter::make(),
+                HideIncompleteFilter::make(),
                 SelectFilter::make('type')
                     ->options(collect(ReviewType::cases())->mapWithKeys(fn (ReviewType $type) => [$type->value => $type->label()])),
                 TrashedFilter::make(),
