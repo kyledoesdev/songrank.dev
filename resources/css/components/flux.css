@@ -1,0 +1,29 @@
+[data-flux-tab],
+[data-flux-navbar-item],
+[data-flux-navlist-item],
+[data-flux-menu-item],
+[data-flux-button] {
+    @apply cursor-pointer;
+}
+
+[data-flux-tab]:disabled,
+[data-flux-navbar-item]:disabled,
+[data-flux-navlist-item]:disabled,
+[data-flux-menu-item]:disabled,
+[data-flux-button]:disabled {
+    @apply cursor-not-allowed;
+}
+
+[data-flux-editor] ui-toolbar button:not(:disabled) {
+    @apply cursor-pointer;
+}
+
+[data-flux-editor] [data-slot='content'] {
+    @apply text-zinc-800! min-h-80;
+}
+
+[data-flux-editor] [data-slot='content'] code:not(pre code),
+[data-flux-editor] [data-slot='content'] pre,
+[data-flux-editor] [data-slot='content'] pre > code {
+    @apply text-zinc-900!;
+}

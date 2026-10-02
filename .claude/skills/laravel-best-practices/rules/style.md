@@ -112,7 +112,7 @@ Pass data to JS via data attributes, or reach for Alpine — `alpinejs` and `@ma
 Two accepted exceptions in this codebase, both because the value is user data Tailwind cannot express:
 
 ```blade
-{{-- A tier's colour is a column, not a utility class --}}
+{{-- A tier's color is a column, not a utility class --}}
 <div style="background-color: {{ $tier->color }}">
 
 {{-- A whole card as a link target --}}

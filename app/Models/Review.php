@@ -149,11 +149,7 @@ class Review extends Model
 
     public function shareDescription(): string
     {
-        return $this->excerpt(180) ?? sprintf(
-            '%s review by %s on Song Rank',
-            $this->type->label(),
-            $this->user->name,
-        );
+        return $this->excerpt(180) ?? "{$this->type->label()} review by {$this->user->name} on Song Rank";
     }
 
     /**
@@ -161,7 +157,7 @@ class Review extends Model
      */
     public function shareText(): string
     {
-        return sprintf('%s — my %s review on Song Rank', $this->shareTitle(), $this->type->subjectLabel());
+        return "{$this->shareTitle()} — my {$this->type->subjectLabel()} review on Song Rank";
     }
 
     public function canBeSeen(): bool
@@ -173,17 +169,9 @@ class Review extends Model
         return $this->is_public && $this->is_published;
     }
 
-    /**
-     * A draft is the owner's to change. Once published, rewriting it is a Pro
-     * feature — everyone else deletes and starts again.
-     */
     public function canBeEdited(): bool
     {
-        if ($this->user_id !== Auth::id()) {
-            return false;
-        }
-
-        return ! $this->is_published || Auth::user()->is_pro;
+        return $this->user_id === Auth::id();
     }
 
     /* Contracts */

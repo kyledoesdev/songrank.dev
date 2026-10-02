@@ -1,15 +1,21 @@
 <div>
-    <div class="pl-4 pr-4 bg-white shadow-lg rounded-lg mt-4">
-        <div class="flex justify-center bg-white p-4">
-            <div class="flex items-center space-x-2 k-line">
-                <span class="text-xs sm:text-sm md:text-base whitespace-nowrap font-bold">
-                    Progress will be saved automatically as you rank!
-                </span>
-            </div>
-        </div>
+    <x-card class="mt-4">
+        <x-card.header>
+            <div class="flex justify-between items-center gap-3">
+                <div class="min-w-0">
+                    <h5 class="text-base sm:text-lg md:text-xl font-medium truncate">{{ $ranking->name }}</h5>
+                    <p class="text-xs text-zinc-500">Progress will be saved automatically as you rank!</p>
+                </div>
 
-        <!-- Progress Bar -->
-        <div class="px-4 py-2">
+                <div class="flex items-center shrink-0">
+                    <a href="{{ route('dashboard') }}" class="btn-primary my-0 px-2 py-1" title="Dashboard">
+                        <i class="fa fa-solid fa-house text-sm"></i>
+                    </a>
+                </div>
+            </div>
+        </x-card.header>
+
+        <div class="px-4 pt-4 pb-2">
             <div class="flex justify-between items-center mb-2">
                 <span class="text-sm font-medium">Progress</span>
                 <span class="text-sm text-gray-600">{{ $progressPercentage }}%</span>
@@ -31,9 +37,7 @@
             @endif
         </div>
 
-        <hr class="my-4" />
-        
-        <div class="px-4 py-4">
+        <x-card.footer class="mt-4 py-3">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <span class="hidden md:flex md:items-center text-gray-600">
                     <i class="fa-solid fa-mug-saucer mr-2"></i>
@@ -75,6 +79,6 @@
                     @endunless
                 </div>
             </div>
-        </div>
-    </div>
+        </x-card.footer>
+    </x-card>
 </div>

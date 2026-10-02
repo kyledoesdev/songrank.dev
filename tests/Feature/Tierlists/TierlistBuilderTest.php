@@ -87,7 +87,7 @@ describe('tiers', function () {
         expect($board->tierlist->fresh()->placementTiers())->toHaveCount(6);
     });
 
-    it('renames and recolours one', function () {
+    it('renames and recolors one', function () {
         $board = builder();
 
         $board->component
@@ -102,7 +102,7 @@ describe('tiers', function () {
             ->and($board->tier->fresh()->color)->toBe('#123456');
     });
 
-    it('rejects a colour that is not a hex colour', function () {
+    it('rejects a color that is not a hex color', function () {
         $board = builder();
 
         $board->component

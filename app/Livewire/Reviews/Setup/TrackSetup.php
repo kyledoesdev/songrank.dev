@@ -5,14 +5,12 @@ namespace App\Livewire\Reviews\Setup;
 use App\Actions\Spotify\SearchTracks;
 use App\Enums\ReviewType;
 use App\Livewire\Reviews\Concerns\HasReviewForm;
-use App\Livewire\Reviews\Concerns\HasReviewSubject;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class TrackSetup extends Component
 {
     use HasReviewForm;
-    use HasReviewSubject;
 
     public function render()
     {

@@ -5,10 +5,14 @@ namespace App\Livewire\Reviews\Concerns;
 use App\Actions\Reviews\StoreReview;
 use App\Livewire\Forms\ReviewForm;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
+/**
+ * @mixin Component
+ */
 trait HasReviewForm
 {
-    use HasReviewFlashErrors;
+    use HasReviewSubject;
 
     public ReviewForm $form;
 
@@ -42,8 +46,8 @@ trait HasReviewForm
         $this->confirmAction(
             action: 'startReview',
             title: 'Start this review?',
-            message: "You're about to write about {$this->subjectName()}. It stays a draft until you publish it, and you can change your mind about the subject right up until then.",
-            confirmText: "Let's write it",
+            message: "You're about to write about {$this->subjectName()}. It stays a draft until you publish it.",
+            confirmText: "Let's go",
         );
     }
 
@@ -68,7 +72,7 @@ trait HasReviewForm
             'comments_replies_enabled' => (bool) $this->form->comments_replies_enabled,
         ]);
 
-        $this->redirect(route('review', ['id' => $review->getKey()]));
+        $this->redirect(route('review.edit', ['id' => $review->getKey()]));
     }
 
     protected function resetReviewForm(): void

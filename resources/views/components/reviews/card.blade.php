@@ -1,12 +1,17 @@
 @props(['review'])
 
-<x-card class="cursor-pointer hover:shadow-lg transition-all duration-300 p-4" onclick="window.location.href='{{ route('review', ['id' => $review->getKey()]) }}'">
+<x-card class="cursor-pointer hover:shadow-lg transition-all duration-300 p-4" onclick="window.location.href='{{ route($review->is_published ? 'review' : 'review.edit', ['id' => $review->getKey()]) }}'">
     <div class="flex gap-4">
-        <img
-            src="{{ $review->subject->cover() }}"
-            alt="{{ $review->subject->name() }}"
-            class="h-24 w-24 rounded-lg object-cover shrink-0"
-        >
+        <div class="shrink-0">
+            <img
+                src="{{ $review->subject->cover() }}"
+                alt="{{ $review->subject->name() }}"
+                class="h-24 w-24 rounded-lg object-cover"
+            >
+            <div class="mt-2 relative z-10">
+                <x-spotify-logo :url="$review->subject->spotifyUrl()" />
+            </div>
+        </div>
 
         <div class="min-w-0 flex-1">
             <p class="text-xs uppercase tracking-wide text-zinc-400">

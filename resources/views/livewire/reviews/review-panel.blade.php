@@ -22,7 +22,7 @@
                     ])
                 >
                     <i class="fa-solid {{ $type->icon() }} text-xl text-zinc-600"></i>
-                    <p class="font-medium text-sm text-zinc-800">{{ $type->withArticle() }}</p>
+                    <p class="font-medium text-sm text-zinc-800">{{ Str::ucfirst($type->withArticle()) }}</p>
                 </a>
             @endforeach
         @else

@@ -22,7 +22,7 @@
                     ])
                 >
                     <i class="fa-solid {{ $type->icon() }} text-xl text-zinc-600"></i>
-                    <p class="font-medium text-sm text-zinc-800">by {{ $type->label() }}</p>
+                    <p class="font-medium text-sm text-zinc-800">By {{ $type->label() }}</p>
                 </a>
             @else
                 <a
@@ -32,7 +32,7 @@
                     title="You have used your {{ $type->label() }} tier list allowance"
                 >
                     <i class="fa-solid fa-star text-xl text-purple-400"></i>
-                    <p class="font-medium text-sm text-zinc-500">by {{ $type->label() }}</p>
+                    <p class="font-medium text-sm text-zinc-500">By {{ $type->label() }}</p>
                 </a>
             @endif
         @endforeach

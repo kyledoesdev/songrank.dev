@@ -2,17 +2,22 @@
 
 namespace App\Livewire\Reviews\Concerns;
 
+use App\Enums\ReviewType;
 use App\Models\Review;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 trait HasReviewSubject
 {
+    use HasReviewFlashErrors;
+
     public string $searchTerm = '';
 
     public ?array $searchResults = null;
 
     public ?array $subject = null;
+
+    abstract public function reviewType(): ReviewType;
 
     /**
      * @return Collection<int, array<string, mixed>>
@@ -30,6 +35,11 @@ trait HasReviewSubject
     public function subjectName(): ?string
     {
         return $this->subject['name'] ?? null;
+    }
+
+    public function spotifyUrlFor(array $entry): string
+    {
+        return "https://open.spotify.com/{$this->reviewType()->value}/{$entry['id']}";
     }
 
     public function chooseSubject(string $id): void

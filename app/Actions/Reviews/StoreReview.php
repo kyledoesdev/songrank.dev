@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 final class StoreReview
 {
     /**
-     * @param  array{type: ReviewType, subject: array<string, mixed>, name?: ?string, stars?: ?float, body?: ?string, is_public?: bool, comments_enabled?: bool, comments_replies_enabled?: bool, publish?: bool}  $attributes
+     * @param  array{type: ReviewType, subject: array<string, mixed>, name: ?string, is_public: bool, comments_enabled: bool, comments_replies_enabled: bool}  $attributes
      */
     public function handle(User $user, array $attributes): Review
     {
@@ -20,24 +20,15 @@ final class StoreReview
 
         $subject = (new ResolveReviewSubject)->handle($type, $attributes['subject']);
 
-        $cleaned = (new CleanReviewBody)->handle($attributes['body'] ?? null);
-
-        $publish = $attributes['publish'] ?? false;
-
         return DB::transaction(fn () => Review::create([
             'user_id' => $user->getKey(),
             'type' => $type->value,
             'subject_type' => $subject->getMorphClass(),
             'subject_id' => $subject->getKey(),
             'name' => Str::limit($this->name($attributes, $subject), 60, ''),
-            'stars' => $attributes['stars'] ?? null,
-            'body' => $cleaned['body'],
-            'body_text' => $cleaned['body_text'],
-            'is_published' => $publish,
-            'is_public' => $attributes['is_public'] ?? false,
-            'comments_enabled' => $attributes['comments_enabled'] ?? false,
-            'comments_replies_enabled' => $attributes['comments_replies_enabled'] ?? false,
-            'published_at' => $publish ? now() : null,
+            'is_public' => $attributes['is_public'],
+            'comments_enabled' => $attributes['comments_enabled'],
+            'comments_replies_enabled' => $attributes['comments_replies_enabled'],
         ]));
     }
 
@@ -48,8 +39,6 @@ final class StoreReview
      */
     private function name(array $attributes, Model $subject): string
     {
-        $name = $attributes['name'] ?? null;
-
-        return filled($name) ? $name : $subject->name().' Review';
+        return filled($attributes['name']) ? $attributes['name'] : $subject->name().' Review';
     }
 }

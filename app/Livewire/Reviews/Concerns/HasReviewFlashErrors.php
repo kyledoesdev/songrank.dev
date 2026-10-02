@@ -39,7 +39,7 @@ trait HasReviewFlashErrors
     {
         $this->flash(
             title: "You have already reviewed {$name}.",
-            message: 'One review each, so the score means something. Edit or delete the one you have if you have changed your mind.',
+            message: 'Edit or delete the one you have if you have changed your mind.',
             icon: 'error',
         );
     }
@@ -47,7 +47,7 @@ trait HasReviewFlashErrors
     protected function flashReviewLimitReached(int $limit): void
     {
         $this->flash(
-            title: 'That is all your reviews used.',
+            title: 'You have used all your reviews',
             message: "Free accounts can keep {$limit} reviews. Delete one to make room, or go Pro for as many as you like.",
             icon: 'error',
         );

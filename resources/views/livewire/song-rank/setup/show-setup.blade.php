@@ -36,6 +36,14 @@
                         ])
                     </div>
                 </div>
+
+                @include('livewire.song-rank.setup.partials.album-filters', ['albums' => null])
+
+                @if (count($this->removedTrackUuids) > 0)
+                    @include('livewire.song-rank.setup.partials.removed-tracks', [
+                        'removedTracks' => $this->removedTracks(),
+                    ])
+                @endif
             @endif
         </div>
     </x-card>

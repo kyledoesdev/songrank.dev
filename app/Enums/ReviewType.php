@@ -62,7 +62,7 @@ enum ReviewType: string
      */
     public function article(): string
     {
-        return $this === self::ALBUM ? 'an' : 'a';
+        return $this === self::TRACK ? 'a' : 'an';
     }
 
     public function withArticle(): string

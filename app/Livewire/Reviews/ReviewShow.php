@@ -20,9 +20,15 @@ class ReviewShow extends Component
             abort(404);
         }
 
+        if (! $this->review->is_published) {
+            $this->redirect(route('review.edit', ['id' => $this->review->getKey()]));
+
+            return;
+        }
+
         Head::title($this->review->name);
 
-        if ($this->review->is_published && $this->review->is_public) {
+        if ($this->review->is_public) {
             $this->shareTags();
         }
     }

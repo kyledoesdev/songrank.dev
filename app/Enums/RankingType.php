@@ -20,7 +20,7 @@ enum RankingType: string
     public function icon(): string
     {
         return match ($this) {
-            self::ARTIST => 'fa-music',
+            self::ARTIST => 'fa-microphone-lines',
             self::PLAYLIST => 'fa-bars-staggered',
             self::SHOW => 'fa-podcast',
         };
