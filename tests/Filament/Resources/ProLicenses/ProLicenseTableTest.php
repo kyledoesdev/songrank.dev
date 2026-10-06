@@ -2,6 +2,7 @@
 
 use App\Enums\Billing\ProLicenseStatus;
 use App\Filament\Resources\ProLicenses\Pages\ListProLicenses;
+use App\Filament\Resources\ProLicenses\ProLicenseResource;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\ProLicense;
 use App\Models\User;
@@ -61,6 +62,17 @@ describe('the licence table', function () {
             ->filterTable('status', ProLicenseStatus::REFUNDED->value)
             ->assertCanSeeTableRecords([$refunded])
             ->assertCanNotSeeTableRecords([$active]);
+    });
+
+    it('counts only active licences in the navigation badge', function () {
+        ProLicense::factory()->count(2)->active()->create();
+        ProLicense::factory()->comp()->create();
+        ProLicense::factory()->pending()->create();
+        ProLicense::factory()->abandoned()->create();
+        ProLicense::factory()->refunded()->create();
+        ProLicense::factory()->revoked()->create();
+
+        expect(ProLicenseResource::getNavigationBadge())->toBe('3');
     });
 
     it('opens on active licences only', function () {

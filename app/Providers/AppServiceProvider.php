@@ -26,6 +26,7 @@ use Laravel\Head\Enums\TwitterCard;
 use Laravel\Head\Facades\Head;
 use Laravel\Head\HeadBuilder;
 use Laravel\Pennant\Feature;
+use Livewire\Blaze\Blaze;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use SocialiteProviders\Spotify\Provider;
 use Spatie\Health\Checks\Checks\DatabaseCheck;
@@ -73,6 +74,18 @@ class AppServiceProvider extends ServiceProvider
         $this->configureHealthChecks();
         $this->configureHead();
         $this->configureDevTerminal();
+        $this->configureBlaze();
+    }
+
+    /**
+     * Email components are rendered with `view()` by the newsletter, which
+     * Blaze cannot compile, so they stay on plain Blade.
+     */
+    private function configureBlaze(): void
+    {
+        Blaze::optimize()
+            ->in(resource_path('views/components'))
+            ->in(resource_path('views/components/emails'), compile: false);
     }
 
     private function configureFeatures(): void
@@ -117,7 +130,7 @@ class AppServiceProvider extends ServiceProvider
                 ->canonical()
                 ->searchableByRobots()
                 ->meta('author', 'kyledoesdev')
-                ->meta('keywords', rescue(fn () => cache()->remember('seo-terms', now()->addWeeks(1), fn () => Seo::query()->first()->seo_terms), '', false))
+                ->meta('keywords', rescue(fn () => Seo::seoTerms(), '', false))
                 ->favicon(asset('favicon.ico'), 'image/x-icon')
                 ->icon(asset('favicon-32x32.png'), 'image/png', '32x32')
                 ->icon(asset('favicon-16x16.png'), 'image/png', '16x16')

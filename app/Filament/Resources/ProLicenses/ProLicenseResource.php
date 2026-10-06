@@ -77,4 +77,9 @@ class ProLicenseResource extends Resource
             'view' => ViewProLicense::route('/{record}'),
         ];
     }
+
+    protected static function navigationBadgeCount(): int
+    {
+        return ProLicense::query()->active()->count();
+    }
 }
