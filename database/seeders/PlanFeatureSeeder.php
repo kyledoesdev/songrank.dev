@@ -19,8 +19,8 @@ class PlanFeatureSeeder extends Seeder
             ['label' => 'Share, embed, comment on and export your lists'],
             ['label' => 'Rearrange tier lists after publishing', 'is_included' => false],
             ['label' => 'Edit reviews after publishing', 'is_included' => false],
-            ['label' => '{catalog_folders} catalog folders', 'detail' => 'Organize your rankings, tier lists and reviews', 'is_coming_soon' => true],
-            ['label' => 'Subfolders in your catalog', 'is_included' => false, 'is_coming_soon' => true],
+            ['label' => '{catalog_folders} catalog folders', 'detail' => 'Organize your rankings, tier lists and reviews'],
+            ['label' => 'Subfolders in your catalog', 'is_included' => false],
             ['label' => 'Earn experience', 'is_coming_soon' => true],
         ],
         'pro' => [
@@ -30,8 +30,8 @@ class PlanFeatureSeeder extends Seeder
             ['label' => 'Share, embed, comment on and export your lists'],
             ['label' => 'Rearrange tier lists after publishing'],
             ['label' => 'Edit reviews after publishing'],
-            ['label' => '{catalog_folders} catalog folders', 'detail' => 'Organize your rankings, tier lists and reviews', 'is_coming_soon' => true],
-            ['label' => 'Subfolders in your catalog', 'detail' => '{subfolder_levels} level deep', 'is_coming_soon' => true],
+            ['label' => '{catalog_folders} catalog folders', 'detail' => 'Organize your rankings, tier lists and reviews'],
+            ['label' => 'Subfolders in your catalog', 'detail' => '{subfolder_levels} level deep'],
             ['label' => '{experience} experience', 'is_coming_soon' => true],
         ],
     ];

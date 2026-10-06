@@ -36,5 +36,6 @@ require_once __DIR__.'/Helpers/users.php';
 require_once __DIR__.'/Helpers/rankings.php';
 require_once __DIR__.'/Helpers/tierlists.php';
 require_once __DIR__.'/Helpers/reviews.php';
+require_once __DIR__.'/Helpers/catalog.php';
 require_once __DIR__.'/Helpers/spotify.php';
 require_once __DIR__.'/Helpers/alerts.php';

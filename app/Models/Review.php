@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ReviewType;
+use App\Models\Concerns\BelongsToCrates;
 use App\QueryBuilders\ReviewQueryBuilder;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
@@ -19,6 +20,7 @@ use Spatie\Comments\Models\Concerns\HasComments;
 #[UseEloquentBuilder(ReviewQueryBuilder::class)]
 class Review extends Model
 {
+    use BelongsToCrates;
     use HasComments;
     use HasFactory;
     use HasStatsAfterEvents;

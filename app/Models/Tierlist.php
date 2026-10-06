@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\TierlistType;
+use App\Models\Concerns\BelongsToCrates;
 use App\QueryBuilders\TierlistQueryBuilder;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
@@ -21,6 +22,7 @@ use Spatie\Comments\Models\Concerns\HasComments;
 #[UseEloquentBuilder(TierlistQueryBuilder::class)]
 class Tierlist extends Model
 {
+    use BelongsToCrates;
     use HasComments;
     use HasFactory;
     use HasStatsAfterEvents;
