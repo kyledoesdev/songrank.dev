@@ -2,6 +2,8 @@
 
 use App\Filament\Widgets\CompletionTimeWidget;
 use App\Models\Ranking;
+use App\Models\Review;
+use App\Models\Tierlist;
 use Livewire\Livewire;
 
 describe('completion time widget', function () {
@@ -69,4 +71,40 @@ describe('completion time widget', function () {
             ->set('filters.filter', 'month')
             ->assertOk();
     });
+
+    test('charts rankings, tier lists and reviews side by side', function () {
+        Ranking::factory()->create(['created_at' => now()->subMinutes(30), 'completed_at' => now()]);
+        Tierlist::factory()->create(['created_at' => now()->subHours(3), 'is_complete' => true, 'completed_at' => now()]);
+        Review::factory()->create(['created_at' => now()->subHours(30), 'is_published' => true, 'published_at' => now()]);
+
+        $datasets = collect(completionChartData(Livewire::actingAs(kyle())
+            ->test(CompletionTimeWidget::class)
+            ->instance())['datasets'])
+            ->mapWithKeys(fn (array $dataset) => [$dataset['label'] => $dataset['data']]);
+
+        expect($datasets->all())->toBe([
+            'Rankings' => [1, 0, 0, 0, 0],
+            'Tier Lists' => [0, 1, 0, 0, 0],
+            'Reviews' => [0, 0, 0, 0, 1],
+        ]);
+    });
+
+    test('ignores drafts and unfinished tier lists', function () {
+        Tierlist::factory()->create(['completed_at' => null]);
+        Review::factory()->create(['published_at' => null]);
+
+        $datasets = completionChartData(Livewire::actingAs(kyle())
+            ->test(CompletionTimeWidget::class)
+            ->instance())['datasets'];
+
+        expect(collect($datasets)->pluck('data')->flatten()->sum())->toBe(0);
+    });
 });
+
+/**
+ * @return array<string, mixed>
+ */
+function completionChartData(CompletionTimeWidget $widget): array
+{
+    return (fn (): array => $this->getData())->call($widget);
+}

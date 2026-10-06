@@ -20,6 +20,7 @@
         "laravel/pennant": "^1.26",
         "laravel/socialite": "^5.11",
         "laravel/tinker": "^3.0",
+        "livewire/blaze": "^1.0",
         "livewire/flux": "^2.20",
         "livewire/flux-pro": "^2.20",
         "maatwebsite/excel": "4.x-dev",

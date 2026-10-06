@@ -4,7 +4,7 @@ namespace App\Filament\Resources\Tierlists;
 
 use App\Enums\TierlistType;
 use App\Filament\Concerns\HasCachedNavigationBadge;
-use App\Filament\Resources\Tierlists\Filters\CompletedFilter;
+use App\Filament\Filters\HideIncompleteFilter;
 use App\Filament\Resources\Tierlists\Pages\EditTierlist;
 use App\Filament\Resources\Tierlists\Pages\ListTierlists;
 use App\Filament\Resources\Tierlists\Pages\ViewTierlist;
@@ -76,7 +76,7 @@ class TierlistResource extends Resource
     {
         return TierlistTable::configure($table)
             ->filters([
-                CompletedFilter::make(),
+                HideIncompleteFilter::make(),
                 SelectFilter::make('type')
                     ->options(collect(TierlistType::cases())->mapWithKeys(fn (TierlistType $type) => [$type->value => $type->label()])),
                 TrashedFilter::make(),

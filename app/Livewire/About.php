@@ -13,11 +13,7 @@ class About extends Component
     {
         return view('livewire.about', [
             'aboutPage' => ApplicationDashboard::first()?->about_page,
-            'content' => cache()->remember(
-                'landing-page-contents',
-                now()->addDay(),
-                fn () => LandingPageContent::all()
-            ),
+            'content' => LandingPageContent::cached(),
         ]);
     }
 }

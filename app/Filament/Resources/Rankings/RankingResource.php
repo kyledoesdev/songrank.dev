@@ -4,7 +4,7 @@ namespace App\Filament\Resources\Rankings;
 
 use App\Enums\RankingType;
 use App\Filament\Concerns\HasCachedNavigationBadge;
-use App\Filament\Resources\Rankings\Filters\InProcessFilter;
+use App\Filament\Filters\HideIncompleteFilter;
 use App\Filament\Resources\Rankings\Pages\EditRanking;
 use App\Filament\Resources\Rankings\Pages\ListRankings;
 use App\Filament\Resources\Rankings\Pages\ViewRanking;
@@ -65,7 +65,7 @@ class RankingResource extends Resource
     {
         return RankingTable::configure($table)
             ->filters([
-                InProcessFilter::make(),
+                HideIncompleteFilter::make(),
                 TrashedFilter::make(),
             ])
             ->recordActions([

@@ -21,7 +21,7 @@ describe('in process filter', function () {
 
         Livewire::actingAs(kyle())
             ->test(ListRankings::class)
-            ->filterTable('in_process', false)
+            ->filterTable('hide_incomplete', false)
             ->assertCanSeeTableRecords([$completed, $inProcess]);
     });
 });

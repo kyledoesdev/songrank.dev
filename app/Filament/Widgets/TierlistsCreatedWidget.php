@@ -14,8 +14,6 @@ class TierlistsCreatedWidget extends ChartWidget
 
     protected ?string $heading = 'Tier List Stats';
 
-    protected static ?int $sort = 4;
-
     protected function getData(): array
     {
         $trendConfig = $this->getTrendConfig();

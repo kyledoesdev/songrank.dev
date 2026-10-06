@@ -1,3 +1,5 @@
+@blaze(fold: true)
+
 <x-card class="p-4 animate-pulse">
     <div class="flex gap-5">
         <div class="shrink-0">

@@ -67,6 +67,11 @@ class ReviewQueryBuilder extends Builder
         return $this->where('type', $type->value);
     }
 
+    public function publicPublishedCount(): int
+    {
+        return (int) (round($this->newQuery()->published()->public()->count() / 25) * 25);
+    }
+
     public function explorableCount(): int
     {
         return $this->newQuery()->public()->published()->count();
@@ -80,6 +85,15 @@ class ReviewQueryBuilder extends Builder
     public function drafts(): static
     {
         return $this->where('is_published', false);
+    }
+
+    /**
+     * A review is finished once it is published, so this matches what
+     * `completed()` means for rankings and tier lists.
+     */
+    public function completed(): static
+    {
+        return $this->published();
     }
 
     public function published(): static

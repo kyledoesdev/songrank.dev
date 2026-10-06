@@ -10,6 +10,7 @@
 
 @theme {
     --font-sans: 'Inter', 'Popins', sans-serif; /* 'Fredoka',  */
+    --font-script: 'Pacifico', cursive;
 }
 
 @import '../../vendor/spatie/laravel-comments-livewire/resources/dist/comments.css';

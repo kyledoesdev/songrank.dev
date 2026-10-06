@@ -1,36 +1,35 @@
 @props(['content'])
 
+@php
+    $modes = [
+        ['key' => 'rankings', 'icon' => 'fa-ranking-star', 'color' => 'purple'],
+        ['key' => 'tierlists', 'icon' => 'fa-layer-group', 'color' => 'green'],
+        ['key' => 'reviews', 'icon' => 'fa-pen-nib', 'color' => 'blue'],
+    ];
+@endphp
+
 <section class="py-16 px-4">
     <div class="max-w-6xl mx-auto">
         <div class="text-center mb-12">
-            <h2 class="text-3xl md:text-4xl font-bold text-gray-900">{{ $content->firstWhere('slug', 'how-it-works-title')->text }}</h2>
-            <p class="mt-3 text-lg text-gray-800/60">{{ $content->firstWhere('slug', 'how-it-works-subtitle')->text }}</p>
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900">{{ $content->get('how-it-works-title') }}</h2>
+            <p class="mt-3 text-lg text-gray-800/60">{{ $content->get('how-it-works-subtitle') }}</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-white/15 backdrop-blur-sm rounded-2xl p-8 border border-white/20 shadow-lg text-center group hover:bg-white/25 transition-all">
-                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-400/20 flex items-center justify-center">
-                    <i class="fa-solid fa-magnifying-glass text-2xl text-purple-600"></i>
+            @foreach ($modes as $mode)
+                <div class="bg-white/15 backdrop-blur-sm rounded-2xl p-8 border border-white/20 shadow-lg text-center hover:bg-white/25 transition-all">
+                    <div @class([
+                        'w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center',
+                        'bg-purple-400/20 text-purple-600' => $mode['color'] === 'purple',
+                        'bg-green-400/20 text-green-600' => $mode['color'] === 'green',
+                        'bg-blue-400/20 text-blue-600' => $mode['color'] === 'blue',
+                    ])>
+                        <i class="fa-solid {{ $mode['icon'] }} text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">{{ $content->get("how-it-works-{$mode['key']}-title") }}</h3>
+                    <p class="text-gray-800/60">{{ $content->get("how-it-works-{$mode['key']}-text") }}</p>
                 </div>
-                <h3 class="text-xl font-bold text-gray-900 mb-2">{{ $content->firstWhere('slug', 'how-it-works-step-1-title')->text }}</h3>
-                <p class="text-gray-800/60">{{ $content->firstWhere('slug', 'how-it-works-step-1-text')->text }}</p>
-            </div>
-
-            <div class="bg-white/15 backdrop-blur-sm rounded-2xl p-8 border border-white/20 shadow-lg text-center group hover:bg-white/25 transition-all">
-                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-green-400/20 flex items-center justify-center">
-                    <i class="fa-solid fa-code-compare text-2xl text-green-600"></i>
-                </div>
-                <h3 class="text-xl font-bold text-gray-900 mb-2">{{ $content->firstWhere('slug', 'how-it-works-step-2-title')->text }}</h3>
-                <p class="text-gray-800/60">{{ $content->firstWhere('slug', 'how-it-works-step-2-text')->text }}</p>
-            </div>
-
-            <div class="bg-white/15 backdrop-blur-sm rounded-2xl p-8 border border-white/20 shadow-lg text-center group hover:bg-white/25 transition-all">
-                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-400/20 flex items-center justify-center">
-                    <i class="fa-solid fa-trophy text-2xl text-blue-600"></i>
-                </div>
-                <h3 class="text-xl font-bold text-gray-900 mb-2">{{ $content->firstWhere('slug', 'how-it-works-step-3-title')->text }}</h3>
-                <p class="text-gray-800/60">{{ $content->firstWhere('slug', 'how-it-works-step-3-text')->text }}</p>
-            </div>
+            @endforeach
         </div>
     </div>
 </section>

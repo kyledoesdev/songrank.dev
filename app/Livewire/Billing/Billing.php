@@ -3,6 +3,7 @@
 namespace App\Livewire\Billing;
 
 use App\Livewire\Concerns\InteractsWithAlerts;
+use App\Models\PlanFeature;
 use App\Models\ProLicense;
 use App\Services\Billing\StripeReceiptService;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +17,7 @@ class Billing extends Component
     {
         return view('livewire.billing.billing', [
             'license' => $this->license(),
+            'features' => PlanFeature::cached(),
         ]);
     }
 

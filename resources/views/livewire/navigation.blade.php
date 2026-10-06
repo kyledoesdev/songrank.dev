@@ -31,7 +31,7 @@
             style="display: none;"
         >
             <div class="flex items-center justify-between h-16 px-4 border-b">
-                <a href="{{ auth()->check() ? route('dashboard') : route('welcome') }}" class="flex items-center">
+                <a href="{{ route('welcome') }}" class="flex items-center">
                     <img src="{{ logo() }}" alt="{{ config('app.name') }} Logo" class="h-8 w-8 rounded-lg" />
                     <span class="text-sm font-medium text-zinc-800 ml-2">{{ config('app.name') }}</span>
                 </a>
@@ -95,7 +95,7 @@
         <div class="hidden lg:block w-full">
             <div class="flex justify-between items-center shadow-md bg-white rounded-lg py-4 px-4 w-full">
                 <div class="flex items-center">
-                    <a href="{{ auth()->check() ? route('dashboard') : route('welcome') }}" class="h-10 flex items-center me-4">
+                    <a href="{{ route('welcome') }}" class="h-10 flex items-center me-4">
                         <div class="flex items-center justify-center h-8 rounded-sm overflow-hidden shrink-0">
                             <img src="{{ logo() }}" alt="{{ config('app.name') }} Logo" class="h-8 w-8 rounded-2xl" />
                         </div>
