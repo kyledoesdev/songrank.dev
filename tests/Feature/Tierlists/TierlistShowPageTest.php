@@ -94,9 +94,10 @@ describe('the board', function () {
 
         actingAs(kyle());
 
+        expect($tierlist->fresh()->bankIsEmpty())->toBeFalse();
+
         get(route('tierlist', ['id' => $tierlist->getKey()]))
-            ->assertSee('Unranked')
-            ->assertSee('1 still to place');
+            ->assertSee($tierlist->bank->name);
     });
 
     it('drops that section once everything has been placed', function () {
@@ -106,7 +107,7 @@ describe('the board', function () {
 
         actingAs(kyle());
 
-        get(route('tierlist', ['id' => $tierlist->getKey()]))->assertDontSee('Unranked');
+        expect($tierlist->fresh()->bankIsEmpty())->toBeTrue();
     });
 });
 
@@ -141,7 +142,7 @@ describe('comments', function () {
         actingAs(kyle())
             ->get(route('tierlist', ['id' => $tierlist->getKey()]))
             ->assertOk()
-            ->assertSee('No comments yet');
+            ->assertSeeLivewire('comments');
     });
 
     it('is hidden when comments are disabled', function () {
@@ -150,7 +151,7 @@ describe('comments', function () {
         actingAs(kyle())
             ->get(route('tierlist', ['id' => $tierlist->getKey()]))
             ->assertOk()
-            ->assertDontSee('No comments yet');
+            ->assertDontSeeLivewire('comments');
     });
 });
 

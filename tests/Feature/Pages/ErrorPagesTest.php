@@ -16,24 +16,23 @@ describe('error pages', function () {
         get('/this-page-does-not-exist')
             ->assertNotFound()
             ->assertSee('404')
-            ->assertSee('Leaderboards')
-            ->assertSee('Built by');
+            ->assertSee(route('explore'), escape: false)
+            ->assertSee('<footer', escape: false);
     });
 
     test('drops the site chrome for livewire requests', function () {
         withHeaders(['X-Livewire' => 'true'])
             ->get('/this-page-does-not-exist')
             ->assertNotFound()
-            ->assertSee('Try that again')
-            ->assertDontSee('Leaderboards')
-            ->assertDontSee('Built by');
+            ->assertDontSee(route('explore'), escape: false)
+            ->assertDontSee('<footer', escape: false);
     });
 
     test('offers support options on server errors', function () {
         get('/testing/abort/500')
             ->assertStatus(500)
-            ->assertSee('Ask on Discord')
-            ->assertDontSee('Open the support bubble');
+            ->assertSee('discord.gg', escape: false)
+            ->assertDontSee('spatie-support-bubble', escape: false);
     });
 
     test('adds the support bubble for signed in users', function () {
@@ -41,7 +40,7 @@ describe('error pages', function () {
 
         get('/testing/abort/500')
             ->assertStatus(500)
-            ->assertSee('Open the support bubble');
+            ->assertSee('spatie-support-bubble', escape: false);
     });
 
     test('falls back to the xx views for statuses without their own page', function () {

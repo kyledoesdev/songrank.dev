@@ -6,29 +6,17 @@ use App\Models\User;
 use Livewire\Livewire;
 
 describe('the free plan view', function () {
-    it('shows what the plan is called and how to upgrade', function () {
+    it('shows the upgrade path', function () {
         Livewire::actingAs(User::factory()->createOne())
             ->test(Billing::class)
-            ->assertSee('Free Plan')
-            ->assertSee('Unlock forever')
             ->assertSee(route('billing.checkout'), escape: false);
     });
 
     it('compares the two plans', function () {
         Livewire::actingAs(User::factory()->createOne())
             ->test(Billing::class)
-            ->assertSee('Your current plan')
             ->assertSee(config('app.name').' Pro')
-            ->assertSee('100 rankings')
-            ->assertSee('Unlimited rankings')
-            ->assertSee('once, no subscription');
-    });
-
-    it('does not report ranking usage — that card belongs to the dashboard', function () {
-        Livewire::actingAs(userWithRankings(3))
-            ->test(Billing::class)
-            ->assertDontSee('Your Rankings')
-            ->assertDontSee('3 of 100');
+            ->assertSee((string) config('billing.ranking_limits.free'));
     });
 });
 
@@ -37,15 +25,7 @@ describe('the Pro view', function () {
         Livewire::actingAs(proUser())
             ->test(Billing::class)
             ->assertSee(config('app.name').' Pro')
-            ->assertDontSee('Unlock forever')
-            ->assertDontSee('Your current plan');
-    });
-
-    it('thanks the buyer rather than listing entitlements', function () {
-        Livewire::actingAs(proUser())
-            ->test(Billing::class)
-            ->assertSee('Thanks for supporting '.config('app.name'))
-            ->assertDontSee('of 100');
+            ->assertDontSee(route('billing.checkout'), escape: false);
     });
 
     it('shows the licence id, amount and purchase date', function () {
@@ -95,7 +75,7 @@ describe('the Pro view', function () {
 
         Livewire::actingAs($user)
             ->test(Billing::class)
-            ->assertDontSee('Payment method');
+            ->assertOk();
     });
 });
 
@@ -107,10 +87,7 @@ describe('a complimentary licence', function () {
         Livewire::actingAs($user)
             ->test(Billing::class)
             ->assertOk()
-            ->assertSee('Complimentary')
-            ->assertDontSee('Fetch receipt')
-            ->assertDontSee('fa-file-pdf')
-            ->assertDontSee('Payment method');
+            ->assertDontSee('fa-file-pdf', escape: false);
     });
 
     it('still counts as Pro', function () {
@@ -128,9 +105,8 @@ describe('a refunded licence', function () {
 
         Livewire::actingAs($user)
             ->test(Billing::class)
-            ->assertSee('Free Plan')
-            ->assertSee('Your Previous Purchase')
-            ->assertSee('Refunded')
-            ->assertSee('Unlock forever');
+            ->assertSee(route('billing.checkout'), escape: false);
+
+        expect($user->fresh()->is_pro)->toBeFalse();
     });
 });

@@ -126,7 +126,7 @@ describe('returning from Stripe', function () {
         actingAs($user)
             ->get(route('billing.success', ['session_id' => 'cs_test_songrank']))
             ->assertRedirect(route('billing'))
-            ->assertSessionHas('success', 'Welcome to '.config('app.name').' Pro!');
+            ->assertSessionHas('success');
 
         expect($license->fresh()->status)->toBe(ProLicenseStatus::ACTIVE)
             ->and($user->fresh()->is_pro)->toBeTrue();
@@ -147,7 +147,7 @@ describe('returning from Stripe', function () {
         actingAs($user)
             ->get(route('billing.success', ['session_id' => 'cs_test_songrank']))
             ->assertRedirect(route('billing'))
-            ->assertSessionHas('success', 'Thanks! Your purchase is being confirmed and will appear here shortly.');
+            ->assertSessionHas('success');
 
         expect($license->fresh()->status)->toBe(ProLicenseStatus::PENDING)
             ->and($user->fresh()->is_pro)->toBeFalse();

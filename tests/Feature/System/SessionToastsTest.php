@@ -26,8 +26,8 @@ describe('session flashes', function () {
 
         Livewire::test(SessionToasts::class)
             ->assertDispatched('toast-show', function (string $event, array $params): bool {
-                return $params['slots']['heading'] === 'There were errors with your request'
-                    && $params['dataset']['variant'] === 'danger';
+                return $params['dataset']['variant'] === 'danger'
+                    && filled($params['slots']['heading']);
             });
     });
 

@@ -97,10 +97,10 @@ describe('legal document pages', function () {
 
         get(route('terms'))
             ->assertOk()
-            ->assertSee('This document has not been published yet.');
+            ->assertDontSee('<h2', escape: false);
 
         get(route('privacy'))
             ->assertOk()
-            ->assertSee('This document has not been published yet.');
+            ->assertDontSee('<h2', escape: false);
     });
 });

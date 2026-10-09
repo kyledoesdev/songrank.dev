@@ -74,9 +74,8 @@ describe('explorable rankings counter', function () {
             'completed_at' => null,
         ]);
 
-        get(route('explore'))
-            ->assertOk()
-            ->assertSee('2 completed rankings to explore');
+        Livewire::test(RankingsFeed::class)
+            ->assertViewHas('totalRankings', 2);
     });
 
     test('completing a ranking busts the counter cache', function () {

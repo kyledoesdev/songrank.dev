@@ -42,7 +42,7 @@ describe('faq page', function () {
 
         get(route('faq'))
             ->assertOk()
-            ->assertSee('No FAQs available at this time.');
+            ->assertDontSee('wire:key="faq-', escape: false);
     });
 });
 
