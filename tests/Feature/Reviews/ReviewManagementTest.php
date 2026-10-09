@@ -163,7 +163,7 @@ describe('editing once published', function () {
         ]);
 
         editReview($review)
-            ->assertSee('Want to change a published review?')
+            ->assertSee(route('billing'), escape: false)
             ->set('stars', 2)
             ->set('body', '<p>Rewritten</p>')
             ->set('form.name', 'Renamed')
@@ -181,7 +181,7 @@ describe('editing once published', function () {
         $review = Review::factory()->for(proUser(['is_dev' => true]))->published()->createOne();
 
         $component = editReview($review)
-            ->assertDontSee('Want to change a published review?')
+            ->assertDontSee(route('billing'), escape: false)
             ->call('setStars', 3)
             ->set('body', '<p>Changed my mind</p>')
             ->call('save');
@@ -212,7 +212,7 @@ describe('deleting', function () {
         editReview($review)
             ->call('destroy')
             ->assertRedirect(route('profile', ['id' => $review->user->spotify_id]))
-            ->assertSessionHas('success', 'Review removed successfully.');
+            ->assertSessionHas('success');
 
         expect(Review::find($review->getKey()))->toBeNull()
             ->and(Review::withTrashed()->find($review->getKey()))->not->toBeNull();

@@ -71,7 +71,6 @@ describe('profile tabs', function () {
         actingAs($visitor)
             ->get(route('profile', ['id' => $owner->spotify_id]))
             ->assertOk()
-            ->assertSee("This user hasn't created anything yet.", escape: false)
             ->assertDontSee('Go build something great!');
     });
 

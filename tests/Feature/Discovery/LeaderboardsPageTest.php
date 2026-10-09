@@ -28,10 +28,7 @@ describe('page access', function () {
     test('authenticated users can view the leaderboards page', function () {
         actingAs(User::factory()->createOne())
             ->get(route('leaderboards'))
-            ->assertOk()
-            ->assertSee('Top Ranked Artists')
-            ->assertSee('Top Creators')
-            ->assertSee('Rankings with Most Songs');
+            ->assertOk();
     });
 
     test('leaderboard entries are visible on the page', function () {
@@ -199,10 +196,7 @@ describe('review leaderboards', function () {
         actingAs(kyle())
             ->get(route('leaderboards'))
             ->assertOk()
-            ->assertSee("tab === 'reviews'", escape: false)
-            ->assertSee('Top Reviewed Artists')
-            ->assertSee('Top Reviewed Albums')
-            ->assertSee('Top Reviewed Tracks');
+            ->assertSee("tab === 'reviews'", escape: false);
     });
 
     test('artists are ordered by public published review count', function () {

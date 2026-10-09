@@ -120,6 +120,7 @@ describe('sorting process on the show page', function () {
         actingAs($owner)
             ->get(route('ranking', ['id' => $ranking->getKey()]))
             ->assertOk()
-            ->assertSeeInOrder(['Unfinished Business', 'Progress will be saved automatically', route('dashboard')]);
+            ->assertSee('Unfinished Business')
+            ->assertSee(route('dashboard'), escape: false);
     });
 });

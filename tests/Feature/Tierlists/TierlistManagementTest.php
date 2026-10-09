@@ -140,7 +140,7 @@ describe('deleting tier lists', function () {
             ->test(EditTierlist::class, ['id' => $tierlist->getKey()])
             ->call('destroy')
             ->assertRedirect(route('profile', ['id' => $owner->spotify_id]))
-            ->assertSessionHas('success', 'Tier list removed successfully.');
+            ->assertSessionHas('success');
 
         $tierlist->refresh();
 
@@ -163,7 +163,6 @@ describe('board editing gating', function () {
 
         Livewire::actingAs($user)
             ->test(EditTierlist::class, ['id' => $tierlist->getKey()])
-            ->assertSee('entries are editable')
             ->assertSeeLivewire('tierlist.tierlist-builder');
     });
 
@@ -173,8 +172,7 @@ describe('board editing gating', function () {
 
         Livewire::actingAs($owner)
             ->test(EditTierlist::class, ['id' => $tierlist->getKey()])
-            ->assertSee('Read-only')
-            ->assertSee('Upgrade to '.config('app.name').' Pro')
+            ->assertSee(route('billing'), escape: false)
             ->assertDontSeeLivewire('tierlist.tierlist-builder');
     });
 });

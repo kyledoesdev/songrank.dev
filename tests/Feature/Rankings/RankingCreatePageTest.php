@@ -2,6 +2,7 @@
 
 use App\Livewire\SongRank\RankingPanel;
 use App\Livewire\SongRank\Setup\ArtistSetup;
+use App\Livewire\SongRank\Setup\PlaylistSetup;
 use App\Livewire\SongRank\SongRankSetup;
 use App\Models\User;
 use Livewire\Livewire;
@@ -22,10 +23,10 @@ describe('create page', function () {
     });
 
     test('type query parameter pre-selects the ranking type', function () {
-        actingAs(User::factory()->createOne())
-            ->get(route('rankings.create', ['type' => 'playlist']))
-            ->assertOk()
-            ->assertDontSee('Search for an artist');
+        Livewire::actingAs(User::factory()->createOne())
+            ->withQueryParams(['type' => 'playlist'])
+            ->test(SongRankSetup::class)
+            ->assertSeeLivewire(PlaylistSetup::class);
     });
 
     test('defaults to artist setup without a type parameter', function () {
@@ -49,6 +50,6 @@ describe('ranking panel', function () {
 
         Livewire::actingAs(User::factory()->createOne())
             ->test(RankingPanel::class)
-            ->assertSee('go Pro for more');
+            ->assertSee(route('billing'), escape: false);
     });
 });

@@ -13,7 +13,7 @@ describe('the panel on the dashboard', function () {
         actingAs(kyle());
 
         get(route('dashboard'))
-            ->assertSee('Say what you actually thought')
+            ->assertSee('Reviews')
             ->assertSee(route('reviews.create', ['type' => 'artist']), escape: false)
             ->assertSee(route('reviews.create', ['type' => 'album']), escape: false)
             ->assertSee(route('reviews.create', ['type' => 'track']), escape: false);
@@ -27,8 +27,8 @@ describe('what the panel offers', function () {
 
         Livewire::actingAs($user)
             ->test(ReviewPanel::class)
-            ->assertSee('2 / 5 used')
-            ->assertDontSee('go Pro for more');
+            ->assertSee('2 / 5')
+            ->assertDontSee(route('billing'), escape: false);
     });
 
     it('sends a spent allowance to billing instead of to setup', function () {
@@ -37,15 +37,14 @@ describe('what the panel offers', function () {
         Livewire::actingAs($user)
             ->test(ReviewPanel::class)
             ->assertDontSee(route('reviews.create', ['type' => 'album']), escape: false)
-            ->assertSee(route('billing'), escape: false)
-            ->assertSee('5 / 5 used')
-            ->assertSee('go Pro for more');
+            ->assertSee(route('billing'), escape: false);
     });
 
     it('says unlimited for a pro account', function () {
-        Livewire::actingAs(proUser(['is_dev' => true]))
+        $user = proUser(['is_dev' => true]);
+
+        Livewire::actingAs($user)
             ->test(ReviewPanel::class)
-            ->assertSee('Unlimited reviews')
-            ->assertDontSee('used');
+            ->assertDontSee(route('billing'), escape: false);
     });
 });

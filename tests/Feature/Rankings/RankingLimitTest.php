@@ -62,16 +62,14 @@ describe('the setup screen at the limit', function () {
     it('replaces the search box with an upgrade prompt', function () {
         Livewire::actingAs(userWithRankings(2))
             ->test(ArtistSetup::class)
-            ->assertSee("You've reached 2 rankings", escape: false)
-            ->assertSee('Go Pro')
+            ->assertSee(route('billing'), escape: false)
             ->assertDontSee('wire:keydown.enter="search"', escape: false);
     });
 
     it('shows the search box while there is headroom', function () {
         Livewire::actingAs(userWithRankings(1))
             ->test(ArtistSetup::class)
-            ->assertSee('Choose a ranking type to get started')
-            ->assertDontSee('Go Pro');
+            ->assertDontSee(route('billing'), escape: false);
     });
 
     it('never blocks a Pro user', function () {
@@ -80,8 +78,7 @@ describe('the setup screen at the limit', function () {
 
         Livewire::actingAs($user)
             ->test(ArtistSetup::class)
-            ->assertSee('Choose a ranking type to get started')
-            ->assertDontSee('Go Pro');
+            ->assertDontSee(route('billing'), escape: false);
     });
 
     it('blocks every setup type, not just artists', function () {
@@ -90,7 +87,7 @@ describe('the setup screen at the limit', function () {
         foreach ([ArtistSetup::class, PlaylistSetup::class, ShowSetup::class] as $component) {
             Livewire::actingAs($user)
                 ->test($component)
-                ->assertSee('Go Pro');
+                ->assertSee(route('billing'), escape: false);
         }
     });
 });

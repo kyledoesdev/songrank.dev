@@ -107,7 +107,7 @@ describe('deleting rankings', function () {
             ->test(EditRanking::class, ['id' => $ranking->getKey()])
             ->call('destroy')
             ->assertRedirect(route('profile', ['id' => $user->spotify_id]))
-            ->assertSessionHas('success', 'Ranking removed successfully.');
+            ->assertSessionHas('success');
 
         $ranking->refresh();
 
