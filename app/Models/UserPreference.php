@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CatalogSort;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +17,13 @@ class UserPreference extends Model
         'user_id',
         'recieve_newsletter_emails',
         'enabled_comment_mentions',
+        'catalog_sort',
+        'catalog_is_public',
+    ];
+
+    protected $attributes = [
+        'catalog_sort' => 'alphabetical',
+        'catalog_is_public' => false,
     ];
 
     protected function casts(): array
@@ -23,6 +31,8 @@ class UserPreference extends Model
         return [
             'recieve_newsletter_emails' => 'boolean',
             'enabled_comment_mentions' => 'boolean',
+            'catalog_sort' => CatalogSort::class,
+            'catalog_is_public' => 'boolean',
         ];
     }
 

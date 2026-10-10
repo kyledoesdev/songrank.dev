@@ -76,6 +76,8 @@ class PlaylistSetup extends Component
             'playlist' => $this->selectedPlaylist,
         ]);
 
+        $this->fileIntoCrates($ranking);
+
         $this->redirect(route('ranking', ['id' => $ranking->getKey()]));
     }
 

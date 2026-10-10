@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Contracts\CrateEntity;
 use App\Enums\ReviewType;
+use App\Models\Concerns\BelongsToCrates;
 use App\QueryBuilders\ReviewQueryBuilder;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
@@ -17,8 +19,9 @@ use Kyledoesdev\Essentials\Concerns\HasStatsAfterEvents;
 use Spatie\Comments\Models\Concerns\HasComments;
 
 #[UseEloquentBuilder(ReviewQueryBuilder::class)]
-class Review extends Model
+class Review extends Model implements CrateEntity
 {
+    use BelongsToCrates;
     use HasComments;
     use HasFactory;
     use HasStatsAfterEvents;
@@ -176,6 +179,26 @@ class Review extends Model
 
     /* Contracts */
 
+    public function cover(): ?string
+    {
+        return $this->subject?->cover();
+    }
+
+    public function label(): string
+    {
+        return $this->type->label().' review';
+    }
+
+    public function url(): string
+    {
+        return route('review', ['id' => $this->getKey()]);
+    }
+
+    public function progressLabel(): ?string
+    {
+        return $this->is_published ? null : 'Draft';
+    }
+
     public function commentableName(): string
     {
         return $this->name;
@@ -183,6 +206,6 @@ class Review extends Model
 
     public function commentUrl(): string
     {
-        return route('review', ['id' => $this->getKey()]);
+        return $this->url();
     }
 }

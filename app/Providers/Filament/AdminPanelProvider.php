@@ -13,6 +13,7 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -46,6 +47,10 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make('System')
                     ->collapsible(),
             ])
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn (): string => '<script src="https://kit.fontawesome.com/07b7751319.js" crossorigin="anonymous"></script>',
+            )
             ->userMenuItems([
                 MenuItem::make()
                     ->label('Application Health')

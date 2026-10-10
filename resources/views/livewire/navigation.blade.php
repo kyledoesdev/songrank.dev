@@ -54,6 +54,12 @@
                     </a>
                 @endif
                 @auth
+                    @if (Route::currentRouteName() !== 'catalog')
+                        <a href="{{ route('catalog') }}" class="flex items-center px-3 py-2 text-sm font-medium text-zinc-800 rounded-md hover:bg-gray-100">
+                            <i class="fa fa-book mr-3"></i>
+                            Catalog
+                        </a>
+                    @endif
                     {{-- @if (Route::currentRouteName() != 'profile' || (Route::currentRouteName() == 'profile' && Route::current()->parameter('id') != auth()->user()?->spotify_id))
                         <a href="{{ route('profile', ['id' => auth()->user()->spotify_id ]) }}" class="flex items-center px-3 py-2 text-sm font-medium text-zinc-800 rounded-md hover:bg-gray-100">
                             <i class="fa fa-user mr-3"></i>
@@ -105,6 +111,13 @@
                         <i class="fa fa-house mr-1"></i>
                         <span class="text-xs font-medium text-zinc-800 mx-1">Home</span>
                     </a>
+
+                    @auth
+                        <a href="{{ route('catalog') }}" class="h-10 flex items-center me-4 rounded-lg cursor-pointer p-2 {{ in_array(Route::currentRouteName(), ['catalog', 'catalog.crate']) ? 'bg-purple-100 border-b-3 border-purple-400' : 'bg-gray-100' }}">
+                            <i class="fa fa-book mr-1"></i>
+                            <span class="text-xs font-medium text-zinc-800 mx-1">Catalog</span>
+                        </a>
+                    @endauth
 
                     <a href="{{ route('explore') }}" class="h-10 flex items-center me-4 rounded-lg cursor-pointer p-2 {{ Route::currentRouteName() == 'explore' ? 'bg-purple-100 border-b-3 border-purple-400' : 'bg-gray-100' }}">
                         <i class="fa fa-compass mr-1"></i>

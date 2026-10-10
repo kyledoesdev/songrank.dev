@@ -56,6 +56,15 @@
             </select>
         </div>
 
+        <div class="my-2">
+            <label>Add To Crates</label>
+            <livewire:catalog.crate-picker
+                wire:model="crateIds"
+                class="w-full bg-zinc-100 rounded-lg p-2 text-left focus:ring-2 focus:ring-blue-400"
+                wire:key="crate-picker"
+            />
+        </div>
+
         <p @class([
             'text-sm mb-2',
             'text-red-600 font-semibold' => $tracksToRankCount > Ranking::MAX_SONGS,

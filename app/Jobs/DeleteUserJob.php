@@ -23,6 +23,9 @@ class DeleteUserJob implements ShouldQueue
 
     public function handle(): void
     {
+        /* First, so nothing deleted below has to take itself out of a crate one row at a time. */
+        $this->user->crates()->delete();
+
         /* Get the user's rankings. */
         $rankings = $this->user
             ->rankings()

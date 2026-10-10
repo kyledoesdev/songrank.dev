@@ -16,6 +16,8 @@ songrank.dev — a Laravel 13 application with two ways to order music, and one 
 
 Users authenticate with Spotify. A finished record of any kind can be made public, browsed from the explore page and commented on; rankings can also be exported.
 
+The **Catalog** sits on top of all three: each user files their own rankings, tier lists and reviews into folders called **crates**, and one record can sit in as many crates as they like. A catalog is private unless its owner makes it public, which lets anyone browse it from their profile.
+
 ## Commands
 
 ### Development
@@ -55,11 +57,11 @@ Users authenticate with Spotify. A finished record of any kind can be made publi
 
 ### Routes
 
-`routes/web.php` holds the public and account routes, then requires one file per domain: `routes/rankings.php`, `routes/billing.php`, `routes/tierlists.php` and `routes/reviews.php`. Pages are Livewire components registered with `Route::livewire()` and titled with `->withHead()`.
+`routes/web.php` holds the public and account routes, then requires one file per domain: `routes/rankings.php`, `routes/billing.php`, `routes/tierlists.php`, `routes/reviews.php` and `routes/catalog.php`. Pages are Livewire components registered with `Route::livewire()` and titled with `->withHead()`.
 
 Developer-only routes use `IsDeveloper` from `kyledoesdev/essentials`.
 
-The show routes (`/rank/{id}`, `/tierlist/{id}`, `/review/{id}`) are public because a finished, public list is meant to be shared; the component decides who may actually see each record (`canBeSeen()`), and serves the sorting process itself to an owner whose list is not finished yet.
+The show routes (`/rank/{id}`, `/tierlist/{id}`, `/review/{id}`) are public because a finished, public list is meant to be shared; the component decides who may actually see each record (`canBeSeen()`), and serves the sorting process itself to an owner whose list is not finished yet. Crate pages (`/catalog/{id}`) are the exception: they sit behind auth, and `Crate::canBeSeen()` keeps each one to its owner.
 
 ### Action Pattern
 
@@ -68,6 +70,7 @@ Business logic lives in `app/Actions/` rather than in controllers or Livewire co
 - `Actions/Rankings/` — ranking creation, update and deletion (`StoreArtistRanking`, `StorePlaylistRanking`, `StoreShowRanking`, `UpdateRanking`, `DestroyRanking`). `CompleteSongRankProcess` sits at the `app/Actions/` root rather than in here.
 - `Actions/Reviews/` — review lifecycle (`StoreReview`, `UpdateReview`, `PublishReview`, `DestroyReview`), `ResolveReviewSubject` for turning a search result into a local model, and `CleanReviewBody` (see **Reviews** below)
 - `Actions/Tierlists/` — list lifecycle (`StoreTierlist`, `CreateDefaultTiers`, `MoveTierlistItem`, `CompleteTierlist`, `ResolveTierlistEntries`), with tier CRUD under `Actions/Tierlists/Tiers/`
+- `Actions/Catalog/` — crates and what is filed in them (`StoreCrate`, `UpdateCrate`, `DestroyCrate`, `MoveCrate`, `ReorderCrate`, `UpdateCatalogSort`, `AddCrateItem`, `RemoveCrateItem`, `MoveCrateItem`, `SyncEntityCrates`). They trust their caller: ownership and Pro checks live in the Livewire components (see **Catalog** below)
 - `Actions/Spotify/` — every Spotify API call (`SearchArtists`, `SearchAlbums`, `SearchTracks`, `GetArtistSongs`, `GetArtistAlbums`, `GetPlaylistTracks`, `GetShowEpisodes`, `RefreshToken`). `GetArtistAppearsOnSongs` is deliberately separate: featured tracks are expensive to fetch for prolific guests, so `count()` probes cheaply during artist selection and `handle()` only runs when the user toggles the featured list on
 - `Actions/Artists/`, `Actions/Playlists/` — resolve a Spotify payload into local models
 - `Actions/Billing/` — the Song Rank Pro purchase lifecycle (`StartProCheckout`, `FulfillProPurchase`, `RevokeProLicense`, `GrantProLicense`, `HandleStripeWebhook`)
@@ -86,9 +89,10 @@ The primary UI layer. Each page is a Livewire component in `app/Livewire/`:
 - `Dashboard/Dashboard` and `Dashboard/InProgress` — the user's rankings and lists
 - `Explorer`, with `Explorer/RankingsFeed`, `Explorer/TierlistsFeed` and `Explorer/ReviewsFeed` — browse public records. The three feeds share `Livewire/Concerns/HasInfiniteFeed`
 - `Ranking/Ranking`, `Ranking/EditRanking`, `Tierlist/TierlistShow`, `Tierlist/EditTierlist` — view and manage one record
+- `Catalog/Catalog` and `Catalog/CrateShow` — the catalog and one crate's page, sharing `Catalog/Concerns/HasCrateList`. `Catalog/CrateSettings` is a crate's cog popover, `Catalog/AddToCrateModal` files records from inside a crate, and `Catalog/CratePicker` files one record into crates from its setup form or its finished show page. `Catalog/CatalogModal` is the read-only catalog a profile opens
 - `Profile/Profile`, `Profile/Settings`, `Billing/Billing`, `Navigation`, `Notifications/ShowAll`
 
-Shared behaviour lives in traits rather than base classes: `Livewire/Concerns/InteractsWithAlerts` centralizes flash messaging for every component (see **Alerts** below), and per-domain concerns sit in `SongRank/Concerns/` (`HasTrackList`, `HasRankingForm`, `HasSetupFlashErrors`) `Tierlist/Concerns/` (`HasEntryBank`, `HasTierlistForm`, `HasTierlistFlashErrors`) and `Reviews/Concerns/` (`HasReviewSubject`, `HasReviewForm`, `HasReviewFlashErrors`). Form objects are in `Livewire/Forms/`, and shared markup in `resources/views/livewire/{song-rank,tierlist}/setup/partials/`.
+Shared behaviour lives in traits rather than base classes: `Livewire/Concerns/InteractsWithAlerts` centralizes flash messaging for every component (see **Alerts** below), and per-domain concerns sit in `SongRank/Concerns/` (`HasTrackList`, `HasRankingForm`, `HasSetupFlashErrors`) `Tierlist/Concerns/` (`HasEntryBank`, `HasTierlistForm`, `HasTierlistFlashErrors`) `Reviews/Concerns/` (`HasReviewSubject`, `HasReviewForm`, `HasReviewFlashErrors`) and `Catalog/Concerns/` (`HasCrateList`, `FilesIntoCrates`). Form objects are in `Livewire/Forms/`, and shared markup in `resources/views/livewire/{song-rank,tierlist}/setup/partials/`.
 
 ### Alerts
 
@@ -101,13 +105,15 @@ Flux is installed for toasts and the review editor only. Nav, cards, buttons, in
 
 ### Key Models and Relationships
 
-- `User` → has many `Ranking`, `Tierlist` and `ProLicense`; has one `UserPreference`. Allowance logic lives in `Models/Concerns/HasRankingAllowance` and `HasTierlistAllowance`
+- `User` → has many `Ranking`, `Tierlist`, `Crate` and `ProLicense`; has one `UserPreference`. Allowance logic lives in `Models/Concerns/HasRankingAllowance`, `HasTierlistAllowance` and `HasCrateAllowance`
 - `Ranking` → belongs to `User`, has many `Song`, has one `RankingSortingState`, and has a polymorphic **`source()`** — an `Artist`, `Playlist` or `Show`. There are no per-type foreign keys any more; anything needing the source reads `source`, and `RankingType` says which kind it is
 - `Tierlist` → belongs to `User`, has many `Tier` (the first of which is the bank) and many `TierlistItem`. Its `source()` is polymorphic too, but records **provenance only** — a list assembled from search has none
 - `TierlistItem` → belongs to a `Tier` and morphs to an `entryable`: an `Artist`, `Album` or `Track`
 - `Review` → belongs to `User` and morphs to a `subject`: an `Artist`, `Album` or `Track`. Soft deletes, so one-review-per-subject is enforced in `HasReviewSubject` rather than by a unique index
 - `Song` → `featured_artist` marks tracks the ranked artist only guests on; for those rows `artist_id` points at the track's *primary* artist, while every other row's `artist_id` is the artist the *ranking* belongs to
 - `RankingSortingState` — persists merge-sort algorithm state so rankings can be resumed across sessions
+- `Crate` → belongs to `User`, nests through `parent()` / `children()`, has many `CrateItem` and may have a `CrateIcon`. `CrateItem` morphs to an `entity`: a `Ranking`, `Tierlist` or `Review`
+- `Ranking`, `Tierlist` and `Review` implement `Contracts/CrateEntity` (`cover()`, `label()`, `progressLabel()`, `url()`, `canBeEdited()`, `crateItems()`) and use `Models/Concerns/BelongsToCrates`, which is what lets any of them be filed in a crate and listed the same way
 - `Artist`, `Album`, `Track`, `Playlist` and `Show` all implement `Contracts/SpotifyEntity` (`name()`, `cover()`, `spotifyId()`, `spotifyUrl()`) — that shared shape is what lets a ranking source, a tier list source, a tier list entry and a review subject each be any of them
 
 ### Custom Query Builders
@@ -116,7 +122,7 @@ Every model with non-trivial reads has a builder in `app/QueryBuilders/`, attach
 
 ### Enums
 
-`App\Enums\RankingType`, `App\Enums\TierlistType` and `App\Enums\ReviewType` carry their own presentation (`label()`, `icon()`, `color()`, `filamentColor()`), so neither Blade nor Filament needs to match on a raw string. Billing enums live under `Enums/Billing/`.
+`App\Enums\RankingType`, `App\Enums\TierlistType` and `App\Enums\ReviewType` carry their own presentation (`label()`, `icon()`, `color()`, `filamentColor()`), so neither Blade nor Filament needs to match on a raw string. `CrateEntityType` does the same for the three kinds of record a crate holds, and maps each to its model (`model()`, `query()`). Billing enums live under `Enums/Billing/`.
 
 ### Global Helpers
 
@@ -141,6 +147,19 @@ Three Pennant flags: `songrank-pro` (`app/Features/SongRankPro.php`), `tierlists
 - **The body is user-authored HTML rendered unescaped.** `CleanReviewBody` is the only way in: `symfony/html-sanitizer` with an explicit allowlist first, then Blasp on the text *between* tags only (Blasp mangles tag characters). It also derives `body_text`, the plain copy used for search and excerpts. Anything that writes `body` must go through it — the Filament form deliberately has no body or stars field.
 - Sharing is X, Bluesky and copy-link (`ShareTarget`), plus review-specific OG/Twitter tags from `laravel/head` — only when the review is public.
 - `DeleteUserJob` deletes a user's reviews and tier lists along with their rankings; a soft-deleted author left behind breaks pages that read `->user`.
+
+## Catalog
+
+- A catalog is the user's **crates**: folders for their own rankings, tier lists and reviews. A record goes in any number of crates, once each, and nothing is filed automatically — the user picks every crate.
+- A catalog is private until its owner opens it up in Settings (`user_preferences.catalog_is_public`, read through `User::hasPublicCatalog()`). Only then does the profile card grow a footer that opens `CatalogModal`, for guests too. Inside, a visitor sees only records that are public and finished (`CrateItemQueryBuilder::whereEntityIsPublic()`), and crate counts count only those; the owner sees everything. The modal checks visibility on mount and again on every step into a crate, so going private takes effect at once. Crate pages themselves stay the owner's management screens.
+- Limits live in `config/billing.php` → `catalog_limits`. `folders` counts every crate the user owns, nested or not (`null` is unlimited); `depth` is how many levels a catalog may go, so free is 5 flat crates and Pro is unlimited, nested one level. Losing Pro keeps everything already made but stops new crates and nesting.
+- Nesting is `parent_id` plus a stored `depth`, never a fixed shape. `MoveCrate` and `Crate::branch()` walk the tree generically, so going deeper is a config change.
+- Positions run from zero with no gaps inside each list (a crate's siblings, a crate's items). A new row takes the end through a `creating` hook on its model, and anything that removes or moves a row keeps the run tight through `QueryBuilders/Concerns/HasPositions`. Items drag into order on any account; crates only on Pro, and only while `user_preferences.catalog_sort` is `custom` (`CatalogSort`). Free accounts always read A–Z.
+- `crate_items.entity_type` stores the **full class name**. `Ranking`, `Tierlist` and `Review` are deliberately kept out of the morph map: aliasing them would change what Spatie Comments writes to `commentable_type` and orphan every existing comment.
+- `BelongsToCrates` takes a deleted record out of every crate it was in. Soft deletes never reach the database cascade, and the admin panel deletes rankings without going through `DestroyRanking`, so the clean-up hangs off the model. `DeleteUserJob` deletes the user's crates first.
+- **Authorization lives in the Livewire components.** `CrateSettings`, `AddToCrateModal` and `CratePicker` only ever render for the owner and check once in `mount`. `CrateShow` serves anything `Crate::canBeSeen()` allows (only the owner, today) and still guards its edits (`moveItem`, `removeItem`) with `canBeEdited()` on their own.
+- `CratePicker` sits in every setup form and on the owner's view of a **finished** ranking, tier list or review — deliberately not unfinished ones, to nudge people to finish. In a setup it binds `crateIds` with `#[Modelable]`, and the setup files the new record through `FilesIntoCrates` after its Store action; on a show page each tick files straight away.
+- Crate icons are rows in `crate_icons`, managed from the **Crate Icons** admin page (`is_pro`, `is_active`, drag order) and seeded by `CrateIconSeeder` from their create-table migration. Font Awesome loads from a kit, so seeded icons stay in the free solid set; `AdminPanelProvider` loads the same kit through a `HEAD_END` render hook so the previews draw. A crate's colour is any hex the native colour picker gives, validated by `Livewire/Forms/CrateForm`.
 
 ## Song Rank Pro (Billing)
 
@@ -187,6 +206,7 @@ Every change must be covered by a test. Three suites are registered in `phpunit.
     - `Tierlists/` — the tier list domain (setup, builder, board, limits, management)
     - `Reviews/` — the review domain (setup, creation, limits, body cleaning, management, show page, comments)
     - `Billing/` — Song Rank Pro: checkout, Stripe webhooks, licences, the billing page
+    - `Catalog/` — crates: limits, settings, moving and ordering, filing records, the picker, the pages, the public catalog
 - **Filament** (`tests/Filament/`) — the admin panel; gets `RefreshDatabase`. **Mirrors the `app/Filament/` directory structure**, so a test sits at the same path as the code it covers:
     - `app/Filament/Resources/Rankings/…` → `tests/Filament/Resources/Rankings/…`
     - `app/Filament/Widgets/…` → `tests/Filament/Widgets/…`
@@ -196,7 +216,7 @@ Every change must be covered by a test. Three suites are registered in `phpunit.
 Anything under `app/Filament/` is tested in the **Filament** suite, not `Feature`. Everything else goes in the `Feature/` directory matching its product area; add a new subdirectory only when an area has no existing home.
 
 #### Testing Pro and the Admin Panel
-- No feature flag needs setting up in a test: every domain is open to any signed-in user. `proUser()` builds a user holding an active licence
+- No feature flag needs setting up in a test: every domain is open to any signed-in user. `proUser()` builds a user holding an active licence, and `revokePro()` takes Pro away again
 - The admin panel is gated on `is_dev`, so act as `kyle()` — the project's only admin persona — there
 - Filament pages and widgets are Livewire components — test them with `Livewire::actingAs($user)->test(ListRankings::class)`, passing `['record' => $model->getKey()]` for view/edit pages
 
@@ -210,7 +230,7 @@ Every Pest test file follows this order, top to bottom:
 Additional conventions:
 - Use `Pest\Laravel` functions (`get()`, `actingAs()`, `assertGuest()`, ...) instead of `$this->get()` etc. — Intelephense cannot resolve `$this` inside Pest closures
 - Avoid `$this->property` state in `beforeEach()` for the same reason; prefer helper functions
-- Cross-file helpers live in `tests/Helpers/`, grouped by the domain they build for (`users.php`, `rankings.php`, `tierlists.php`, `reviews.php`, `spotify.php`) and required from `tests/Pest.php`. `alerts.php` holds `alertsFrom()`, which reads the sweetalert2 `flash`/`confirm` payloads a component sent on its last request. Helper function names are global, so they must be unique across the whole suite; anything used by a single test file still lives at the bottom of that file
+- Cross-file helpers live in `tests/Helpers/`, grouped by the domain they build for (`users.php`, `rankings.php`, `tierlists.php`, `reviews.php`, `catalog.php`, `spotify.php`) and required from `tests/Pest.php`. `alerts.php` holds `alertsFrom()`, which reads the sweetalert2 `flash`/`confirm` payloads a component sent on its last request. Helper function names are global, so they must be unique across the whole suite; anything used by a single test file still lives at the bottom of that file
 
 ## CI/CD
 

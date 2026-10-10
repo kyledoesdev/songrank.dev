@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Dashboard;
 
+use App\Models\Crate;
 use App\Models\Ranking;
 use App\Models\Review;
 use App\Models\Tierlist;
@@ -89,6 +90,20 @@ class InProgress extends Component
             $page,
             ['pageName' => self::PAGE_NAME],
         );
+    }
+
+    /**
+     * The top of the catalog, as much as fits the tab.
+     *
+     * @return Collection<int, Crate>
+     */
+    #[Computed]
+    public function crates(): Collection
+    {
+        return Crate::query()
+            ->forCatalogPage(Auth::user())
+            ->limit(6)
+            ->get();
     }
 
     /**

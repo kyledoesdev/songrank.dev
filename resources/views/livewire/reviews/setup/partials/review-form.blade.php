@@ -54,6 +54,15 @@
             </select>
         </div>
 
+        <div class="my-2">
+            <label>Add To Crates</label>
+            <livewire:catalog.crate-picker
+                wire:model="crateIds"
+                class="w-full bg-zinc-100 rounded-lg p-2 text-left focus:ring-2 focus:ring-blue-400"
+                wire:key="crate-picker"
+            />
+        </div>
+
         <button
             type="button"
             class="btn-primary py-1 px-2 mt-2"

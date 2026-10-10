@@ -44,6 +44,19 @@ class ReviewQueryBuilder extends Builder
     }
 
     /**
+     * Every review the user has, drafts included, to file into a crate.
+     */
+    public function forAddItemsModal(User $user, ?string $search = null): static
+    {
+        return $this->newQuery()
+            ->where('user_id', $user->getKey())
+            ->when($search, fn (Builder $query, string $search) => $query->whereNameOrSubjectLike($search))
+            ->with('subject')
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id');
+    }
+
+    /**
      * A review is named by its author and is often not named after its subject
      * at all, so the review's own name has to be searchable alongside it.
      */

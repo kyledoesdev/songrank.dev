@@ -38,6 +38,36 @@ describe('newsletter preferences', function () {
     });
 });
 
+describe('which preferences the page can change', function () {
+    test('saves each preference it offers', function (string $preference) {
+        $user = User::factory()->createOne();
+        $user->preferences->update([$preference => false]);
+
+        Livewire::actingAs($user)
+            ->test(Settings::class)
+            ->call('updateSetting', $preference, true);
+
+        expect($user->fresh()->preferences->{$preference})->toBeTrue();
+    })->with(['recieve_newsletter_emails', 'catalog_is_public']);
+
+    test('refuses any other column, leaving the row as it was', function (string $column, mixed $value) {
+        $user = User::factory()->createOne();
+        $before = $user->preferences()->first()->getAttributes();
+
+        Livewire::actingAs($user)
+            ->test(Settings::class)
+            ->call('updateSetting', $column, $value)
+            ->assertForbidden();
+
+        expect($user->preferences()->first()->getAttributes())->toBe($before);
+    })->with([
+        'handing the row to another user' => ['user_id', 999],
+        'trashing the row' => ['deleted_at', '2026-01-01 00:00:00'],
+        'a preference set somewhere else' => ['catalog_sort', 'custom'],
+        'a column that is not a preference' => ['is_dev', true],
+    ]);
+});
+
 describe('account deletion', function () {
     test('user receives download notification when deleting account with rankings', function () {
         Notification::fake();

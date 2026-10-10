@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasCrateAllowance;
 use App\Models\Concerns\HasRankingAllowance;
 use App\Models\Concerns\HasReviewAllowance;
 use App\Models\Concerns\HasTierlistAllowance;
@@ -27,6 +28,7 @@ use Spatie\Comments\Support\CommentatorProperties;
 class User extends Authenticatable implements CanComment, FilamentUser
 {
     use Billable;
+    use HasCrateAllowance;
     use HasFactory;
     use HasFeatures;
     use HasRankingAllowance;
@@ -99,6 +101,11 @@ class User extends Authenticatable implements CanComment, FilamentUser
     public function tierlists(): HasMany
     {
         return $this->hasMany(Tierlist::class);
+    }
+
+    public function crates(): HasMany
+    {
+        return $this->hasMany(Crate::class);
     }
 
     public function proLicenses(): HasMany

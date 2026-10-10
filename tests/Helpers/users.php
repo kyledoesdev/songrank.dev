@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\TierlistType;
+use App\Models\Crate;
 use App\Models\ProLicense;
 use App\Models\Ranking;
 use App\Models\Review;
@@ -30,6 +31,17 @@ function proUser(array $attributes = []): User
 
     /* ProLicenseObserver has since flipped is_pro on the row, not on this instance. */
     return $user->fresh();
+}
+
+/**
+ * An account that has lost Pro. Whatever it made while it had Pro stays
+ * exactly where it was.
+ */
+function revokePro(User $user): User
+{
+    $user->update(['is_pro' => false]);
+
+    return $user;
 }
 
 /**
@@ -67,6 +79,18 @@ function userWithReviews(int $count, array $attributes = []): User
     $user = User::factory()->createOne($attributes);
 
     Review::factory()->count($count)->for($user)->create();
+
+    return $user;
+}
+
+/**
+ * A user sitting on exactly $count top-level crates, for allowance assertions.
+ */
+function userWithCrates(int $count, array $attributes = []): User
+{
+    $user = User::factory()->createOne($attributes);
+
+    Crate::factory()->count($count)->for($user)->create();
 
     return $user;
 }

@@ -51,6 +51,34 @@
                 </div>
             </div>
             
+            <!-- Catalog Section -->
+            <div class="bg-white rounded-xl p-6 shadow-md transition-all duration-300">
+                <div class="flex items-center mb-6">
+                    <h5 class="font-semibold">Catalog</h5>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="group">
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Who Can See Your Catalog</label>
+                        <div class="relative">
+                            <select
+                                class="w-full appearance-none bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all duration-200 group-hover:border-slate-300"
+                                wire:change="updateSetting('catalog_is_public', $event.target.value === 'true')"
+                            >
+                                <option value="false" {{ ! auth()->user()->preferences->catalog_is_public ? 'selected' : '' }}>Only me</option>
+                                <option value="true" {{ auth()->user()->preferences->catalog_is_public ? 'selected' : '' }}>Anyone, from my profile</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                                <i class="fa fa-chevron-down text-slate-400 text-sm"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-2">
+                            A public catalog opens from your profile. Visitors only see the rankings, tier lists and reviews that are public and finished.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Account Actions Section -->
             <div class="bg-white rounded-xl p-6 shadow-md border border-slate-100 hover:shadow-lg transition-all duration-300">
                 <div class="flex items-center mb-6">

@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Contracts\CrateEntity;
 use App\Enums\TierlistType;
+use App\Models\Concerns\BelongsToCrates;
 use App\QueryBuilders\TierlistQueryBuilder;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
@@ -19,8 +21,9 @@ use Kyledoesdev\Essentials\Concerns\HasStatsAfterEvents;
 use Spatie\Comments\Models\Concerns\HasComments;
 
 #[UseEloquentBuilder(TierlistQueryBuilder::class)]
-class Tierlist extends Model
+class Tierlist extends Model implements CrateEntity
 {
+    use BelongsToCrates;
     use HasComments;
     use HasFactory;
     use HasStatsAfterEvents;
@@ -210,6 +213,26 @@ class Tierlist extends Model
 
     /* Contracts */
 
+    public function cover(): ?string
+    {
+        return $this->source?->cover();
+    }
+
+    public function label(): string
+    {
+        return 'Tier list by '.$this->type->label();
+    }
+
+    public function url(): string
+    {
+        return route('tierlist', ['id' => $this->getKey()]);
+    }
+
+    public function progressLabel(): ?string
+    {
+        return $this->is_complete ? null : 'In progress';
+    }
+
     public function commentableName(): string
     {
         return $this->name;
@@ -217,6 +240,6 @@ class Tierlist extends Model
 
     public function commentUrl(): string
     {
-        return route('tierlist', ['id' => $this->getKey()]);
+        return $this->url();
     }
 }

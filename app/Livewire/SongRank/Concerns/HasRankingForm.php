@@ -2,6 +2,7 @@
 
 namespace App\Livewire\SongRank\Concerns;
 
+use App\Livewire\Catalog\Concerns\FilesIntoCrates;
 use App\Livewire\Concerns\InteractsWithAlerts;
 use App\Livewire\Forms\RankingForm;
 use App\Models\Ranking;
@@ -9,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 trait HasRankingForm
 {
+    use FilesIntoCrates;
     use InteractsWithAlerts;
 
     public RankingForm $form;
@@ -90,6 +92,7 @@ trait HasRankingForm
             'form.is_public',
             'form.comments_enabled',
             'form.comments_replies_enabled',
+            'crateIds',
         ]);
     }
 }

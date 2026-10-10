@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Contracts\CrateEntity;
 use App\Enums\RankingType;
+use App\Models\Concerns\BelongsToCrates;
 use App\QueryBuilders\RankingQueryBuilder;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
@@ -18,8 +20,9 @@ use Kyledoesdev\Essentials\Concerns\HasStatsAfterEvents;
 use Spatie\Comments\Models\Concerns\HasComments;
 
 #[UseEloquentBuilder(RankingQueryBuilder::class)]
-class Ranking extends Model
+class Ranking extends Model implements CrateEntity
 {
+    use BelongsToCrates;
     use HasComments;
     use HasFactory;
     use HasStatsAfterEvents;
@@ -121,6 +124,26 @@ class Ranking extends Model
 
     /* contracts */
 
+    public function cover(): ?string
+    {
+        return $this->source?->cover();
+    }
+
+    public function label(): string
+    {
+        return $this->type->label().' ranking';
+    }
+
+    public function url(): string
+    {
+        return route('ranking', ['id' => $this->getKey()]);
+    }
+
+    public function progressLabel(): ?string
+    {
+        return $this->is_ranked ? null : 'In progress';
+    }
+
     public function commentableName(): string
     {
         return $this->name;
@@ -128,6 +151,6 @@ class Ranking extends Model
 
     public function commentUrl(): string
     {
-        return route('ranking', ['id' => $this->getKey()]);
+        return $this->url();
     }
 }
