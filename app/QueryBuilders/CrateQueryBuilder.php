@@ -26,6 +26,23 @@ class CrateQueryBuilder extends Builder
     }
 
     /**
+     * One list of somebody's crates, counting only what the viewer may open.
+     */
+    public function forCatalogModal(User $owner, ?Crate $parent, ?User $viewer): static
+    {
+        return $this->newQuery()
+            ->ownedBy($owner)
+            ->inside($parent)
+            ->withCount([
+                'items' => fn (Builder $query) => $owner->is($viewer)
+                    ? $query->whereEntityExists()
+                    : $query->whereEntityIsPublic(),
+                'children',
+            ])
+            ->ordered($owner);
+    }
+
+    /**
      * Every crate the user owns, in display order, for the picker to nest.
      */
     public function forPicker(User $user): static

@@ -138,7 +138,7 @@ class CrateSettings extends Component
         $this->confirmAction(
             action: 'destroy',
             title: 'Delete '.$this->crate->name.'?',
-            message: 'Any crates inside it go too. The rankings, tier lists and reviews in them stay exactly as they are.',
+            message: 'Your rankings, tier lists and reviews will not be deleted.',
             confirmText: 'Delete it',
         );
     }

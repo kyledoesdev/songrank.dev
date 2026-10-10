@@ -223,6 +223,11 @@ class Tierlist extends Model implements CrateEntity
         return 'Tier list by '.$this->type->label();
     }
 
+    public function url(): string
+    {
+        return route('tierlist', ['id' => $this->getKey()]);
+    }
+
     public function progressLabel(): ?string
     {
         return $this->is_complete ? null : 'In progress';
@@ -235,6 +240,6 @@ class Tierlist extends Model implements CrateEntity
 
     public function commentUrl(): string
     {
-        return route('tierlist', ['id' => $this->getKey()]);
+        return $this->url();
     }
 }

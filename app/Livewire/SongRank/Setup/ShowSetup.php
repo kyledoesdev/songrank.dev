@@ -68,6 +68,8 @@ class ShowSetup extends Component
             'show' => $this->selectedShow,
         ]);
 
+        $this->fileIntoCrates($ranking);
+
         $this->redirect(route('ranking', ['id' => $ranking->getKey()]));
     }
 

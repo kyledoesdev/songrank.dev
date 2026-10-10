@@ -134,6 +134,11 @@ class Ranking extends Model implements CrateEntity
         return $this->type->label().' ranking';
     }
 
+    public function url(): string
+    {
+        return route('ranking', ['id' => $this->getKey()]);
+    }
+
     public function progressLabel(): ?string
     {
         return $this->is_ranked ? null : 'In progress';
@@ -146,6 +151,6 @@ class Ranking extends Model implements CrateEntity
 
     public function commentUrl(): string
     {
-        return route('ranking', ['id' => $this->getKey()]);
+        return $this->url();
     }
 }

@@ -54,7 +54,7 @@ describe('the seeded features', function () {
         $free = PlanFeature::cached()->get('free')->map->renderedLabel();
         $pro = PlanFeature::cached()->get('pro')->map->renderedLabel();
 
-        expect($free)->toContain('200 rankings', '3 tier lists of each type', '5 reviews', '5 catalog folders');
+        expect($free)->toContain('200 rankings', '3 tier lists of each type', '5 reviews', '5 crates in your catalog');
         expect($pro)->toContain('Unlimited rankings', 'Unlimited tier lists', 'Double experience');
         expect(PlanFeature::cached()->get('pro')->firstWhere('label', '{tierlists} tier lists')->renderedDetail())->toBe('Up to 500 entries on each');
     });

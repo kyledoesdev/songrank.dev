@@ -18,10 +18,12 @@ class UserPreference extends Model
         'recieve_newsletter_emails',
         'enabled_comment_mentions',
         'catalog_sort',
+        'catalog_is_public',
     ];
 
     protected $attributes = [
         'catalog_sort' => 'alphabetical',
+        'catalog_is_public' => false,
     ];
 
     protected function casts(): array
@@ -30,6 +32,7 @@ class UserPreference extends Model
             'recieve_newsletter_emails' => 'boolean',
             'enabled_comment_mentions' => 'boolean',
             'catalog_sort' => CatalogSort::class,
+            'catalog_is_public' => 'boolean',
         ];
     }
 

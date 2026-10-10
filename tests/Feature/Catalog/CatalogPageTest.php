@@ -2,6 +2,8 @@
 
 use App\Livewire\Catalog\Catalog;
 use App\Livewire\Catalog\CrateShow;
+use App\Livewire\Dashboard\InProgress;
+use App\Livewire\Navigation;
 use App\Models\Artist;
 use App\Models\Crate;
 use App\Models\CrateItem;
@@ -37,6 +39,43 @@ describe('who can open the catalog', function () {
         actingAs(User::factory()->createOne());
 
         get(route('catalog.crate', ['id' => 999]))->assertNotFound();
+    });
+});
+
+describe('getting to the catalog', function () {
+    it('is in the nav for anyone signed in', function () {
+        Livewire::actingAs(User::factory()->createOne())
+            ->test(Navigation::class)
+            ->assertSee(route('catalog'), escape: false);
+    });
+
+    it('is not in the nav for a guest', function () {
+        Livewire::test(Navigation::class)
+            ->assertDontSee(route('catalog'), escape: false);
+    });
+
+    it('has a dashboard tab with the top of the catalog', function () {
+        $user = proUser();
+        $crates = Crate::factory()->count(7)->for($user)->create();
+        Crate::factory()->nestedIn($crates->first())->create();
+
+        $component = Livewire::actingAs($user)->test(InProgress::class);
+        $shown = $component->instance()->crates;
+
+        expect($shown)->toHaveCount(6)
+            ->and($shown->pluck('parent_id')->filter())->toBeEmpty();
+
+        $component
+            ->assertSee(route('catalog.crate', ['id' => $shown->first()->getKey()]), escape: false)
+            ->assertSee(route('catalog'), escape: false);
+    });
+
+    it('points an empty catalog at its first crate', function () {
+        $component = Livewire::actingAs(User::factory()->createOne())
+            ->test(InProgress::class)
+            ->assertSee(route('catalog'), escape: false);
+
+        expect($component->instance()->crates)->toBeEmpty();
     });
 });
 

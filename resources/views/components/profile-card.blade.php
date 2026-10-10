@@ -64,4 +64,10 @@
             </div>
         </div>
     </div>
+
+    @if ($user->hasPublicCatalog())
+        <x-card.footer class="flex justify-end rounded-b-lg">
+            <livewire:catalog.catalog-modal :user="$user" wire:key="catalog-modal-{{ $user->getKey() }}" />
+        </x-card.footer>
+    @endif
 </div>

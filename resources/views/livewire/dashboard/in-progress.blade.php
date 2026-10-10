@@ -30,14 +30,35 @@
     </x-card.header>
 
     {{-- Catalog tab --}}
-    <div x-show="tab === 'catalog'" class="p-6">
-        <div class="text-center py-8">
-            <i class="fa-solid fa-book text-3xl text-zinc-300 mb-3"></i>
-            <p class="text-sm text-zinc-500">
-                Your catalog is coming soon. This is where you'll find all of your completed rankings and tier lists in one place.
-            </p>
-        </div>
+    <div x-show="tab === 'catalog'" class="p-4">
+        @if ($this->crates->isEmpty())
+            <div class="text-center py-8">
+                <i class="fa-solid fa-book text-3xl text-zinc-300 mb-3"></i>
+                <p class="text-sm text-zinc-500 mb-4">
+                    Crates keep your rankings, tier lists and reviews together, sorted however you like.
+                </p>
+                <a href="{{ route('catalog') }}" class="btn-primary px-3 py-1.5">
+                    <i class="fa-solid fa-folder-plus mr-1"></i>
+                    Make your first crate
+                </a>
+            </div>
+        @else
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                @foreach ($this->crates as $crate)
+                    <x-catalog.crate-tile :crate="$crate" wire:key="dashboard-crate-{{ $crate->getKey() }}" />
+                @endforeach
+            </div>
+        @endif
     </div>
+
+    @if ($this->crates->isNotEmpty())
+        <x-card.footer x-show="tab === 'catalog'" class="text-right">
+            <a href="{{ route('catalog') }}" class="text-xs text-primary hover:underline">
+                View catalog
+                <i class="fa-solid fa-arrow-right ml-1"></i>
+            </a>
+        </x-card.footer>
+    @endif
 
     {{-- In-progress tab --}}
     @if ($this->hasAnything())

@@ -7,6 +7,7 @@ use App\Models\Crate;
 use App\Models\Ranking;
 use App\Models\Review;
 use App\Models\Tierlist;
+use App\Models\User;
 use App\QueryBuilders\Concerns\HasPositions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -23,6 +24,31 @@ class CrateItemQueryBuilder extends Builder
             ->withEntityCards()
             ->orderBy('position')
             ->orderBy('id');
+    }
+
+    /**
+     * A crate as somebody browsing a catalog sees it: everything for its owner,
+     * only what anybody may open for anyone else.
+     */
+    public function forCatalogModal(Crate $crate, ?User $viewer): static
+    {
+        return $this->newQuery()
+            ->inCrate($crate)
+            ->visibleTo($crate, $viewer)
+            ->with(['entity' => fn (MorphTo $morphTo) => $morphTo->morphWith([
+                Ranking::class => ['source'],
+                Tierlist::class => ['source'],
+                Review::class => ['subject'],
+            ])])
+            ->orderBy('position')
+            ->orderBy('id');
+    }
+
+    public function visibleTo(Crate $crate, ?User $viewer): static
+    {
+        return $crate->user_id === $viewer?->getKey()
+            ? $this->whereEntityExists()
+            : $this->whereEntityIsPublic();
     }
 
     public function inCrate(Crate $crate): static
@@ -42,6 +68,18 @@ class CrateItemQueryBuilder extends Builder
     public function whereEntityExists(): static
     {
         return $this->whereHasMorph('entity', [Ranking::class, Tierlist::class, Review::class]);
+    }
+
+    /**
+     * Only records anybody may open: public, and finished.
+     */
+    public function whereEntityIsPublic(): static
+    {
+        return $this->whereHasMorph(
+            'entity',
+            [Ranking::class, Tierlist::class, Review::class],
+            fn (Builder $query) => $query->public()->completed(),
+        );
     }
 
     /**

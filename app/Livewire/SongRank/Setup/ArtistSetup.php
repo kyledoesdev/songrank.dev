@@ -176,6 +176,8 @@ class ArtistSetup extends Component
             'artist' => $this->selectedArtist,
         ]);
 
+        $this->fileIntoCrates($ranking);
+
         $this->redirect(route('ranking', ['id' => $ranking->getKey()]));
     }
 

@@ -12,5 +12,9 @@ interface CrateEntity
 
     public function progressLabel(): ?string;
 
+    public function url(): string;
+
+    public function canBeEdited(): bool;
+
     public function crateItems(): MorphMany;
 }

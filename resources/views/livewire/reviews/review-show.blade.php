@@ -23,6 +23,8 @@
                         <a href="{{ route('review.edit', ['id' => $review->getKey()]) }}" class="btn-secondary my-0 px-2 py-1" title="Edit">
                             <i class="fa fa-solid fa-pencil text-sm"></i>
                         </a>
+
+                        <livewire:catalog.crate-picker :entity="$review" class="btn-helper my-0 px-2 py-1" wire:key="crate-picker" />
                     @endif
 
                     @auth

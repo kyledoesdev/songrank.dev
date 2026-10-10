@@ -3,12 +3,14 @@
 namespace App\Livewire\Tierlist\Concerns;
 
 use App\Actions\Tierlists\StoreTierlist;
+use App\Livewire\Catalog\Concerns\FilesIntoCrates;
 use App\Livewire\Concerns\InteractsWithAlerts;
 use App\Livewire\Forms\TierlistForm;
 use Illuminate\Support\Facades\Auth;
 
 trait HasTierlistForm
 {
+    use FilesIntoCrates;
     use InteractsWithAlerts;
 
     public TierlistForm $form;
@@ -84,6 +86,8 @@ trait HasTierlistForm
             'comments_replies_enabled' => (bool) $this->form->comments_replies_enabled,
         ]);
 
+        $this->fileIntoCrates($tierlist);
+
         $this->redirect(route('tierlist', ['id' => $tierlist->getKey()]));
     }
 
@@ -94,6 +98,7 @@ trait HasTierlistForm
             'form.is_public',
             'form.comments_enabled',
             'form.comments_replies_enabled',
+            'crateIds',
         ]);
     }
 }

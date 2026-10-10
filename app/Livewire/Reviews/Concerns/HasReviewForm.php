@@ -3,6 +3,7 @@
 namespace App\Livewire\Reviews\Concerns;
 
 use App\Actions\Reviews\StoreReview;
+use App\Livewire\Catalog\Concerns\FilesIntoCrates;
 use App\Livewire\Forms\ReviewForm;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -12,6 +13,7 @@ use Livewire\Component;
  */
 trait HasReviewForm
 {
+    use FilesIntoCrates;
     use HasReviewSubject;
 
     public ReviewForm $form;
@@ -72,6 +74,8 @@ trait HasReviewForm
             'comments_replies_enabled' => (bool) $this->form->comments_replies_enabled,
         ]);
 
+        $this->fileIntoCrates($review);
+
         $this->redirect(route('review.edit', ['id' => $review->getKey()]));
     }
 
@@ -82,6 +86,7 @@ trait HasReviewForm
             'form.is_public',
             'form.comments_enabled',
             'form.comments_replies_enabled',
+            'crateIds',
         ]);
     }
 }

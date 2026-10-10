@@ -62,6 +62,11 @@ trait HasCrateAllowance
         return $this->is_pro;
     }
 
+    public function hasPublicCatalog(): bool
+    {
+        return $this->preferences->catalog_is_public;
+    }
+
     public function catalogSort(): CatalogSort
     {
         if (! $this->canArrangeCrates()) {
