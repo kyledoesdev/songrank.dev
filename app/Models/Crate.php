@@ -87,6 +87,16 @@ class Crate extends Model
         return $this->icon?->icon ?? self::DEFAULT_ICON;
     }
 
+    /**
+     * This crate and every crate inside it, however deep.
+     *
+     * @return Collection<int, Crate>
+     */
+    public function branch(): Collection
+    {
+        return collect([$this])->merge($this->children->flatMap->branch());
+    }
+
     public function isTopLevel(): bool
     {
         return is_null($this->parent_id);
@@ -108,6 +118,14 @@ class Crate extends Model
         }
 
         return $ancestors;
+    }
+
+    /**
+     * Crates are private, so only the owner sees one.
+     */
+    public function canBeSeen(): bool
+    {
+        return $this->user_id === Auth::id();
     }
 
     public function canBeEdited(): bool

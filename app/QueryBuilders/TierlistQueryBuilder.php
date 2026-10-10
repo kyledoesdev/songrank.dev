@@ -46,6 +46,20 @@ class TierlistQueryBuilder extends Builder
     }
 
     /**
+     * Every tier list the user has, finished or not, to file into a crate.
+     */
+    public function forAddItemsModal(User $user, ?string $search = null): static
+    {
+        return $this->newQuery()
+            ->where('user_id', $user->getKey())
+            ->when($search, fn (Builder $query, string $search) => $query->whereNameOrSourceLike($search))
+            ->with('source')
+            ->withCount('items')
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id');
+    }
+
+    /**
      * Only what anyone could open anyway: an embed is served to whoever loads
      * the page it sits on, not to the list's owner.
      */

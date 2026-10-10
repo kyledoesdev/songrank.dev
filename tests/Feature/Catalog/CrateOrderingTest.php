@@ -5,11 +5,14 @@ use App\Actions\Catalog\RemoveCrateItem;
 use App\Actions\Catalog\ReorderCrate;
 use App\Actions\Catalog\UpdateCatalogSort;
 use App\Enums\CatalogSort;
+use App\Livewire\Catalog\Catalog;
+use App\Livewire\Catalog\CrateShow;
 use App\Models\Crate;
 use App\Models\CrateItem;
 use App\Models\ProLicense;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Livewire\Livewire;
 
 describe('ordering items', function () {
     it('moves an item up its crate', function () {
@@ -145,6 +148,103 @@ describe('the order crates are shown in', function () {
         ProLicense::factory()->active()->for($user)->create();
 
         expect(crateNamesShown($user))->toBe(['Supermodel', 'Paradise State of Mind', 'Torches']);
+    });
+});
+
+describe('dragging on the page', function () {
+    it('drags items into order on a free account', function () {
+        [$crate, $first, $second, $third] = crateOfThree();
+
+        Livewire::actingAs($crate->user)
+            ->test(CrateShow::class, ['id' => $crate->getKey()])
+            ->call('moveItem', $third->getKey(), 0);
+
+        expect(crateContents($crate))->toBe([crateEntry($third->entity), crateEntry($first->entity), crateEntry($second->entity)]);
+    });
+
+    it('will not drag an item from another crate', function () {
+        [$crate] = crateOfThree();
+
+        Livewire::actingAs($crate->user)
+            ->test(CrateShow::class, ['id' => $crate->getKey()])
+            ->call('moveItem', CrateItem::factory()->create()->getKey(), 0)
+            ->assertNotFound();
+    });
+
+    it('drags crates into order on a Pro account', function () {
+        $user = proUser();
+        $crates = cratesNamed($user, ['Torches', 'Supermodel']);
+
+        Livewire::actingAs($user)
+            ->test(Catalog::class)
+            ->call('reorderCrate', $crates['Supermodel']->getKey(), 0);
+
+        expect(crateNamesShown($user))->toBe(['Supermodel', 'Torches']);
+    });
+
+    it('will not drag crates on a free account', function () {
+        $user = User::factory()->createOne();
+        $crates = cratesNamed($user, ['Torches', 'Supermodel']);
+
+        Livewire::actingAs($user)
+            ->test(Catalog::class)
+            ->call('reorderCrate', $crates['Supermodel']->getKey(), 0)
+            ->assertForbidden();
+    });
+
+    it('only drags crates within the list on the page', function () {
+        $user = proUser();
+        $crates = cratesNamed($user, ['Torches']);
+        $nested = Crate::factory()->nestedIn($crates['Torches'])->create();
+
+        Livewire::actingAs($user)
+            ->test(Catalog::class)
+            ->call('reorderCrate', $nested->getKey(), 0)
+            ->assertNotFound();
+    });
+
+    it('drags the crates inside a crate on its page', function () {
+        $user = proUser();
+        $parent = Crate::factory()->for($user)->create();
+        [$first, $second] = Crate::factory()->count(2)->nestedIn($parent)->create();
+
+        Livewire::actingAs($user)
+            ->test(CrateShow::class, ['id' => $parent->getKey()])
+            ->call('reorderCrate', $second->getKey(), 0);
+
+        expect($second->fresh()->position)->toBe(0)
+            ->and($first->fresh()->position)->toBe(1);
+    });
+
+    it('only offers drag handles on crates in a custom order', function () {
+        $user = proUser();
+        cratesNamed($user, ['Torches']);
+
+        Livewire::actingAs($user)
+            ->test(Catalog::class)
+            ->assertDontSeeHtml('wire:sort:handle')
+            ->call('sortBy', CatalogSort::CUSTOM->value)
+            ->assertSeeHtml('wire:sort:handle');
+    });
+});
+
+describe('the sort switch', function () {
+    it('switches a Pro account between orders', function () {
+        $user = proUser();
+
+        Livewire::actingAs($user)
+            ->test(Catalog::class)
+            ->call('sortBy', CatalogSort::CUSTOM->value);
+
+        expect($user->fresh()->catalogSort())->toBe(CatalogSort::CUSTOM);
+    });
+
+    it('is not there for a free account', function () {
+        Livewire::actingAs(User::factory()->createOne())
+            ->test(Catalog::class)
+            ->assertDontSee('wire:click="sortBy(', escape: false)
+            ->call('sortBy', CatalogSort::CUSTOM->value)
+            ->assertForbidden();
     });
 });
 

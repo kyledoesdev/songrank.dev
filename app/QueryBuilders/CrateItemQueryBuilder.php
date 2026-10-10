@@ -2,6 +2,7 @@
 
 namespace App\QueryBuilders;
 
+use App\Contracts\CrateEntity;
 use App\Models\Crate;
 use App\Models\Ranking;
 use App\Models\Review;
@@ -27,6 +28,12 @@ class CrateItemQueryBuilder extends Builder
     public function inCrate(Crate $crate): static
     {
         return $this->where('crate_id', $crate->getKey());
+    }
+
+    public function whereEntity(CrateEntity $entity): static
+    {
+        return $this->where('entity_type', $entity->getMorphClass())
+            ->where('entity_id', $entity->getKey());
     }
 
     /**

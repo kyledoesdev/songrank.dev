@@ -75,3 +75,4 @@ require __DIR__.'/rankings.php';
 require __DIR__.'/billing.php';
 require __DIR__.'/tierlists.php';
 require __DIR__.'/reviews.php';
+require __DIR__.'/catalog.php';

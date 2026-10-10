@@ -22,7 +22,7 @@ final class MoveCrate
             return true;
         }
 
-        $branch = $this->branch($crate);
+        $branch = $crate->branch();
 
         if ($parent && $branch->contains(fn (Crate $member) => $member->is($parent))) {
             return false;
@@ -47,24 +47,6 @@ final class MoveCrate
         });
 
         return true;
-    }
-
-    /**
-     * The crate and every crate inside it, however deep.
-     *
-     * @return Collection<int, Crate>
-     */
-    private function branch(Crate $crate): Collection
-    {
-        $branch = collect([$crate]);
-        $level = $branch;
-
-        while ($level->isNotEmpty()) {
-            $level = Crate::query()->whereIn('parent_id', $level->pluck('id'))->get();
-            $branch = $branch->merge($level);
-        }
-
-        return $branch;
     }
 
     /**

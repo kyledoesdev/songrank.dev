@@ -1,8 +1,10 @@
 <?php
 
 use App\Actions\Catalog\StoreCrate;
+use App\Livewire\Catalog\Catalog;
 use App\Models\Crate;
 use App\Models\User;
+use Livewire\Livewire;
 
 describe('the free allowance', function () {
     it('allows five crates', function () {
@@ -123,5 +125,36 @@ describe('losing pro', function () {
         $user = revokePro($user);
 
         expect($user->canNestIn($parent))->toBeFalse();
+    });
+});
+
+describe('hitting the limit on the page', function () {
+    it('swaps the new crate button for an upgrade prompt', function () {
+        $component = Livewire::actingAs(userWithCrates(5))
+            ->test(Catalog::class)
+            ->assertDontSee('wire:click="startCreatingCrate"', escape: false)
+            ->assertSee(route('billing'), escape: false);
+
+        expect($component->instance()->canAddCrate())->toBeFalse();
+    });
+
+    it('keeps the button until then', function () {
+        Livewire::actingAs(userWithCrates(4))
+            ->test(Catalog::class)
+            ->assertSee('wire:click="startCreatingCrate"', escape: false)
+            ->assertDontSee(route('billing'), escape: false);
+    });
+
+    it('stops a page left open from going over', function () {
+        $user = userWithCrates(5);
+
+        $component = Livewire::actingAs($user)
+            ->test(Catalog::class)
+            ->set('newCrateName', 'One Too Many')
+            ->call('createCrate')
+            ->assertNoRedirect();
+
+        expect(alertsFrom($component)->pluck('icon')->all())->toBe(['error'])
+            ->and($user->crates()->count())->toBe(5);
     });
 });

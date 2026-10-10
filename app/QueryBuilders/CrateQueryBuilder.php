@@ -12,11 +12,15 @@ class CrateQueryBuilder extends Builder
 {
     use HasPositions;
 
-    public function forCatalogPage(User $user): static
+    /**
+     * One list of crates: the top level on the catalog, or what sits directly
+     * inside $parent on its page.
+     */
+    public function forCatalogPage(User $user, ?Crate $parent = null): static
     {
         return $this->newQuery()
             ->ownedBy($user)
-            ->topLevel()
+            ->inside($parent)
             ->withCount('items', 'children')
             ->ordered($user);
     }
@@ -28,6 +32,24 @@ class CrateQueryBuilder extends Builder
     {
         return $this->newQuery()
             ->ownedBy($user)
+            ->ordered($user);
+    }
+
+    /**
+     * Where $crate could move: the user's crates outside its own branch with
+     * room beneath them for everything it holds. Its current parent is left
+     * out, as moving there would change nothing.
+     */
+    public function destinationsFor(Crate $crate, User $user): static
+    {
+        $branch = $crate->branch();
+        $height = $branch->max('depth') - $crate->depth;
+
+        return $this->newQuery()
+            ->ownedBy($user)
+            ->whereNotIn('id', $branch->pluck('id'))
+            ->where('depth', '<', $user->crateDepthLimit() - 1 - $height)
+            ->when($crate->parent_id, fn (Builder $query, int $parentId) => $query->whereKeyNot($parentId))
             ->ordered($user);
     }
 
@@ -49,11 +71,6 @@ class CrateQueryBuilder extends Builder
     public function ownedBy(User $user): static
     {
         return $this->where('user_id', $user->getKey());
-    }
-
-    public function topLevel(): static
-    {
-        return $this->whereNull('parent_id');
     }
 
     /**

@@ -2,11 +2,13 @@
 
 use App\Actions\Catalog\DestroyCrate;
 use App\Actions\Catalog\UpdateCrate;
+use App\Livewire\Catalog\CrateSettings;
 use App\Models\Crate;
 use App\Models\CrateIcon;
 use App\Models\CrateItem;
 use App\Models\Ranking;
 use App\Models\User;
+use Livewire\Livewire;
 
 use function Pest\Laravel\assertModelExists;
 use function Pest\Laravel\assertModelMissing;
@@ -121,6 +123,172 @@ describe('deleting a crate', function () {
 
         expect($first->fresh()->position)->toBe(0)
             ->and($third->fresh()->position)->toBe(1);
+    });
+});
+
+describe('the settings popover', function () {
+    it('opens on what the crate has now', function () {
+        $crate = Crate::factory()->create(['name' => 'Torches', 'color' => '#1E90FF']);
+
+        Livewire::actingAs($crate->user)
+            ->test(CrateSettings::class, ['crate' => $crate])
+            ->call('openSettings')
+            ->assertSet('open', true)
+            ->assertSet('form.name', 'Torches')
+            ->assertSet('form.color', '#1E90FF');
+    });
+
+    it('saves and tells the page', function () {
+        $crate = Crate::factory()->create();
+        $icon = CrateIcon::query()->where('icon', 'fa-record-vinyl')->firstOrFail();
+
+        Livewire::actingAs($crate->user)
+            ->test(CrateSettings::class, ['crate' => $crate])
+            ->call('openSettings')
+            ->set('form.name', 'Sacred Hearts Club')
+            ->set('form.color', '#1E90FF')
+            ->set('form.crate_icon_id', $icon->getKey())
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertSet('open', false)
+            ->assertDispatched('crates-updated');
+
+        expect($crate->fresh())
+            ->name->toBe('Sacred Hearts Club')
+            ->color->toBe('#1E90FF')
+            ->crate_icon_id->toBe($icon->getKey());
+    });
+
+    it('takes any colour the picker gives', function (string $color) {
+        $crate = Crate::factory()->create();
+
+        Livewire::actingAs($crate->user)
+            ->test(CrateSettings::class, ['crate' => $crate])
+            ->call('openSettings')
+            ->set('form.color', $color)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        expect($crate->fresh()->color)->toBe($color);
+    })->with([
+        'lower case' => '#a855f7',
+        'upper case' => '#A855F7',
+    ]);
+
+    it('takes nothing but a hex code for a colour', function (string $color) {
+        $crate = Crate::factory()->create();
+
+        Livewire::actingAs($crate->user)
+            ->test(CrateSettings::class, ['crate' => $crate])
+            ->call('openSettings')
+            ->set('form.color', $color)
+            ->call('save')
+            ->assertHasErrors(['form.color' => 'regex']);
+    })->with([
+        'a colour name' => 'purple',
+        'short hex' => '#fff',
+        'anything smuggled after it' => '#ffffff; background: url(x)',
+    ]);
+
+    it('needs a name', function () {
+        $crate = Crate::factory()->create();
+
+        Livewire::actingAs($crate->user)
+            ->test(CrateSettings::class, ['crate' => $crate])
+            ->call('openSettings')
+            ->set('form.name', '')
+            ->call('save')
+            ->assertHasErrors(['form.name' => 'required']);
+    });
+
+    it('locks Pro icons on a free account', function () {
+        $crate = Crate::factory()->create();
+        $icon = CrateIcon::factory()->pro()->create();
+
+        $component = Livewire::actingAs($crate->user)
+            ->test(CrateSettings::class, ['crate' => $crate])
+            ->call('openSettings')
+            ->assertDontSee("\$wire.form.crate_icon_id = {$icon->getKey()}", escape: false);
+
+        expect($component->instance()->iconIsLocked($icon))->toBeTrue();
+    });
+
+    it('unlocks them on a Pro account', function () {
+        $crate = Crate::factory()->for(proUser())->create();
+        $icon = CrateIcon::factory()->pro()->create();
+
+        $component = Livewire::actingAs($crate->user)
+            ->test(CrateSettings::class, ['crate' => $crate])
+            ->call('openSettings')
+            ->assertSee("\$wire.form.crate_icon_id = {$icon->getKey()}", escape: false);
+
+        expect($component->instance()->iconIsLocked($icon))->toBeFalse();
+    });
+
+    it('turns a Pro icon away from a free account', function () {
+        $crate = Crate::factory()->create();
+        $icon = CrateIcon::factory()->pro()->create();
+
+        $component = Livewire::actingAs($crate->user)
+            ->test(CrateSettings::class, ['crate' => $crate])
+            ->call('openSettings')
+            ->set('form.crate_icon_id', $icon->getKey())
+            ->call('save')
+            ->assertNotDispatched('crates-updated');
+
+        expect(alertsFrom($component)->pluck('icon')->all())->toBe(['error'])
+            ->and($crate->fresh()->crate_icon_id)->toBeNull();
+    });
+
+    it('belongs to the crate\'s owner alone', function () {
+        Livewire::actingAs(User::factory()->createOne())
+            ->test(CrateSettings::class, ['crate' => Crate::factory()->create()])
+            ->assertForbidden();
+    });
+
+});
+
+describe('deleting from the popover', function () {
+    it('asks first', function () {
+        $crate = Crate::factory()->create();
+
+        $component = Livewire::actingAs($crate->user)
+            ->test(CrateSettings::class, ['crate' => $crate])
+            ->call('confirmDestroy');
+
+        expect(alertsFrom($component, 'confirm')->pluck('action')->all())->toBe(['destroy']);
+        assertModelExists($crate);
+    });
+
+    it('tells the page when a tile goes', function () {
+        $crate = Crate::factory()->create();
+
+        Livewire::actingAs($crate->user)
+            ->test(CrateSettings::class, ['crate' => $crate])
+            ->call('destroy')
+            ->assertDispatched('crates-updated');
+
+        assertModelMissing($crate);
+    });
+
+    it('leaves a deleted crate\'s page for the one above it', function () {
+        $user = proUser();
+        $parent = Crate::factory()->for($user)->create();
+        $crate = Crate::factory()->nestedIn($parent)->create();
+
+        Livewire::actingAs($user)
+            ->test(CrateSettings::class, ['crate' => $crate, 'redirectOnDelete' => true])
+            ->call('destroy')
+            ->assertRedirect(route('catalog.crate', ['id' => $parent->getKey()]));
+    });
+
+    it('leaves a deleted top-level crate\'s page for the catalog', function () {
+        $crate = Crate::factory()->create();
+
+        Livewire::actingAs($crate->user)
+            ->test(CrateSettings::class, ['crate' => $crate, 'redirectOnDelete' => true])
+            ->call('destroy')
+            ->assertRedirect(route('catalog'));
     });
 });
 

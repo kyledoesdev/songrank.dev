@@ -2,11 +2,9 @@
 
 namespace App\Actions\Catalog;
 
+use App\Contracts\CrateEntity;
 use App\Models\Crate;
 use App\Models\CrateItem;
-use App\Models\Ranking;
-use App\Models\Review;
-use App\Models\Tierlist;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -19,7 +17,7 @@ final class SyncEntityCrates
      *
      * @param  array<int, int|string>  $crateIds
      */
-    public function handle(User $user, Ranking|Tierlist|Review $entity, array $crateIds): void
+    public function handle(User $user, CrateEntity $entity, array $crateIds): void
     {
         $ticked = Crate::query()->ownedBy($user)->whereKey($crateIds)->get();
 
@@ -27,7 +25,7 @@ final class SyncEntityCrates
             $filed = $entity->crateItems()->get();
 
             $filed
-                ->reject(fn (CrateItem $item) => in_array($item->crate_id, $ticked->modelKeys()))
+                ->reject(fn (CrateItem $item) => $ticked->contains('id', $item->crate_id))
                 ->each(fn (CrateItem $item) => (new RemoveCrateItem)->handle($item));
 
             $ticked

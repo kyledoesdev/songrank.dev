@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Contracts\CrateEntity;
 use App\QueryBuilders\CrateItemQueryBuilder;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -28,9 +29,6 @@ class CrateItem extends Model
         ];
     }
 
-    /**
-     * A new item joins the end of its crate.
-     */
     protected static function booted(): void
     {
         static::creating(function (CrateItem $item) {
@@ -46,10 +44,18 @@ class CrateItem extends Model
     }
 
     /**
-     * What is filed here: a Ranking, a Tierlist or a Review.
+     * A Ranking, a Tierlist or a Review.
      */
     public function entity(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    /* Helpers */
+
+    public function holds(CrateEntity $entity): bool
+    {
+        return $this->entity_type === $entity->getMorphClass()
+            && $this->entity_id === $entity->getKey();
     }
 }
