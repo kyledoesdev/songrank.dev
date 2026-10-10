@@ -5,8 +5,10 @@ namespace App\Models;
 use App\Contracts\CrateEntity;
 use App\Enums\TierlistType;
 use App\Models\Concerns\BelongsToCrates;
+use App\Observers\ExploreCountObserver;
 use App\QueryBuilders\TierlistQueryBuilder;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -20,6 +22,7 @@ use Illuminate\Support\Facades\Auth;
 use Kyledoesdev\Essentials\Concerns\HasStatsAfterEvents;
 use Spatie\Comments\Models\Concerns\HasComments;
 
+#[ObservedBy(ExploreCountObserver::class)]
 #[UseEloquentBuilder(TierlistQueryBuilder::class)]
 class Tierlist extends Model implements CrateEntity
 {
@@ -28,6 +31,8 @@ class Tierlist extends Model implements CrateEntity
     use HasFactory;
     use HasStatsAfterEvents;
     use SoftDeletes;
+
+    public const string EXPLORE_COUNT_CACHE_KEY = 'explore:total-tierlists';
 
     protected $fillable = [
         'user_id',

@@ -17,18 +17,11 @@ trait HasRankingForm
 
     public function confirmBeginRanking(): void
     {
-        /* Backstop for a session that started under the limit and crossed it elsewhere. */
-        if (! $this->ensureCanCreateRanking()) {
+        if (! $this->ensureRankingCanBegin()) {
             return;
         }
 
         $songCount = $this->rankableTracks()->count();
-
-        if ($songCount > Ranking::MAX_SONGS) {
-            $this->tooManyTracks($songCount, Ranking::MAX_SONGS);
-
-            return;
-        }
 
         $message = 'Are you sure you are ready to begin? After starting the ranking process, you WILL NOT be able to remove or edit the songs in the ranking.';
 
@@ -69,6 +62,33 @@ trait HasRankingForm
         $this->flashRankingLimitReached(Auth::user()->rankingLimit());
 
         return false;
+    }
+
+    /**
+     * Checked when the confirmation opens and again when it is accepted:
+     * beginRanking() is public, so it can be called without the confirmation.
+     */
+    protected function ensureRankingCanBegin(): bool
+    {
+        if (! $this->ensureCanCreateRanking()) {
+            return false;
+        }
+
+        $songCount = $this->rankableTracks()->count();
+
+        if ($songCount < Ranking::MIN_SONGS) {
+            $this->tooFewTracks(Ranking::MIN_SONGS);
+
+            return false;
+        }
+
+        if ($songCount > Ranking::MAX_SONGS) {
+            $this->tooManyTracks($songCount, Ranking::MAX_SONGS);
+
+            return false;
+        }
+
+        return true;
     }
 
     /**

@@ -22,7 +22,7 @@ describe('user reviews relation manager', function () {
     test('deletes through the review action, clearing the explore count', function () {
         $review = publicPublishedReview();
 
-        cache()->put('explore:total-reviews', 1);
+        cache()->put(Review::EXPLORE_COUNT_CACHE_KEY, 1);
 
         Livewire::actingAs(kyle())
             ->test(ReviewsRelationManager::class, [
@@ -32,6 +32,6 @@ describe('user reviews relation manager', function () {
             ->callAction(TestAction::make(DeleteAction::class)->table($review));
 
         expect(Review::find($review->getKey()))->toBeNull();
-        expect(cache()->has('explore:total-reviews'))->toBeFalse();
+        expect(cache()->has(Review::EXPLORE_COUNT_CACHE_KEY))->toBeFalse();
     });
 });

@@ -5,6 +5,7 @@ use App\Livewire\SongRank\Setup\PlaylistSetup;
 use App\Livewire\SongRank\Setup\ShowSetup;
 use App\Models\Ranking;
 use App\Models\User;
+use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 
 describe('the ranking allowance', function () {
@@ -113,3 +114,115 @@ describe('the search guard', function () {
             ->assertOk();
     });
 });
+
+describe('starting a ranking', function () {
+    beforeEach(function () {
+        config()->set('billing.ranking_limits.free', 2);
+    });
+
+    it('will not start one past the limit, even without the confirmation', function (string $setup) {
+        $user = userWithRankings(2);
+
+        $component = rankingSetupReadyToBegin($setup, $user)
+            ->call('beginRanking')
+            ->assertNoRedirect();
+
+        expect($user->rankings()->count())->toBe(2)
+            ->and(alertsFrom($component)->pluck('icon')->all())->toBe(['error']);
+    })->with('ranking setups');
+
+    it('starts one while there is headroom', function (string $setup) {
+        $user = userWithRankings(1);
+
+        rankingSetupReadyToBegin($setup, $user)
+            ->call('beginRanking')
+            ->assertRedirect();
+
+        expect($user->rankings()->count())->toBe(2);
+    })->with('ranking setups');
+
+    it('will not start one with a track count a ranking cannot take', function (int $tracks) {
+        $user = User::factory()->createOne();
+
+        $component = rankingSetupReadyToBegin(PlaylistSetup::class, $user, $tracks)
+            ->call('beginRanking')
+            ->assertNoRedirect();
+
+        expect($user->rankings()->exists())->toBeFalse()
+            ->and(alertsFrom($component)->pluck('icon')->all())->toBe(['error']);
+    })->with([
+        'too few to compare' => Ranking::MIN_SONGS - 1,
+        'more than the cap' => Ranking::MAX_SONGS + 1,
+    ]);
+
+    it('asks before starting', function () {
+        $component = rankingSetupReadyToBegin(PlaylistSetup::class, userWithRankings(1))
+            ->call('confirmBeginRanking');
+
+        expect(alertsFrom($component, 'confirm')->pluck('action')->all())->toBe(['beginRanking']);
+    });
+
+    it('will not ask once the limit is reached', function () {
+        $component = rankingSetupReadyToBegin(PlaylistSetup::class, userWithRankings(2))
+            ->call('confirmBeginRanking');
+
+        expect(alertsFrom($component, 'confirm'))->toBeEmpty()
+            ->and(alertsFrom($component)->pluck('icon')->all())->toBe(['error']);
+    });
+});
+
+dataset('ranking setups', [
+    'an artist' => ArtistSetup::class,
+    'a playlist' => PlaylistSetup::class,
+    'a show' => ShowSetup::class,
+]);
+
+/**
+ * A setup screen with its source picked and $tracks tracks to rank, one call
+ * away from starting.
+ */
+function rankingSetupReadyToBegin(string $setup, User $user, int $tracks = 3): Testable
+{
+    [$property, $source] = match ($setup) {
+        ArtistSetup::class => ['selectedArtist', [
+            'id' => 'local-natives-id',
+            'name' => 'Local Natives',
+            'cover' => 'https://example.test/local-natives.png',
+        ]],
+        PlaylistSetup::class => ['selectedPlaylist', [
+            'id' => 'road-trip-id',
+            'name' => 'Road Trip',
+            'description' => 'Songs for the car',
+            'creator' => ['display_name' => 'creator-name', 'id' => 'creator-id'],
+            'cover' => 'https://example.test/road-trip.png',
+            'track_count' => $tracks,
+        ]],
+        ShowSetup::class => ['selectedShow', [
+            'id' => 'song-exploder-id',
+            'name' => 'Song Exploder',
+            'publisher' => 'Hrishikesh Hirway',
+            'publisher_image' => 'https://example.test/publisher.png',
+            'description' => 'Musicians take apart their songs',
+            'cover' => 'https://example.test/song-exploder.png',
+            'episode_count' => $tracks,
+            'data' => [],
+        ]],
+    };
+
+    return Livewire::actingAs($user)
+        ->test($setup)
+        ->set($property, $source)
+        ->set('selectedTracks', collect(range(1, $tracks))->map(fn (int $number) => [
+            'id' => "track-{$number}-id",
+            'name' => "Track {$number}",
+            'cover' => 'https://example.test/track.png',
+            'uuid' => str()->uuid()->toString(),
+            'album_name' => 'Hummingbird',
+            'album_id' => 'hummingbird-id',
+            'album_type' => 'album',
+            'artist_id' => 'local-natives-id',
+            'artist_name' => 'Local Natives',
+            'is_podcast' => false,
+        ]))
+        ->set('form.name', 'Ready to Begin');
+}

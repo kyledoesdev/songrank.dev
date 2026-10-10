@@ -63,6 +63,10 @@ class ShowSetup extends Component
 
     public function beginRanking(): void
     {
+        if (! $this->ensureRankingCanBegin()) {
+            return;
+        }
+
         $ranking = (new StoreShowRanking)->handle(Auth::user(), [
             ...$this->rankingAttributes(),
             'show' => $this->selectedShow,

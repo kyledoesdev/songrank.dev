@@ -32,9 +32,9 @@ class DeleteUserJob implements ShouldQueue
             ->with('songs', 'source')
             ->get();
 
-        /* Send the user their data. */
+        /* Send the user their data now: queued, it would be rebuilt after the songs below are gone. */
         if (count($rankings)) {
-            Notification::send($this->user, new DownloadDataNotification($rankings));
+            Notification::sendNow($this->user, new DownloadDataNotification($rankings));
 
             /* Delete the user's rankings & their songs in 1 transaction to be safe */
             DB::transaction(function () use ($rankings) {

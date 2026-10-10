@@ -19,7 +19,7 @@ class ReviewsFeed extends Component
     public function render()
     {
         return view('livewire.explorer.reviews-feed', [
-            'totalReviews' => cache()->remember('explore:total-reviews', now()->addDay(), fn () => Review::query()->explorableCount()),
+            'totalReviews' => cache()->remember(Review::EXPLORE_COUNT_CACHE_KEY, now()->addDay(), fn () => Review::query()->explorableCount()),
         ]);
     }
 

@@ -15,7 +15,7 @@ class RankingsFeed extends Component
     public function render()
     {
         return view('livewire.explorer.rankings-feed', [
-            'totalRankings' => cache()->remember('explore:total-rankings', now()->addDay(), fn () => Ranking::query()->explorableCount()),
+            'totalRankings' => cache()->remember(Ranking::EXPLORE_COUNT_CACHE_KEY, now()->addDay(), fn () => Ranking::query()->explorableCount()),
         ]);
     }
 

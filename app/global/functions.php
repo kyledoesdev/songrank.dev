@@ -3,10 +3,25 @@
 use App\Models\Artist;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
-function prev_route(): string
+/**
+ * The name of the route the visitor came from: null when they followed a link
+ * from another site, or came from a page of ours that no route matches.
+ */
+function prev_route(): ?string
 {
-    return Route::getRoutes()->match(app('request')->create(url()->previous()))->getName();
+    $previous = url()->previous();
+
+    if (parse_url($previous, PHP_URL_HOST) !== request()->getHost()) {
+        return null;
+    }
+
+    try {
+        return Route::getRoutes()->match(request()->create($previous))->getName();
+    } catch (HttpException) {
+        return null;
+    }
 }
 
 /**

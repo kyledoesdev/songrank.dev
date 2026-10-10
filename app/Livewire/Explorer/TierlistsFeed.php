@@ -15,7 +15,7 @@ class TierlistsFeed extends Component
     public function render()
     {
         return view('livewire.explorer.tierlists-feed', [
-            'totalTierlists' => cache()->remember('explore:total-tierlists', now()->addDay(), fn () => Tierlist::query()->explorableCount()),
+            'totalTierlists' => cache()->remember(Tierlist::EXPLORE_COUNT_CACHE_KEY, now()->addDay(), fn () => Tierlist::query()->explorableCount()),
         ]);
     }
 

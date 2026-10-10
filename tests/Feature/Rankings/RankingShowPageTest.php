@@ -105,6 +105,38 @@ describe('header actions on the show page', function () {
     });
 });
 
+describe('arriving at the show page', function () {
+    test('opens from a link on another site', function (string $referrer) {
+        $ranking = publicCompletedRanking();
+
+        get(route('ranking', ['id' => $ranking->getKey()]), ['Referer' => $referrer])->assertOk();
+    })->with([
+        'a path with no route here' => 'https://www.reddit.com/r/music/comments/abc123/my_ranking',
+        'a path one of our routes would match' => 'https://example.com/explore',
+    ]);
+
+    test('opens from a page of ours that no route matches', function () {
+        $ranking = publicCompletedRanking();
+
+        get(route('ranking', ['id' => $ranking->getKey()]), ['Referer' => url('/no-such-page')])->assertOk();
+    });
+
+    test('offers a way back to the explore page', function () {
+        $ranking = publicCompletedRanking();
+
+        get(route('ranking', ['id' => $ranking->getKey()]), ['Referer' => route('explore')])
+            ->assertSee('onclick="history.back()"', escape: false);
+    });
+
+    test('offers no way back to another site', function () {
+        $ranking = publicCompletedRanking();
+
+        get(route('ranking', ['id' => $ranking->getKey()]), ['Referer' => 'https://example.com/explore'])
+            ->assertOk()
+            ->assertDontSee('onclick="history.back()"', escape: false);
+    });
+});
+
 describe('sorting process on the show page', function () {
     test('shows the ranking name and a way home to an owner who has not finished', function () {
         $owner = User::factory()->createOne();

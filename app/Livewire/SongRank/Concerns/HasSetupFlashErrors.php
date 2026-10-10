@@ -89,6 +89,15 @@ trait HasSetupFlashErrors
         );
     }
 
+    protected function tooFewTracks(int $min): void
+    {
+        $this->flash(
+            title: 'Not enough tracks to rank.',
+            message: "Rankings need at least {$min} tracks to begin.",
+            icon: 'error',
+        );
+    }
+
     protected function tooManyTracks(int $count, int $max): void
     {
         $remove = $count - $max;

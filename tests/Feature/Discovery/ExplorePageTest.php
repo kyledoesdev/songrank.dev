@@ -79,7 +79,7 @@ describe('explorable rankings counter', function () {
     });
 
     test('completing a ranking busts the counter cache', function () {
-        cache()->put('explore:total-rankings', 99);
+        cache()->put(Ranking::EXPLORE_COUNT_CACHE_KEY, 99);
 
         $ranking = Ranking::factory()->create([
             'is_public' => true,
@@ -93,7 +93,7 @@ describe('explorable rankings counter', function () {
             'finalSongIds' => $ranking->songs()->pluck('id')->all(),
         ]);
 
-        expect(cache()->has('explore:total-rankings'))->toBeFalse();
+        expect(cache()->has(Ranking::EXPLORE_COUNT_CACHE_KEY))->toBeFalse();
     });
 });
 

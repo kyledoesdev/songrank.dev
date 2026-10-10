@@ -10,6 +10,7 @@ use App\Enums\RankingType;
 use App\Livewire\SongRank\Concerns\HasRankingForm;
 use App\Livewire\SongRank\Concerns\HasSetupFlashErrors;
 use App\Livewire\SongRank\Concerns\HasTrackList;
+use App\Models\Ranking;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -80,7 +81,7 @@ class ArtistSetup extends Component
 
         $tracks = (new GetArtistSongs)->handle(Auth::user(), $artistId);
 
-        if (is_null($tracks) || $tracks->count() < 2) {
+        if (is_null($tracks) || $tracks->count() < Ranking::MIN_SONGS) {
             $this->notEnoughTracks(data_get($this->selectedArtist, 'name', 'this artist'));
             $this->resetSetup();
 
@@ -171,6 +172,10 @@ class ArtistSetup extends Component
 
     public function beginRanking(): void
     {
+        if (! $this->ensureRankingCanBegin()) {
+            return;
+        }
+
         $ranking = (new StoreArtistRanking)->handle(Auth::user(), [
             ...$this->rankingAttributes(),
             'artist' => $this->selectedArtist,

@@ -5,8 +5,10 @@ namespace App\Models;
 use App\Contracts\CrateEntity;
 use App\Enums\RankingType;
 use App\Models\Concerns\BelongsToCrates;
+use App\Observers\ExploreCountObserver;
 use App\QueryBuilders\RankingQueryBuilder;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,6 +21,7 @@ use Illuminate\Support\Facades\Auth;
 use Kyledoesdev\Essentials\Concerns\HasStatsAfterEvents;
 use Spatie\Comments\Models\Concerns\HasComments;
 
+#[ObservedBy(ExploreCountObserver::class)]
 #[UseEloquentBuilder(RankingQueryBuilder::class)]
 class Ranking extends Model implements CrateEntity
 {
@@ -28,7 +31,11 @@ class Ranking extends Model implements CrateEntity
     use HasStatsAfterEvents;
     use SoftDeletes;
 
+    public const MIN_SONGS = 2;
+
     public const MAX_SONGS = 500;
+
+    public const string EXPLORE_COUNT_CACHE_KEY = 'explore:total-rankings';
 
     protected $fillable = [
         'user_id',

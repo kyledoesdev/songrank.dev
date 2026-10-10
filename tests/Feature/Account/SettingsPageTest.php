@@ -9,8 +9,14 @@ use App\Models\Review;
 use App\Models\Tierlist;
 use App\Models\User;
 use App\Notifications\DownloadDataNotification;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use Symfony\Component\Mailer\SentMessage;
+use Symfony\Component\Mime\Part\DataPart;
 
 use function Pest\Laravel\assertGuest;
 
@@ -78,6 +84,20 @@ describe('account deletion', function () {
         DeleteUserJob::dispatch($user);
 
         Notification::assertSentTo($user, DownloadDataNotification::class);
+    });
+
+    test('mails the export while its songs still exist, rather than queueing it for later', function () {
+        Queue::fake();
+
+        $user = User::factory()->createOne();
+        $ranking = Ranking::factory()->for($user)->createOne();
+
+        (new DeleteUserJob($user))->handle();
+
+        $export = mailedRankingsExport();
+
+        expect($export->getSheetCount())->toBe(1)
+            ->and($export->getSheet(0)->getHighestRow())->toBe($ranking->songs()->withTrashed()->count() + 1);
     });
 
     test('user does not receive download notification when deleting account without rankings', function () {
@@ -201,3 +221,22 @@ describe('account deletion', function () {
         expect(User::find($otherUser->getKey()))->not->toBeNull();
     });
 });
+
+/**
+ * The rankings spreadsheet attached to whatever mail has been sent so far.
+ */
+function mailedRankingsExport(): Spreadsheet
+{
+    $attachment = Mail::getSymfonyTransport()->messages()
+        ->flatMap(fn (SentMessage $message) => $message->getOriginalMessage()->getAttachments())
+        ->sole(fn (DataPart $part) => $part->getFilename() === 'rankings.xlsx');
+
+    $path = tempnam(sys_get_temp_dir(), 'export');
+    file_put_contents($path, $attachment->getBody());
+
+    $spreadsheet = IOFactory::createReader('Xlsx')->load($path);
+
+    unlink($path);
+
+    return $spreadsheet;
+}

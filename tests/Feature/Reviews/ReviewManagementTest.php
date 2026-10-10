@@ -243,11 +243,11 @@ describe('deleting', function () {
     it('clears the cached explore count for a review that was on it', function () {
         $review = Review::factory()->for(kyle())->published()->public()->createOne();
 
-        cache()->put('explore:total-reviews', 1);
+        cache()->put(Review::EXPLORE_COUNT_CACHE_KEY, 1);
 
         editReview($review)->call('destroy');
 
-        expect(cache()->has('explore:total-reviews'))->toBeFalse();
+        expect(cache()->has(Review::EXPLORE_COUNT_CACHE_KEY))->toBeFalse();
     });
 });
 

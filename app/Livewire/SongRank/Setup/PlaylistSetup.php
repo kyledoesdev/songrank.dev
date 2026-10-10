@@ -71,6 +71,10 @@ class PlaylistSetup extends Component
 
     public function beginRanking(): void
     {
+        if (! $this->ensureRankingCanBegin()) {
+            return;
+        }
+
         $ranking = (new StorePlaylistRanking)->handle(Auth::user(), [
             ...$this->rankingAttributes(),
             'playlist' => $this->selectedPlaylist,

@@ -13,8 +13,10 @@ use App\Livewire\Profile\Profile;
 use App\Livewire\Profile\Settings;
 use App\Livewire\Welcome\Welcome;
 use Illuminate\Auth\Middleware\Authenticate;
+use Illuminate\Routing\Middleware\ValidateSignature;
 use Illuminate\Support\Facades\Route;
 use Kyledoesdev\Essentials\Middleware\IsDeveloper;
+use Spatie\Comments\Http\Controllers\UnsubscribeFromNotificationsController;
 use Spatie\Health\Http\Controllers\HealthCheckResultsController;
 
 Route::livewire('/', Welcome::class)
@@ -50,6 +52,13 @@ Route::livewire('/profile/{id}', Profile::class)
 Route::get('/login/spotify', [SpotifyAuthController::class, 'login'])->name('spotify.login');
 Route::get('/login/spotify/callback', [SpotifyAuthController::class, 'processLogin'])->name('spotify.process_login');
 Route::get('/logout', [SpotifyAuthController::class, 'logout'])->name('logout');
+
+Route::middleware(ValidateSignature::class)->group(function () {
+    Route::get('/comment-subscription/{commentNotificationSubscription}/unsubscribe', [UnsubscribeFromNotificationsController::class, 'askConfirmation'])
+        ->name('comments::notifications.unsubscribe');
+
+    Route::post('/comment-subscription/{commentNotificationSubscription}/unsubscribe', [UnsubscribeFromNotificationsController::class, 'unsubscribe']);
+});
 
 Route::middleware(Authenticate::class)->group(function () {
     Route::livewire('/dashboard', Dashboard::class)
