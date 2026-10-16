@@ -1,12 +1,14 @@
 <?php
 
+use App\Models\User;
+
 use function Pest\Laravel\actingAs;
 
 describe('review comments', function () {
     test('displays comments component when comments are enabled', function () {
         $review = publicPublishedReview(['comments_enabled' => true]);
 
-        actingAs(kyle())
+        actingAs(User::factory()->createOne())
             ->get(route('review', ['id' => $review->getKey()]))
             ->assertOk()
             ->assertSeeLivewire('comments');
@@ -15,7 +17,7 @@ describe('review comments', function () {
     test('hides comments component when comments are disabled', function () {
         $review = publicPublishedReview(['comments_enabled' => false]);
 
-        actingAs(kyle())
+        actingAs(User::factory()->createOne())
             ->get(route('review', ['id' => $review->getKey()]))
             ->assertOk()
             ->assertDontSeeLivewire('comments');
@@ -44,7 +46,7 @@ describe('review comment replies', function () {
             'comments_replies_enabled' => true,
         ]);
 
-        actingAs(kyle())
+        actingAs(User::factory()->createOne())
             ->get(route('review', ['id' => $review->getKey()]))
             ->assertOk()
             ->assertSee('&quot;showReplies&quot;:true', false);
@@ -56,7 +58,7 @@ describe('review comment replies', function () {
             'comments_replies_enabled' => false,
         ]);
 
-        actingAs(kyle())
+        actingAs(User::factory()->createOne())
             ->get(route('review', ['id' => $review->getKey()]))
             ->assertOk()
             ->assertSee('&quot;showReplies&quot;:false', false);

@@ -17,8 +17,8 @@ use function Pest\Laravel\get;
 
 describe('reaching the page', function () {
 
-    it('opens for somebody the feature is on for', function () {
-        actingAs(kyle());
+    it('opens for anyone signed in', function () {
+        actingAs(User::factory()->createOne());
 
         get(route('reviews.create'))->assertOk();
     });
@@ -30,7 +30,7 @@ describe('reaching the page', function () {
 
 describe('choosing a type', function () {
     it('starts on albums', function () {
-        Livewire::actingAs(kyle())
+        Livewire::actingAs(User::factory()->createOne())
             ->test(ReviewSetup::class)
             ->assertSet('type', ReviewType::ALBUM)
             ->call('setupComponent')
@@ -38,14 +38,14 @@ describe('choosing a type', function () {
     });
 
     it('opens on the type a link asks for', function () {
-        Livewire::actingAs(kyle())
+        Livewire::actingAs(User::factory()->createOne())
             ->withQueryParams(['type' => 'track'])
             ->test(ReviewSetup::class)
             ->assertSet('type', ReviewType::TRACK);
     });
 
     it('swaps in the artist setup', function () {
-        Livewire::actingAs(kyle())
+        Livewire::actingAs(User::factory()->createOne())
             ->test(ReviewSetup::class)
             ->dispatch('switch-review-type', type: 'artist')
             ->assertSet('type', ReviewType::ARTIST)
@@ -54,7 +54,7 @@ describe('choosing a type', function () {
     });
 
     it('swaps in the track setup', function () {
-        Livewire::actingAs(kyle())
+        Livewire::actingAs(User::factory()->createOne())
             ->test(ReviewSetup::class)
             ->dispatch('switch-review-type', type: 'track')
             ->call('setupComponent')
@@ -66,44 +66,44 @@ describe('searching', function () {
     it('finds artists', function () {
         fakeSearch('artists', [spotifyArtist()]);
 
-        Livewire::actingAs(kyle())
+        Livewire::actingAs(User::factory()->createOne())
             ->test(ArtistSetup::class)
             ->set('searchTerm', 'tame impala')
             ->call('search')
-            ->assertSee('Tame Impala')
-            ->assertSee('https://open.spotify.com/artist/tame-impala-id');
+            ->assertSet('searchResults', fn (array $results) => collect($results)->pluck('id')->all() === ['tame-impala-id'])
+            ->assertSee('https://open.spotify.com/artist/tame-impala-id', escape: false);
     });
 
     it('finds albums', function () {
         fakeSearch('albums', [spotifyAlbum()]);
 
-        Livewire::actingAs(kyle())
+        Livewire::actingAs(User::factory()->createOne())
             ->test(AlbumSetup::class)
             ->set('searchTerm', 'currents')
             ->call('search')
-            ->assertSee('Currents')
-            ->assertSee('https://open.spotify.com/album/currents-id');
+            ->assertSet('searchResults', fn (array $results) => collect($results)->pluck('id')->all() === ['currents-id'])
+            ->assertSee('https://open.spotify.com/album/currents-id', escape: false);
     });
 
     it('finds tracks', function () {
         fakeSearch('tracks', [spotifyTrack()]);
 
-        Livewire::actingAs(kyle())
+        Livewire::actingAs(User::factory()->createOne())
             ->test(TrackSetup::class)
             ->set('searchTerm', 'less i know')
             ->call('search')
-            ->assertSee('The Less I Know The Better')
-            ->assertSee('https://open.spotify.com/track/less-i-know-id');
+            ->assertSet('searchResults', fn (array $results) => collect($results)->pluck('id')->all() === ['less-i-know-id'])
+            ->assertSee('https://open.spotify.com/track/less-i-know-id', escape: false);
     });
 
     it('asks for a search term before calling Spotify', function () {
         Http::fake();
 
-        $component = Livewire::actingAs(kyle())
+        $component = Livewire::actingAs(User::factory()->createOne())
             ->test(AlbumSetup::class)
             ->call('search');
 
-        expect(alertsFrom($component)->pluck('title'))->toContain('Please enter a valid search term.');
+        expect(alertsFrom($component)->pluck('icon')->all())->toBe(['error']);
 
         Http::assertNothingSent();
     });
@@ -111,12 +111,13 @@ describe('searching', function () {
     it('says so when nothing comes back', function () {
         fakeSearch('albums', []);
 
-        $component = Livewire::actingAs(kyle())
+        $component = Livewire::actingAs(User::factory()->createOne())
             ->test(AlbumSetup::class)
             ->set('searchTerm', 'zzzz')
-            ->call('search');
+            ->call('search')
+            ->assertSet('searchResults', fn (?array $results) => empty($results));
 
-        expect(alertsFrom($component)->pluck('title'))->toContain('Nothing found.');
+        expect(alertsFrom($component)->pluck('icon')->all())->toBe(['error']);
     });
 });
 
@@ -143,7 +144,7 @@ describe('choosing a subject', function () {
     });
 
     it('refuses something the user has already reviewed', function () {
-        $user = kyle();
+        $user = User::factory()->createOne();
         $album = Album::factory()->createOne(['album_id' => 'currents-id']);
         Review::factory()->for($user)->createOne(['subject_id' => $album->getKey()]);
 
@@ -151,11 +152,11 @@ describe('choosing a subject', function () {
 
         $component->assertSet('subject', null);
 
-        expect(alertsFrom($component)->pluck('title'))->toContain('You have already reviewed Currents.');
+        expect(alertsFrom($component)->pluck('icon')->all())->toBe(['error']);
     });
 
     it('allows the subject again once that review is deleted', function () {
-        $user = kyle();
+        $user = User::factory()->createOne();
         $album = Album::factory()->createOne(['album_id' => 'currents-id']);
         Review::factory()->for($user)->createOne(['subject_id' => $album->getKey()])->delete();
 
@@ -186,7 +187,7 @@ describe('choosing a subject', function () {
 
 function albumSetupWithResults(?User $user = null): Testable
 {
-    return Livewire::actingAs($user ?? kyle())
+    return Livewire::actingAs($user ?? User::factory()->createOne())
         ->test(AlbumSetup::class)
         ->set('searchResults', [albumEntry()]);
 }

@@ -7,6 +7,7 @@ use App\Livewire\Tierlist\Setup\TrackSetup;
 use App\Livewire\Tierlist\TierlistSetup;
 use App\Models\Artist;
 use App\Models\Tierlist;
+use App\Models\User;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
@@ -14,18 +15,18 @@ use function Pest\Laravel\get;
 
 describe('following a type link', function () {
     it('opens the setup on the type that was clicked', function () {
-        actingAs(kyle());
+        actingAs(User::factory()->createOne());
 
         get(route('tierlists.create', ['type' => 'album']))->assertOk();
 
-        Livewire::actingAs(kyle())
+        Livewire::actingAs(User::factory()->createOne())
             ->withQueryParams(['type' => 'album'])
             ->test(TierlistSetup::class)
             ->assertSet('type', TierlistType::ALBUM);
     });
 
     it('falls back to artists when the link says something silly', function () {
-        Livewire::actingAs(kyle())
+        Livewire::actingAs(User::factory()->createOne())
             ->withQueryParams(['type' => 'nonsense'])
             ->test(TierlistSetup::class)
             ->assertSet('type', TierlistType::ARTIST);
@@ -34,8 +35,8 @@ describe('following a type link', function () {
 
 describe('reaching the page', function () {
 
-    it('opens for somebody the feature is on for', function () {
-        actingAs(kyle());
+    it('opens for anyone signed in', function () {
+        actingAs(User::factory()->createOne());
 
         get(route('tierlists.create'))->assertOk();
     });
@@ -47,7 +48,7 @@ describe('reaching the page', function () {
 
 describe('choosing a type', function () {
     it('starts on artists', function () {
-        Livewire::actingAs(kyle())
+        Livewire::actingAs(User::factory()->createOne())
             ->test(TierlistSetup::class)
             ->assertSet('type', TierlistType::ARTIST)
             ->call('setupComponent')
@@ -55,7 +56,7 @@ describe('choosing a type', function () {
     });
 
     it('swaps in the album setup', function () {
-        Livewire::actingAs(kyle())
+        Livewire::actingAs(User::factory()->createOne())
             ->test(TierlistSetup::class)
             ->dispatch('switch-tierlist-type', type: 'album')
             ->assertSet('type', TierlistType::ALBUM)
@@ -64,7 +65,7 @@ describe('choosing a type', function () {
     });
 
     it('swaps in the track setup', function () {
-        Livewire::actingAs(kyle())
+        Livewire::actingAs(User::factory()->createOne())
             ->test(TierlistSetup::class)
             ->dispatch('switch-tierlist-type', type: 'track')
             ->call('setupComponent')
@@ -171,7 +172,7 @@ describe('starting the list', function () {
             spotifyArtist(['id' => 'foster-the-people-id', 'name' => 'Foster the People']),
         ]);
 
-        $user = kyle();
+        $user = User::factory()->createOne();
 
         Livewire::actingAs($user)
             ->test(ArtistSetup::class)
@@ -195,8 +196,8 @@ describe('starting the list', function () {
 
 describe('the allowance', function () {
     it('blocks a search once the type allowance is spent', function () {
-        $user = kyle();
-        Tierlist::factory()->for($user)->count(3)->create(['type' => TierlistType::ARTIST->value]);
+        $user = User::factory()->createOne();
+        Tierlist::factory()->for($user)->count(config('billing.tierlist_limits.free.artist'))->create(['type' => TierlistType::ARTIST->value]);
 
         $component = Livewire::actingAs($user)
             ->test(ArtistSetup::class)
@@ -208,8 +209,8 @@ describe('the allowance', function () {
     });
 
     it('leaves the other types alone', function () {
-        $user = kyle();
-        Tierlist::factory()->for($user)->count(3)->create(['type' => TierlistType::ARTIST->value]);
+        $user = User::factory()->createOne();
+        Tierlist::factory()->for($user)->count(config('billing.tierlist_limits.free.artist'))->create(['type' => TierlistType::ARTIST->value]);
 
         $component = Livewire::actingAs($user)->test(AlbumSetup::class);
 
@@ -222,7 +223,7 @@ describe('the allowance', function () {
             spotifyArtist(['id' => 'foster-the-people-id', 'name' => 'Foster the People']),
         ]);
 
-        $user = kyle();
+        $user = User::factory()->createOne();
 
         $component = Livewire::actingAs($user)
             ->test(ArtistSetup::class)
@@ -231,11 +232,11 @@ describe('the allowance', function () {
             ->call('addEntry', 'tame-impala-id')
             ->call('addEntry', 'foster-the-people-id');
 
-        Tierlist::factory()->for($user)->count(3)->create(['type' => TierlistType::ARTIST->value]);
+        Tierlist::factory()->for($user)->count(config('billing.tierlist_limits.free.artist'))->create(['type' => TierlistType::ARTIST->value]);
 
         $component->call('startTierlist')->assertNoRedirect();
 
-        expect(Tierlist::count())->toBe(3);
+        expect(Tierlist::count())->toBe(config('billing.tierlist_limits.free.artist'));
     });
 
     it('stops the board filling past what the account allows', function () {
@@ -260,5 +261,5 @@ describe('the allowance', function () {
 
 function artistTierlistSetup()
 {
-    return Livewire::actingAs(kyle())->test(ArtistSetup::class);
+    return Livewire::actingAs(User::factory()->createOne())->test(ArtistSetup::class);
 }

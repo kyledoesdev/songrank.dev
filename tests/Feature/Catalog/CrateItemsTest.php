@@ -53,7 +53,7 @@ describe('filing something in a crate', function () {
         (new AddCrateItem)->handle($byArtist, $ranking);
         (new AddCrateItem)->handle($byYear, $ranking);
 
-        expect($ranking->crateItems()->pluck('crate_id')->all())->toBe([$byArtist->getKey(), $byYear->getKey()]);
+        expect($ranking->crateItems()->orderBy('id')->pluck('crate_id')->all())->toBe([$byArtist->getKey(), $byYear->getKey()]);
     });
 
     it('takes records that are not finished yet', function () {
@@ -78,7 +78,7 @@ describe('reading a crate', function () {
         [$ranking, $tierlist, $review] = CrateItem::query()->forCratePage($crate)->get()->pluck('entity');
 
         expect($ranking->relationLoaded('source'))->toBeTrue()
-            ->and($ranking->songs_count)->toBe(10)
+            ->and($ranking->songs_count)->toBe($ranking->songs()->count())
             ->and($tierlist->relationLoaded('tiers'))->toBeTrue()
             ->and($tierlist->items_count)->not->toBeNull()
             ->and($review->relationLoaded('subject'))->toBeTrue()

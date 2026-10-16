@@ -6,6 +6,10 @@ use App\Models\Crate;
 use App\Models\User;
 use Livewire\Livewire;
 
+beforeEach(function () {
+    config()->set('billing.catalog_limits.free', ['folders' => 5, 'depth' => 1]);
+});
+
 describe('the free allowance', function () {
     it('allows five crates', function () {
         expect(User::factory()->createOne()->crateLimit())->toBe(5)

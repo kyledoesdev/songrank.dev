@@ -4,6 +4,7 @@ use App\Filament\Resources\ProLicenses\Pages\ViewProLicense;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\ProLicense;
 use App\Models\User;
+use Filament\Actions\Testing\TestAction;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
@@ -26,9 +27,10 @@ describe('the licence detail view', function () {
         $license = ProLicense::factory()->active()->withTax(210, 'DE')->create();
 
         Livewire::test(ViewProLicense::class, ['record' => $license->uuid])
-            ->assertSee('$10.00')
-            ->assertSee('$2.10')
-            ->assertSee('DE');
+            ->assertSchemaComponentVisible('money')
+            ->assertSee($license->formattedTotal())
+            ->assertSee($license->formattedTax())
+            ->assertSchemaComponentStateSet('money.billing_country', 'DE');
     });
 
     it('explains why a complimentary licence exists', function () {
@@ -36,7 +38,7 @@ describe('the licence detail view', function () {
 
         Livewire::test(ViewProLicense::class, ['record' => $license->uuid])
             ->assertSee('Top ranker.')
-            ->assertSee('Complimentary');
+            ->assertSee($license->source->label());
     });
 
     it('hides the money and Stripe sections on a complimentary licence', function () {
@@ -44,8 +46,8 @@ describe('the licence detail view', function () {
 
         Livewire::test(ViewProLicense::class, ['record' => $license->uuid])
             ->assertOk()
-            ->assertDontSee('Payment Intent')
-            ->assertDontSee('Checkout Session');
+            ->assertSchemaComponentHidden('money')
+            ->assertSchemaComponentHidden('stripe');
     });
 
     it('resolves the record by uuid rather than id', function () {
@@ -62,7 +64,6 @@ describe('the link to the buyer', function () {
 
         Livewire::test(ViewProLicense::class, ['record' => $license->uuid])
             ->assertOk()
-            ->assertSee($buyer->name)
             ->assertSee(UserResource::getUrl('view', ['record' => $buyer]));
     });
 
@@ -71,7 +72,7 @@ describe('the link to the buyer', function () {
         $license = ProLicense::factory()->active()->for($buyer)->create();
 
         Livewire::test(ViewProLicense::class, ['record' => $license->uuid])
-            ->assertSee('Open user');
+            ->assertActionVisible(TestAction::make('viewUser')->schemaComponent('user.name'));
     });
 
     it('offers no link once the account is gone', function () {
@@ -79,8 +80,8 @@ describe('the link to the buyer', function () {
 
         Livewire::test(ViewProLicense::class, ['record' => $license->uuid])
             ->assertOk()
-            ->assertSee('Account deleted')
-            ->assertDontSee('Open user');
+            ->assertSchemaComponentStateSet('user.name', null)
+            ->assertActionHidden(TestAction::make('viewUser')->schemaComponent('user.name'));
     });
 
     it('never points at somebody else', function () {

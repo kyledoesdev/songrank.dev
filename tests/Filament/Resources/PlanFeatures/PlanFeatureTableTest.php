@@ -7,8 +7,10 @@ use Livewire\Livewire;
 
 describe('plan feature table', function () {
     test('shows one plan per tab', function () {
-        $free = PlanFeature::query()->where('plan', Plan::FREE)->get();
-        $pro = PlanFeature::query()->where('plan', Plan::PRO)->get();
+        PlanFeature::query()->forceDelete();
+
+        $free = PlanFeature::factory()->count(2)->create();
+        $pro = PlanFeature::factory()->count(2)->pro()->create();
 
         Livewire::actingAs(kyle())
             ->test(ListPlanFeatures::class)
@@ -21,11 +23,13 @@ describe('plan feature table', function () {
     });
 
     test('shows what each label becomes on the card', function () {
+        $feature = PlanFeature::factory()->create(['plan' => Plan::FREE, 'label' => '{rankings} rankings to begin with']);
+
         Livewire::actingAs(kyle())
             ->test(ListPlanFeatures::class)
             ->set('activeTab', 'free')
-            ->assertSee('{rankings} rankings')
-            ->assertSee('100 rankings');
+            ->assertTableColumnStateSet('label', '{rankings} rankings to begin with', $feature)
+            ->assertTableColumnStateSet('rendered_label', $feature->renderedLabel(), $feature);
     });
 
     test('reordering reaches the landing page straight away', function () {

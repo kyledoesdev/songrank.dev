@@ -33,9 +33,17 @@ class TierlistBuilder extends Component
 
     public function mount(Tierlist $tierlist): void
     {
-        abort_unless($tierlist->canBeEdited(), 403);
+        abort_unless($tierlist->canBeRearranged(), 403);
 
         $this->tierlist = $tierlist;
+    }
+
+    /**
+     * A builder left open can outlive the board's lock, so every request checks again.
+     */
+    public function hydrate(): void
+    {
+        abort_unless($this->tierlist->canBeRearranged(), 403);
     }
 
     public function render()

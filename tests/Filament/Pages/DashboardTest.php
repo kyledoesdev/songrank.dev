@@ -8,6 +8,8 @@ describe('admin dashboard', function () {
         Livewire::actingAs(kyle())
             ->test(Dashboard::class)
             ->assertOk()
-            ->assertSeeInOrder(['Pro', 'Users', 'Content']);
+            ->assertSchemaComponentExists('pro', 'content')
+            ->assertSchemaComponentExists('users', 'content')
+            ->assertSchemaComponentExists('content', 'content');
     });
 });

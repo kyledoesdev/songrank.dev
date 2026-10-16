@@ -38,7 +38,7 @@
                     </div>
                     <div>
                         <p class="text-sm font-medium text-gray-700">Rankings</p>
-                        <p class="text-xs text-gray-500">{{ number_format($user->rankings->where('is_ranked', true)->count()) }}</p>
+                        <p class="text-xs text-gray-500">{{ number_format($user->completedRankingCount()) }}</p>
                     </div>
                 </div>
 
@@ -48,7 +48,7 @@
                     </div>
                     <div>
                         <p class="text-sm font-medium text-gray-700">Tier Lists</p>
-                        <p class="text-xs text-gray-500">{{ number_format($user->tierlists->where('is_complete', true)->count()) }}</p>
+                        <p class="text-xs text-gray-500">{{ number_format($user->completedTierlistCount()) }}</p>
                     </div>
                 </div>
 
@@ -58,7 +58,7 @@
                     </div>
                     <div>
                         <p class="text-sm font-medium text-gray-700">Reviews</p>
-                        <p class="text-xs text-gray-500">{{ number_format($user->reviews->where('is_published', true)->count()) }}</p>
+                        <p class="text-xs text-gray-500">{{ number_format($user->publishedReviewCount()) }}</p>
                     </div>
                 </div>
             </div>

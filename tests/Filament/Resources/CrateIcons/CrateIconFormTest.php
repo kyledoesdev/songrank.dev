@@ -32,9 +32,11 @@ describe('creating an icon', function () {
     });
 
     it('refuses an icon already in the picker', function () {
+        $existing = CrateIcon::factory()->create();
+
         Livewire::actingAs(kyle())
             ->test(CreateCrateIcon::class)
-            ->fillForm(['name' => 'Another Vinyl', 'icon' => 'fa-record-vinyl'])
+            ->fillForm(['name' => 'Another One', 'icon' => $existing->icon])
             ->call('create')
             ->assertHasFormErrors(['icon' => 'unique']);
     });
@@ -61,7 +63,7 @@ describe('creating an icon', function () {
 
 describe('editing an icon', function () {
     it('keeps its own class without tripping the unique rule', function () {
-        $icon = CrateIcon::query()->where('icon', 'fa-crown')->firstOrFail();
+        $icon = CrateIcon::factory()->create();
 
         Livewire::actingAs(kyle())
             ->test(EditCrateIcon::class, ['record' => $icon->getKey()])
@@ -75,7 +77,7 @@ describe('editing an icon', function () {
     });
 
     it('puts crates back on the default folder once their icon is deleted', function () {
-        $icon = CrateIcon::query()->where('icon', 'fa-fire')->firstOrFail();
+        $icon = CrateIcon::factory()->create();
         $crate = Crate::factory()->create(['crate_icon_id' => $icon->getKey()]);
 
         Livewire::actingAs(kyle())

@@ -8,6 +8,10 @@ use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 
+beforeEach(function () {
+    config()->set('billing.review_limits.free', 5);
+});
+
 describe('the free allowance', function () {
     it('allows five reviews', function () {
         expect(User::factory()->createOne()->reviewLimit())->toBe(5)
@@ -61,28 +65,27 @@ describe('the pro allowance', function () {
 
 describe('hitting the limit in setup', function () {
     it('swaps the search for an upgrade prompt', function () {
-        Livewire::actingAs(userWithReviews(5, ['is_dev' => true]))
+        Livewire::actingAs(userWithReviews(5))
             ->test(AlbumSetup::class)
-            ->assertSee('That is all your reviews used')
-            ->assertSee(route('billing'))
-            ->assertDontSee('Search for an album...');
+            ->assertSee(route('billing'), escape: false)
+            ->assertDontSee('wire:keydown.enter="search"', escape: false);
     });
 
     it('stops a search from a stale page before it reaches Spotify', function () {
         Http::fake();
 
-        $component = Livewire::actingAs(userWithReviews(5, ['is_dev' => true]))
+        $component = Livewire::actingAs(userWithReviews(5))
             ->test(TrackSetup::class)
             ->set('searchTerm', 'currents')
             ->call('search');
 
-        expect(alertsFrom($component)->pluck('title'))->toContain('You have used all your reviews');
+        expect(alertsFrom($component)->pluck('icon')->all())->toBe(['error']);
 
         Http::assertNothingSent();
     });
 
     it('stops a review being started from a stale page', function () {
-        $user = userWithReviews(5, ['is_dev' => true]);
+        $user = userWithReviews(5);
 
         Livewire::actingAs($user)
             ->test(AlbumSetup::class)

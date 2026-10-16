@@ -30,19 +30,20 @@ describe('plan feature form', function () {
     });
 
     test('rewrites a feature on the landing page straight away', function () {
-        get(route('welcome'))->assertSee('5 reviews');
+        $feature = PlanFeature::factory()->create(['plan' => Plan::FREE, 'label' => '{reviews} reviews to start with']);
+        $before = $feature->renderedLabel();
 
-        $feature = PlanFeature::query()->where('plan', Plan::FREE)->where('label', '{reviews} reviews')->first();
+        get(route('welcome'))->assertSee($before);
 
         Livewire::actingAs(kyle())
             ->test(EditPlanFeature::class, ['record' => $feature->getKey()])
-            ->fillForm(['label' => '{reviews} written reviews'])
+            ->fillForm(['label' => '{reviews} written reviews to start with'])
             ->call('save')
             ->assertHasNoFormErrors();
 
         get(route('welcome'))
-            ->assertSee('5 written reviews')
-            ->assertDontSee('5 reviews');
+            ->assertSee($feature->fresh()->renderedLabel())
+            ->assertDontSee($before);
     });
 
     test('requires a plan and a label', function () {

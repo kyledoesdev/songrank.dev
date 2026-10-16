@@ -10,9 +10,7 @@ use Livewire\Livewire;
 
 describe('trend chart widgets', function () {
     test('renders without error', function (string $widget) {
-        $user = User::factory()->createOne();
-
-        Livewire::actingAs($user)
+        Livewire::actingAs(kyle())
             ->test($widget)
             ->assertOk();
     })->with([
@@ -24,22 +22,20 @@ describe('trend chart widgets', function () {
     ]);
 
     test('renders with each quick filter applied', function (string $filter) {
-        $user = User::factory()->createOne();
-
-        Livewire::actingAs($user)
+        Livewire::actingAs(kyle())
             ->test(NewUsersWidget::class)
             ->set('filters.filter', $filter)
             ->assertOk();
     })->with(['all', 'day', 'week', 'month', 'year']);
 
     test('builds a dataset for new and deleted users', function () {
-        $actor = User::factory()->createOne();
+        $admin = kyle();
         User::factory()->count(2)->create();
         User::factory()->count(1)->create()->each->delete();
 
-        Livewire::actingAs($actor)
-            ->test(NewUsersWidget::class)
-            ->assertOk()
-            ->assertSee('New Users');
+        [$new, $deleted] = widgetChartData(Livewire::actingAs($admin)->test(NewUsersWidget::class));
+
+        expect(array_sum($new))->toBe(3)
+            ->and(array_sum($deleted))->toBe(1);
     });
 });

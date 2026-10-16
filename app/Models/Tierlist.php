@@ -207,6 +207,15 @@ class Tierlist extends Model implements CrateEntity
         return $this->user_id === Auth::id();
     }
 
+    /**
+     * Publishing locks a free account's board: its owner rearranges it only
+     * while it is unfinished, or afterwards on Pro.
+     */
+    public function canBeRearranged(): bool
+    {
+        return $this->canBeEdited() && (! $this->is_complete || (bool) Auth::user()->is_pro);
+    }
+
     public function canBeSeen(): bool
     {
         if ($this->user_id == Auth::id()) {

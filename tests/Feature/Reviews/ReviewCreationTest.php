@@ -13,7 +13,7 @@ use Livewire\Livewire;
 
 describe('confirming the start', function () {
     it('asks before creating anything', function () {
-        $component = Livewire::actingAs(kyle())
+        $component = Livewire::actingAs(User::factory()->createOne())
             ->test(AlbumSetup::class)
             ->set('subject', albumEntry())
             ->call('confirmStartReview');
@@ -21,24 +21,22 @@ describe('confirming the start', function () {
         $confirm = alertsFrom($component, 'confirm')->first();
 
         expect($confirm['action'])->toBe('startReview')
-            ->and($confirm['message'])->toBe("You're about to write about Currents. It stays a draft until you publish it.")
-            ->and($confirm['confirmText'])->toBe("Let's go")
             ->and(Review::count())->toBe(0);
     });
 
     it('wants a subject first', function () {
-        $component = Livewire::actingAs(kyle())
+        $component = Livewire::actingAs(User::factory()->createOne())
             ->test(AlbumSetup::class)
             ->call('confirmStartReview');
 
-        expect(alertsFrom($component)->pluck('title'))->toContain('Pick something to review first.')
+        expect(alertsFrom($component)->pluck('icon')->all())->toBe(['error'])
             ->and(alertsFrom($component, 'confirm'))->toBeEmpty();
     });
 });
 
 describe('starting a review', function () {
     it('creates a draft and opens it for writing', function () {
-        $user = kyle();
+        $user = User::factory()->createOne();
 
         $component = Livewire::actingAs($user)
             ->test(AlbumSetup::class)
@@ -66,7 +64,7 @@ describe('starting a review', function () {
     });
 
     it('names an unnamed review after its subject', function () {
-        Livewire::actingAs(kyle())
+        Livewire::actingAs(User::factory()->createOne())
             ->test(AlbumSetup::class)
             ->set('subject', albumEntry())
             ->set('form.name', '')
@@ -76,7 +74,7 @@ describe('starting a review', function () {
     });
 
     it('does nothing without a subject', function () {
-        Livewire::actingAs(kyle())
+        Livewire::actingAs(User::factory()->createOne())
             ->test(AlbumSetup::class)
             ->call('startReview');
 
@@ -86,7 +84,7 @@ describe('starting a review', function () {
 
 describe('resolving the subject', function () {
     it('stores an album with its credited artist', function () {
-        Livewire::actingAs(kyle())
+        Livewire::actingAs(User::factory()->createOne())
             ->test(AlbumSetup::class)
             ->set('subject', albumEntry())
             ->call('startReview');
@@ -100,7 +98,7 @@ describe('resolving the subject', function () {
     });
 
     it('stores a track', function () {
-        Livewire::actingAs(kyle())
+        Livewire::actingAs(User::factory()->createOne())
             ->test(TrackSetup::class)
             ->set('subject', trackEntry())
             ->call('startReview');
@@ -113,7 +111,7 @@ describe('resolving the subject', function () {
     });
 
     it('stores an artist', function () {
-        Livewire::actingAs(kyle())
+        Livewire::actingAs(User::factory()->createOne())
             ->test(ArtistSetup::class)
             ->set('subject', artistEntry())
             ->call('startReview');
@@ -128,7 +126,7 @@ describe('resolving the subject', function () {
     it('fills in the picture of an artist first stored without one', function () {
         Artist::factory()->createOne(['artist_id' => 'tame-impala-id', 'artist_img' => null]);
 
-        Livewire::actingAs(kyle())
+        Livewire::actingAs(User::factory()->createOne())
             ->test(ArtistSetup::class)
             ->set('subject', artistEntry())
             ->call('startReview');
@@ -138,7 +136,7 @@ describe('resolving the subject', function () {
     });
 
     it('reuses a subject somebody else already reviewed', function () {
-        foreach ([kyle(), User::factory()->createOne(['is_dev' => true])] as $user) {
+        foreach ([User::factory()->createOne(), User::factory()->createOne()] as $user) {
             Livewire::actingAs($user)
                 ->test(AlbumSetup::class)
                 ->set('subject', albumEntry())

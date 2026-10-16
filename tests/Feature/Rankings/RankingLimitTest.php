@@ -5,6 +5,7 @@ use App\Livewire\SongRank\Setup\PlaylistSetup;
 use App\Livewire\SongRank\Setup\ShowSetup;
 use App\Models\Ranking;
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 
@@ -12,7 +13,7 @@ describe('the ranking allowance', function () {
     it('caps a free account at the configured limit', function () {
         $user = userWithRankings(3);
 
-        expect($user->rankingLimit())->toBe(100)
+        expect($user->rankingLimit())->toBe(config('billing.ranking_limits.free'))
             ->and($user->canCreateRanking())->toBeTrue();
     });
 
@@ -99,11 +100,15 @@ describe('the search guard', function () {
     });
 
     it('refuses a search from a stale page without calling Spotify', function () {
+        Http::fake();
+
         Livewire::actingAs(userWithRankings(2))
             ->test(ArtistSetup::class)
             ->set('searchTerm', 'Radiohead')
             ->call('search')
             ->assertSet('searchedArtists', null);
+
+        Http::assertNothingSent();
     });
 
     it('lets a search through while there is headroom', function () {

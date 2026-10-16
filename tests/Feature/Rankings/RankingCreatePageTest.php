@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\RankingType;
 use App\Livewire\SongRank\RankingPanel;
 use App\Livewire\SongRank\Setup\ArtistSetup;
 use App\Livewire\SongRank\Setup\PlaylistSetup;
@@ -38,11 +39,11 @@ describe('create page', function () {
 
 describe('ranking panel', function () {
     test('shows create links for each ranking type', function () {
-        Livewire::actingAs(User::factory()->createOne())
-            ->test(RankingPanel::class)
-            ->assertSee('Artist')
-            ->assertSee('Playlist')
-            ->assertSee('Podcast / Show');
+        $component = Livewire::actingAs(User::factory()->createOne())->test(RankingPanel::class);
+
+        foreach (RankingType::cases() as $type) {
+            $component->assertSee(route('rankings.create', ['type' => $type->value]), escape: false);
+        }
     });
 
     test('shows upgrade prompt when ranking limit is reached', function () {

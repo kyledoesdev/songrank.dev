@@ -6,6 +6,9 @@ use App\Models\Concerns\HasCrateAllowance;
 use App\Models\Concerns\HasRankingAllowance;
 use App\Models\Concerns\HasReviewAllowance;
 use App\Models\Concerns\HasTierlistAllowance;
+use App\QueryBuilders\RankingQueryBuilder;
+use App\QueryBuilders\ReviewQueryBuilder;
+use App\QueryBuilders\TierlistQueryBuilder;
 use App\QueryBuilders\UserQueryBuilder;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -17,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Auth;
 use Kyledoesdev\Essentials\Concerns\HasStatsAfterEvents;
 use Laravel\Cashier\Billable;
 use Laravel\Pennant\Concerns\HasFeatures;
@@ -111,6 +115,39 @@ class User extends Authenticatable implements CanComment, FilamentUser
     public function proLicenses(): HasMany
     {
         return $this->hasMany(ProLicense::class);
+    }
+
+    public function completedRankingCount(): int
+    {
+        return $this->rankings()
+            ->completed()
+            ->when(! $this->isSignedInUser(), fn (RankingQueryBuilder $query) => $query->public())
+            ->count();
+    }
+
+    public function completedTierlistCount(): int
+    {
+        return $this->tierlists()
+            ->completed()
+            ->when(! $this->isSignedInUser(), fn (TierlistQueryBuilder $query) => $query->public())
+            ->count();
+    }
+
+    public function publishedReviewCount(): int
+    {
+        return $this->reviews()
+            ->published()
+            ->when(! $this->isSignedInUser(), fn (ReviewQueryBuilder $query) => $query->public())
+            ->count();
+    }
+
+    /**
+     * The profile card counts everything its owner has finished, but only
+     * public records for anybody else, signed in or not.
+     */
+    private function isSignedInUser(): bool
+    {
+        return $this->getKey() === Auth::id();
     }
 
     public function syncProStatus(): void

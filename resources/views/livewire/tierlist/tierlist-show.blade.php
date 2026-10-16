@@ -94,7 +94,7 @@
             </div>
 
             @if ($tierlist->bank->items->isNotEmpty())
-                <div class="mt-4 rounded-lg border border-zinc-200 overflow-hidden">
+                <div class="mt-4 rounded-lg border border-zinc-200 overflow-hidden" wire:key="tier-{{ $tierlist->bank->getKey() }}">
                     <div class="px-4 py-2 bg-gray-50 border-b border-zinc-200">
                         <h4 class="font-semibold text-gray-800 text-sm">
                             Unranked

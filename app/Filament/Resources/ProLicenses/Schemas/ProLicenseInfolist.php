@@ -58,6 +58,7 @@ class ProLicenseInfolist
                 ]),
 
             Section::make('Money')
+                ->key('money')
                 ->columns(3)
                 ->columnSpanFull()
                 ->visible(fn (ProLicense $record): bool => $record->isPaid())
@@ -84,6 +85,7 @@ class ProLicenseInfolist
                 ]),
 
             Section::make('Stripe')
+                ->key('stripe')
                 ->columns(2)
                 ->columnSpanFull()
                 ->visible(fn (ProLicense $record): bool => $record->isPaid())

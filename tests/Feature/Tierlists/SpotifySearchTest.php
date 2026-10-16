@@ -11,7 +11,7 @@ describe('searching albums', function () {
     it('maps a result onto the shape an album entry is stored from', function () {
         fakeSearch('albums', [spotifyAlbum()]);
 
-        $album = (new SearchAlbums)->handle(searcher(), 'currents')->first();
+        $album = (new SearchAlbums)->handle(spotifySearcher(), 'currents')->first();
 
         expect($album)->toBe([
             'id' => 'currents-id',
@@ -31,7 +31,7 @@ describe('searching albums', function () {
             spotifyAlbum(['id' => 'coverless-id', 'images' => []]),
         ]);
 
-        $albums = (new SearchAlbums)->handle(searcher(), 'currents');
+        $albums = (new SearchAlbums)->handle(spotifySearcher(), 'currents');
 
         expect($albums)->toHaveCount(1)
             ->and($albums->first()['id'])->toBe('currents-id');
@@ -43,7 +43,7 @@ describe('searching albums', function () {
             'https://api.spotify.com/v1/search*' => fn () => throw new Exception('spotify is down'),
         ]);
 
-        expect((new SearchAlbums)->handle(searcher(), 'currents'))->toBeNull();
+        expect((new SearchAlbums)->handle(spotifySearcher(), 'currents'))->toBeNull();
     });
 });
 
@@ -51,7 +51,7 @@ describe('searching tracks', function () {
     it('maps a result onto the shape a track entry is stored from', function () {
         fakeSearch('tracks', [spotifyTrack()]);
 
-        $track = (new SearchTracks)->handle(searcher(), 'the less i know')->first();
+        $track = (new SearchTracks)->handle(spotifySearcher(), 'the less i know')->first();
 
         expect($track)->toBe([
             'id' => 'less-i-know-id',
@@ -66,7 +66,7 @@ describe('searching tracks', function () {
     it('takes the artwork from the album the track belongs to', function () {
         fakeSearch('tracks', [spotifyTrack(['album' => ['name' => 'No Art', 'images' => []]])]);
 
-        expect((new SearchTracks)->handle(searcher(), 'the less i know'))->toBeEmpty();
+        expect((new SearchTracks)->handle(spotifySearcher(), 'the less i know'))->toBeEmpty();
     });
 
 });
@@ -78,7 +78,7 @@ describe('importing a discography', function () {
             spotifyAlbum(['id' => 'patience-id', 'name' => 'Patience', 'album_type' => 'single']),
         ]);
 
-        $albums = (new GetArtistAlbums)->handle(searcher(), 'tame-impala-id');
+        $albums = (new GetArtistAlbums)->handle(spotifySearcher(), 'tame-impala-id');
 
         expect($albums->pluck('id')->all())->toBe(['currents-id', 'patience-id'])
             ->and($albums->last()['album_type'])->toBe('single');
@@ -91,7 +91,7 @@ describe('importing a discography', function () {
             spotifyAlbum(['id' => 'currents-id-uk', 'name' => 'Currents']),
         ]);
 
-        $albums = (new GetArtistAlbums)->handle(searcher(), 'tame-impala-id');
+        $albums = (new GetArtistAlbums)->handle(spotifySearcher(), 'tame-impala-id');
 
         expect($albums)->toHaveCount(1)
             ->and($albums->first()['id'])->toBe('currents-id');
@@ -108,7 +108,7 @@ describe('importing a discography', function () {
             ]),
         ]);
 
-        $albums = (new GetArtistAlbums)->handle(searcher(), 'tame-impala-id');
+        $albums = (new GetArtistAlbums)->handle(spotifySearcher(), 'tame-impala-id');
 
         expect($albums->pluck('id')->all())->toBe(['currents-id', 'slow-rush-id']);
     });
@@ -119,11 +119,11 @@ describe('importing a discography', function () {
             'https://api.spotify.com/v1/artists/*' => fn () => throw new Exception('spotify is down'),
         ]);
 
-        expect((new GetArtistAlbums)->handle(searcher(), 'tame-impala-id'))->toBeNull();
+        expect((new GetArtistAlbums)->handle(spotifySearcher(), 'tame-impala-id'))->toBeNull();
     });
 });
 
-function searcher(): User
+function spotifySearcher(): User
 {
     return User::factory()->createOne();
 }

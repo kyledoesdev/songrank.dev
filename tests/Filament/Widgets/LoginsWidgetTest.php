@@ -7,36 +7,29 @@ use Livewire\Livewire;
 
 describe('logins widget', function () {
     test('renders all stats', function () {
-        $user = User::factory()->createOne();
-
-        Livewire::actingAs($user)
+        $widget = Livewire::actingAs(kyle())
             ->test(LoginsWidget::class)
-            ->assertSee('Total Users')
-            ->assertSee('Deleted Users')
-            ->assertSee('Daily Active Users')
-            ->assertSee('Weekly Active Users')
-            ->assertSee('Monthly Active Users');
+            ->assertOk();
+
+        expect(widgetStats($widget))->toHaveCount(5);
     });
 
     test('counts total and deleted users', function () {
-        $actor = User::factory()->createOne();
+        $admin = kyle();
         User::factory()->count(2)->create();
-        User::factory()->count(3)->create()->each->delete();
+        User::factory()->count(4)->create()->each->delete();
 
-        Livewire::actingAs($actor)
-            ->test(LoginsWidget::class)
-            ->assertSee('3')
-            ->assertSee('All-time account deletions');
+        [$total, $deleted] = widgetStats(Livewire::actingAs($admin)->test(LoginsWidget::class));
+
+        expect($total)->toBe('3')
+            ->and($deleted)->toBe('4');
     });
 
     test('reflects daily active users from login stats', function () {
-        $user = User::factory()->createOne();
-
         LoginStat::increase(5);
 
-        Livewire::actingAs($user)
-            ->test(LoginsWidget::class)
-            ->assertSee('Daily Active Users')
-            ->assertSee('5');
+        [, , $daily] = widgetStats(Livewire::actingAs(kyle())->test(LoginsWidget::class));
+
+        expect($daily)->toBe('5');
     });
 });

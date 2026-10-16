@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Notifications\Bell;
+use App\Livewire\Notifications\Details;
 use App\Models\Comment;
 use App\Models\Ranking;
 use App\Models\User;
@@ -50,6 +51,33 @@ describe('notification bell component', function () {
 
         expect($owner->unreadNotifications()->count())->toBe(0);
         expect($owner->notifications()->count())->toBe(3);
+    });
+});
+
+describe('opening one notification', function () {
+    test('shows the viewer one of their own', function () {
+        $ranking = commentableRanking();
+        createComment(User::factory()->createOne(), $ranking);
+        $notification = $ranking->user->notifications()->sole();
+
+        $component = Livewire::actingAs($ranking->user)
+            ->test(Details::class)
+            ->call('show', $notification->getKey())
+            ->assertSet('open', true);
+
+        expect($component->instance()->notification->is($notification))->toBeTrue();
+    });
+
+    test('will not open somebody else\'s', function () {
+        $ranking = commentableRanking();
+        createComment(User::factory()->createOne(), $ranking);
+        $notification = $ranking->user->notifications()->sole();
+
+        Livewire::actingAs(User::factory()->createOne())
+            ->test(Details::class)
+            ->call('show', $notification->getKey())
+            ->assertNotFound()
+            ->assertSet('open', false);
     });
 });
 

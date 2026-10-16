@@ -11,8 +11,7 @@ describe('review infolist', function () {
         Livewire::actingAs(kyle())
             ->test(ViewReview::class, ['record' => $review->getKey()])
             ->assertOk()
-            ->assertSee('Review Details')
-            ->assertSee(route('review', ['id' => $review->getKey()]));
+            ->assertSee(route('review', ['id' => $review->getKey()]), escape: false);
     });
 
     test('links the subject back to spotify', function () {
@@ -20,8 +19,7 @@ describe('review infolist', function () {
 
         Livewire::actingAs(kyle())
             ->test(ViewReview::class, ['record' => $review->getKey()])
-            ->assertSee($review->subject->name())
-            ->assertSee($review->subject->spotifyUrl());
+            ->assertSee($review->subject->spotifyUrl(), escape: false);
     });
 
     test('renders the stored body as html', function () {
@@ -38,7 +36,7 @@ describe('review infolist', function () {
 
         Livewire::actingAs(kyle())
             ->test(ViewReview::class, ['record' => $review->getKey()])
-            ->assertSee('Not scored');
+            ->assertSchemaComponentStateSet('stars', null);
     });
 
     test('opens a deleted review', function () {

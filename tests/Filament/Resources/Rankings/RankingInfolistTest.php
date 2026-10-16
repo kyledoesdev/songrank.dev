@@ -10,27 +10,27 @@ describe('source sections', function () {
         $ranking = Ranking::factory()->createOne();
 
         viewRanking($ranking)
-            ->assertSee('Artist Details')
-            ->assertDontSee('Playlist Details')
-            ->assertDontSee('Show Details');
+            ->assertSchemaComponentVisible('artist')
+            ->assertSchemaComponentHidden('playlist')
+            ->assertSchemaComponentHidden('show');
     });
 
     test('only shows playlist details for a playlist ranking', function () {
         $ranking = Ranking::factory()->playlist()->createOne();
 
         viewRanking($ranking)
-            ->assertSee('Playlist Details')
-            ->assertDontSee('Artist Details')
-            ->assertDontSee('Show Details');
+            ->assertSchemaComponentVisible('playlist')
+            ->assertSchemaComponentHidden('artist')
+            ->assertSchemaComponentHidden('show');
     });
 
     test('only shows show details for a show ranking', function () {
         $ranking = Ranking::factory()->show()->createOne();
 
         viewRanking($ranking)
-            ->assertSee('Show Details')
-            ->assertDontSee('Artist Details')
-            ->assertDontSee('Playlist Details');
+            ->assertSchemaComponentVisible('show')
+            ->assertSchemaComponentHidden('artist')
+            ->assertSchemaComponentHidden('playlist');
     });
 });
 

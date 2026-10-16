@@ -113,13 +113,13 @@ describe('the licence table', function () {
 
         Livewire::test(ListProLicenses::class)
             ->assertCanSeeTableRecords([$license])
-            ->assertSee('Account deleted');
+            ->assertTableColumnStateSet('user.name', null, $license);
     });
 
     it('formats money rather than showing raw cents', function () {
-        ProLicense::factory()->active()->create();
+        $license = ProLicense::factory()->active()->create();
 
         Livewire::test(ListProLicenses::class)
-            ->assertSee('$10.00');
+            ->assertTableColumnStateSet('amount_total', $license->formattedTotal(), $license);
     });
 });

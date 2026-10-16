@@ -59,7 +59,7 @@ class LoginsWidget extends StatsOverviewWidget
             ->where('name', (new LoginStat)->getName())
             ->where('type', DataPoint::TYPE_CHANGE)
             ->where('value', '>', 0)
-            ->whereBetween('created_at', [$start, $end])
+            ->whereBetween('created_at', [$start->copy()->tz(Auth::user()->timezone), $end->copy()->tz(Auth::user()->timezone)])
             ->sum('value');
     }
 

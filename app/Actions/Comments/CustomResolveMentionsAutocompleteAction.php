@@ -6,7 +6,7 @@ use App\Models\User;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Spatie\Comments\Actions\ResolveMentionsAutocompleteAction;
 
-class CustomResolveMentionsAutocompleteAction extends ResolveMentionsAutocompleteAction
+final class CustomResolveMentionsAutocompleteAction extends ResolveMentionsAutocompleteAction
 {
     /**
      * Spatie's search, people already in the thread first, less anyone who

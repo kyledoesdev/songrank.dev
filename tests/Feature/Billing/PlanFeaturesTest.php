@@ -48,15 +48,27 @@ describe('placeholders', function () {
 });
 
 describe('the seeded features', function () {
-    it('reflect the billing config on each card', function () {
+    it('resolve every placeholder they use', function () {
+        $rendered = PlanFeature::cached()
+            ->flatten()
+            ->flatMap(fn (PlanFeature $feature) => [$feature->renderedLabel(), $feature->renderedDetail()])
+            ->filter();
+
+        expect($rendered)->not->toBeEmpty()
+            ->and($rendered->filter(fn (string $text) => preg_match('/\{\w+\}/', $text) === 1))->toBeEmpty();
+    });
+
+    it('follow the billing config on each card', function () {
+        $rankings = PlanFeature::cached()->get('free')->first(fn (PlanFeature $feature) => str_contains($feature->label, '{rankings}'));
+
         config(['billing.ranking_limits.free' => 200]);
+        $before = $rankings->renderedLabel();
 
-        $free = PlanFeature::cached()->get('free')->map->renderedLabel();
-        $pro = PlanFeature::cached()->get('pro')->map->renderedLabel();
+        config(['billing.ranking_limits.free' => 300]);
 
-        expect($free)->toContain('200 rankings', '3 tier lists of each type', '5 reviews', '5 crates in your catalog');
-        expect($pro)->toContain('Unlimited rankings', 'Unlimited tier lists', 'Double experience');
-        expect(PlanFeature::cached()->get('pro')->firstWhere('label', '{tierlists} tier lists')->renderedDetail())->toBe('Up to 500 entries on each');
+        expect($rankings->renderedLabel())
+            ->not->toBe($before)
+            ->toContain('300');
     });
 });
 

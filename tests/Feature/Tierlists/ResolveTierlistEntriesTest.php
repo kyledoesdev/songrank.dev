@@ -121,8 +121,8 @@ describe('duplicates and empties', function () {
 
 describe('query cost', function () {
     it('costs the same whether the bank holds five entries or fifty', function () {
-        $small = countQueries(fn () => resolveEntries(TierlistType::ALBUM, albumEntries(5)));
-        $large = countQueries(fn () => resolveEntries(TierlistType::ALBUM, albumEntries(50)));
+        $small = queriesRunBy(fn () => resolveEntries(TierlistType::ALBUM, albumEntries(5)));
+        $large = queriesRunBy(fn () => resolveEntries(TierlistType::ALBUM, albumEntries(50)));
 
         expect($large)->toBe($small);
     });
@@ -160,18 +160,4 @@ function albumEntries(int $count): array
             'artist_name' => "Artist {$i}",
         ]))
         ->all();
-}
-
-function countQueries(Closure $work): int
-{
-    DB::flushQueryLog();
-    DB::enableQueryLog();
-
-    $work();
-
-    $count = count(DB::getQueryLog());
-
-    DB::disableQueryLog();
-
-    return $count;
 }

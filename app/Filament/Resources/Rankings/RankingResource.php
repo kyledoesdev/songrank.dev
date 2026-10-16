@@ -105,6 +105,7 @@ class RankingResource extends Resource
                     ]),
 
                 Section::make('Artist Details')
+                    ->key('artist')
                     ->visible(fn (Ranking $record): bool => $record->type === RankingType::ARTIST)
                     ->schema([
                         TextEntry::make('source.artist_name')
@@ -115,6 +116,7 @@ class RankingResource extends Resource
                     ]),
 
                 Section::make('Playlist Details')
+                    ->key('playlist')
                     ->visible(fn (Ranking $record): bool => $record->type === RankingType::PLAYLIST)
                     ->schema([
                         TextEntry::make('source.name')
@@ -126,6 +128,7 @@ class RankingResource extends Resource
                     ]),
 
                 Section::make('Show Details')
+                    ->key('show')
                     ->visible(fn (Ranking $record): bool => $record->type === RankingType::SHOW)
                     ->schema([
                         TextEntry::make('source.name')

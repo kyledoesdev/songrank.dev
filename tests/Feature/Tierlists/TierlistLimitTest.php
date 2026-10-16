@@ -14,13 +14,13 @@ describe('the free allowance', function () {
     });
 
     it('stops at the limit for that type', function () {
-        $user = userWithTierlists(3, TierlistType::ARTIST);
+        $user = userWithTierlists(config('billing.tierlist_limits.free.artist'), TierlistType::ARTIST);
 
         expect($user->canCreateTierlist(TierlistType::ARTIST))->toBeFalse();
     });
 
     it('counts each type on its own, so one spent allowance does not spend the others', function () {
-        $user = userWithTierlists(3, TierlistType::ARTIST);
+        $user = userWithTierlists(config('billing.tierlist_limits.free.artist'), TierlistType::ARTIST);
 
         expect($user->canCreateTierlist(TierlistType::ARTIST))->toBeFalse()
             ->and($user->canCreateTierlist(TierlistType::ALBUM))->toBeTrue()
@@ -28,7 +28,7 @@ describe('the free allowance', function () {
     });
 
     it('caps how many entries one of its lists may hold', function () {
-        expect(User::factory()->createOne()->tierlistItemLimit())->toBe(100);
+        expect(User::factory()->createOne()->tierlistItemLimit())->toBe(config('billing.tierlist_item_limits.free'));
     });
 });
 
@@ -44,13 +44,13 @@ describe('the pro allowance', function () {
     it('keeps letting them make more once past what a free account could', function () {
         $user = proUser();
 
-        Tierlist::factory()->count(5)->for($user)->create();
+        Tierlist::factory()->count(config('billing.tierlist_limits.free.artist') + 1)->for($user)->create();
 
         expect($user->canCreateTierlist(TierlistType::ARTIST))->toBeTrue();
     });
 
     it('allows a bigger board', function () {
-        expect(proUser()->tierlistItemLimit())->toBe(500);
+        expect(proUser()->tierlistItemLimit())->toBe(config('billing.tierlist_item_limits.pro'));
     });
 });
 
@@ -63,15 +63,16 @@ describe('counting', function () {
     });
 
     it('counts unfinished lists too, since they occupy a slot all the same', function () {
+        $limit = config('billing.tierlist_limits.free.artist');
         $user = User::factory()->createOne();
-        Tierlist::factory()->for($user)->count(3)->create(['is_complete' => false]);
+        Tierlist::factory()->for($user)->count($limit)->create(['is_complete' => false]);
 
-        expect($user->tierlistCount(TierlistType::ARTIST))->toBe(3)
+        expect($user->tierlistCount(TierlistType::ARTIST))->toBe($limit)
             ->and($user->canCreateTierlist(TierlistType::ARTIST))->toBeFalse();
     });
 
     it('frees the slot again once a list is deleted', function () {
-        $user = userWithTierlists(3, TierlistType::ARTIST);
+        $user = userWithTierlists(config('billing.tierlist_limits.free.artist'), TierlistType::ARTIST);
 
         $user->tierlists()->first()->delete();
 

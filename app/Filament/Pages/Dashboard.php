@@ -18,6 +18,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\Widget;
+use Illuminate\Support\Str;
 
 class Dashboard extends BaseDashboard
 {
@@ -49,6 +50,7 @@ class Dashboard extends BaseDashboard
     private function section(string $heading, Heroicon $icon, array $widgets, int $columns = 2): Section
     {
         return Section::make($heading)
+            ->key(Str::slug($heading))
             ->icon($icon)
             ->collapsible()
             ->schema([

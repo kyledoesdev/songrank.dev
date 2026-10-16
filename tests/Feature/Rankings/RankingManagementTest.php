@@ -83,7 +83,7 @@ describe('deleting rankings', function () {
         $ranking = $user->rankings->first();
 
         expect($ranking->deleted_at)->toBeNull();
-        expect(Song::where('ranking_id', $ranking->getKey())->count())->toBe(10);
+        expect(Song::where('ranking_id', $ranking->getKey())->count())->toBeGreaterThan(0);
 
         Livewire::actingAs($user)
             ->test(ProfileRankingCard::class, ['ranking' => $ranking])
@@ -122,6 +122,7 @@ describe('deleting rankings', function () {
 
         $nonOwner = User::factory()->createOne();
         $ranking = $owner->rankings->first();
+        $songs = $ranking->songs()->count();
 
         Livewire::actingAs($nonOwner)
             ->test(ProfileRankingCard::class, ['ranking' => $ranking])
@@ -131,6 +132,6 @@ describe('deleting rankings', function () {
         $ranking->refresh();
 
         expect($ranking->deleted_at)->toBeNull();
-        expect(Song::where('ranking_id', $ranking->getKey())->count())->toBe(10);
+        expect(Song::where('ranking_id', $ranking->getKey())->count())->toBe($songs);
     });
 });

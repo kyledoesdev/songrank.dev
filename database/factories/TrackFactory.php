@@ -17,7 +17,7 @@ class TrackFactory extends Factory
             'track_id' => str()->random(22),
             'artist_id' => Artist::factory(),
             'name' => fake()->sentence(3),
-            'cover' => fake()->imageUrl(300, 300, 'track', true),
+            'cover' => 'https://example.test/tracks/'.str()->random(16).'.png',
             'album_name' => fake()->sentence(2),
         ];
     }

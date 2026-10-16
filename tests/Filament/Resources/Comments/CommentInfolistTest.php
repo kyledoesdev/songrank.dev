@@ -16,9 +16,7 @@ describe('commented on link', function () {
 
         $comment = $ranking->comment('great list', $ranking->user);
 
-        viewComment($comment)
-            ->assertSee($ranking->name)
-            ->assertSee(RankingResource::getUrl('view', ['record' => $ranking]));
+        viewComment($comment)->assertSee(RankingResource::getUrl('view', ['record' => $ranking]));
     });
 
     test('links a top level comment to the tier list it belongs to', function () {
@@ -26,9 +24,7 @@ describe('commented on link', function () {
 
         $comment = $tierlist->comment('great tiers', $tierlist->user);
 
-        viewComment($comment)
-            ->assertSee($tierlist->name)
-            ->assertSee(TierlistResource::getUrl('view', ['record' => $tierlist]));
+        viewComment($comment)->assertSee(TierlistResource::getUrl('view', ['record' => $tierlist]));
     });
 
     test('links a top level comment to the review it belongs to', function () {
@@ -36,9 +32,7 @@ describe('commented on link', function () {
 
         $comment = $review->comment('great review', $review->user);
 
-        viewComment($comment)
-            ->assertSee($review->name)
-            ->assertSee(ReviewResource::getUrl('view', ['record' => $review]));
+        viewComment($comment)->assertSee(ReviewResource::getUrl('view', ['record' => $review]));
     });
 
     test('links a reply to its parent comment rather than an unrelated ranking', function () {
@@ -51,7 +45,6 @@ describe('commented on link', function () {
         Ranking::factory()->createOne(['id' => $parent->getKey() + 1000]);
 
         viewComment($reply)
-            ->assertSee("Comment #{$parent->getKey()}")
             ->assertSee(CommentResource::getUrl('view', ['record' => $parent]))
             ->assertDontSee(RankingResource::getUrl('view', ['record' => $parent->getKey()]))
             ->assertDontSee(RankingResource::getUrl('edit', ['record' => $parent->getKey()]));

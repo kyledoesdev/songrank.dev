@@ -2,6 +2,7 @@
 
 use App\Enums\ReviewType;
 use App\Livewire\Leaderboards;
+use App\Livewire\Navigation;
 use App\Models\Album;
 use App\Models\Artist;
 use App\Models\Playlist;
@@ -20,9 +21,7 @@ describe('page access', function () {
     test('guests can view the leaderboards page', function () {
         get(route('leaderboards'))
             ->assertOk()
-            ->assertSee('Top Ranked Artists')
-            ->assertSee('Top Creators')
-            ->assertSee('Rankings with Most Songs');
+            ->assertSeeLivewire(Leaderboards::class);
     });
 
     test('authenticated users can view the leaderboards page', function () {
@@ -32,25 +31,19 @@ describe('page access', function () {
     });
 
     test('leaderboard entries are visible on the page', function () {
-        $artist = Artist::factory()->create(['artist_name' => 'Page Artist']);
-        $user = User::factory()->createOne(['name' => 'Page Creator']);
+        $artist = Artist::factory()->create();
+        $user = User::factory()->createOne();
 
-        publicCompletedRanking($artist, [
-            'user_id' => $user->getKey(),
-            'name' => 'Page Ranking',
-        ]);
+        $ranking = publicCompletedRanking($artist, ['user_id' => $user->getKey()]);
 
-        get(route('leaderboards'))
-            ->assertOk()
-            ->assertSee('Page Artist')
-            ->assertSee('Page Creator')
-            ->assertSee('Page Ranking');
+        Livewire::test(Leaderboards::class)
+            ->assertSee($artist->cover(), escape: false)
+            ->assertSee(route('profile', ['id' => $user->spotify_id]), escape: false)
+            ->assertSee(route('ranking', ['id' => $ranking->getKey()]), escape: false);
     });
 
     test('guests see the leaderboards link in the navigation', function () {
-        get(route('explore'))
-            ->assertOk()
-            ->assertSee('Leaderboards');
+        Livewire::test(Navigation::class)->assertSee(route('leaderboards'), escape: false);
     });
 });
 
@@ -135,16 +128,20 @@ describe('rankings with most songs', function () {
 
         publicCompletedRanking(Playlist::factory()->createOne(), ['name' => 'Smaller Ranking']);
 
-        foreach (range(11, 15) as $rank) {
+        $start = $bigger->songs()->count() + 1;
+
+        foreach (range($start, $start + 4) as $rank) {
             Song::factory()->create([
                 'ranking_id' => $bigger->getKey(),
                 'rank' => $rank,
             ]);
         }
 
+        $songs = $bigger->songs()->count();
+
         Livewire::test(Leaderboards::class)
             ->assertViewHas('biggestRankings', fn ($entries) => $entries->pluck('name')->all() === ['Bigger Ranking', 'Smaller Ranking']
-                && $entries->first()['count'] == 15
+                && $entries->first()['count'] == $songs
                 && $entries->first()['subtitle'] === 'List Maker'
                 && filled($entries->last()['image']));
     });
@@ -166,36 +163,34 @@ describe('rankings with most songs', function () {
         $within = publicCompletedRanking(attributes: ['name' => 'Within Limit Ranking']);
         $beyond = publicCompletedRanking(attributes: ['name' => 'Beyond Limit Ranking']);
 
-        Song::factory()->count(490)->create([
+        Song::factory()->count(Ranking::MAX_SONGS - $within->songs()->count())->create([
             'ranking_id' => $within->getKey(),
             'artist_id' => $artist->getKey(),
         ]);
 
-        Song::factory()->count(491)->create([
+        Song::factory()->count(Ranking::MAX_SONGS + 1 - $beyond->songs()->count())->create([
             'ranking_id' => $beyond->getKey(),
             'artist_id' => $artist->getKey(),
         ]);
 
         Livewire::test(Leaderboards::class)
             ->assertViewHas('biggestRankings', fn ($entries) => $entries->pluck('name')->all() === ['Within Limit Ranking']
-                && $entries->first()['count'] == 500);
+                && $entries->first()['count'] == Ranking::MAX_SONGS);
     });
 });
 
 describe('review leaderboards', function () {
     test('are visible to guests', function () {
-        get(route('leaderboards'))
-            ->assertOk()
+        Livewire::test(Leaderboards::class)
             ->assertSee("tab === 'reviews'", escape: false)
-            ->assertSee('Top Reviewed Artists')
-            ->assertSee('Top Reviewed Albums')
-            ->assertSee('Top Reviewed Tracks');
+            ->assertViewHas('topReviewedArtists')
+            ->assertViewHas('topReviewedAlbums')
+            ->assertViewHas('topReviewedTracks');
     });
 
-    test('appear under their own tab for users with the reviews feature', function () {
-        actingAs(kyle())
-            ->get(route('leaderboards'))
-            ->assertOk()
+    test('appear under their own tab for signed-in users', function () {
+        Livewire::actingAs(User::factory()->createOne())
+            ->test(Leaderboards::class)
             ->assertSee("tab === 'reviews'", escape: false);
     });
 
@@ -207,8 +202,7 @@ describe('review leaderboards', function () {
         reviewOf($first);
         reviewOf($second);
 
-        Livewire::actingAs(kyle())
-            ->test(Leaderboards::class)
+        Livewire::test(Leaderboards::class)
             ->assertViewHas('topReviewedArtists', fn ($entries) => $entries->pluck('name')->all() === ['Most Reviewed', 'Less Reviewed']
                 && $entries->first()['count'] == 2);
     });
@@ -219,8 +213,7 @@ describe('review leaderboards', function () {
 
         reviewOf($album);
 
-        Livewire::actingAs(kyle())
-            ->test(Leaderboards::class)
+        Livewire::test(Leaderboards::class)
             ->assertViewHas('topReviewedAlbums', fn ($entries) => $entries->first()['name'] === 'Great Album'
                 && $entries->first()['subtitle'] === 'Album Artist');
     });
@@ -233,8 +226,7 @@ describe('review leaderboards', function () {
         reviewOf($first);
         reviewOf($first);
 
-        Livewire::actingAs(kyle())
-            ->test(Leaderboards::class)
+        Livewire::test(Leaderboards::class)
             ->assertViewHas('topReviewedTracks', fn ($entries) => $entries->pluck('name')->all() === ['Big Single', 'Deep Cut']);
     });
 
@@ -244,8 +236,7 @@ describe('review leaderboards', function () {
         Review::factory()->public()->create(['subject_id' => $album->getKey()]);
         Review::factory()->published()->create(['subject_id' => $album->getKey()]);
 
-        Livewire::actingAs(kyle())
-            ->test(Leaderboards::class)
+        Livewire::test(Leaderboards::class)
             ->assertViewHas('topReviewedAlbums', fn ($entries) => $entries->isEmpty());
     });
 });

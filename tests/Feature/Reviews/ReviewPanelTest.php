@@ -2,6 +2,7 @@
 
 use App\Livewire\Reviews\ReviewPanel;
 use App\Models\Review;
+use App\Models\User;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
@@ -9,11 +10,10 @@ use function Pest\Laravel\get;
 
 describe('the panel on the dashboard', function () {
 
-    it('appears for somebody the feature is on for, offering every type', function () {
-        actingAs(kyle());
+    it('appears on the dashboard, offering every type', function () {
+        actingAs(User::factory()->createOne());
 
         get(route('dashboard'))
-            ->assertSee('Reviews')
             ->assertSee(route('reviews.create', ['type' => 'artist']), escape: false)
             ->assertSee(route('reviews.create', ['type' => 'album']), escape: false)
             ->assertSee(route('reviews.create', ['type' => 'track']), escape: false);
@@ -22,17 +22,18 @@ describe('the panel on the dashboard', function () {
 
 describe('what the panel offers', function () {
     it('counts what has been used against the limit', function () {
-        $user = kyle();
+        $user = User::factory()->createOne();
         Review::factory()->for($user)->count(2)->create();
 
-        Livewire::actingAs($user)
+        $component = Livewire::actingAs($user)
             ->test(ReviewPanel::class)
-            ->assertSee('2 / 5')
             ->assertDontSee(route('billing'), escape: false);
+
+        expect($component->instance()->count())->toBe(2);
     });
 
     it('sends a spent allowance to billing instead of to setup', function () {
-        $user = userWithReviews(5, ['is_dev' => true]);
+        $user = userWithReviews(config('billing.review_limits.free'));
 
         Livewire::actingAs($user)
             ->test(ReviewPanel::class)
@@ -41,7 +42,7 @@ describe('what the panel offers', function () {
     });
 
     it('says unlimited for a pro account', function () {
-        $user = proUser(['is_dev' => true]);
+        $user = proUser();
 
         Livewire::actingAs($user)
             ->test(ReviewPanel::class)

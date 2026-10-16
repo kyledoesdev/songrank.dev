@@ -22,27 +22,38 @@ describe('access', function () {
 });
 
 describe('the icon table', function () {
-    beforeEach(fn () => actingAs(kyle()));
+    beforeEach(function () {
+        CrateIcon::query()->delete();
+
+        actingAs(kyle());
+    });
 
     it('lists the icons in picker order', function () {
+        CrateIcon::factory()->count(3)->create();
+
         Livewire::test(ListCrateIcons::class)
-            ->assertCanSeeTableRecords(CrateIcon::query()->ordered()->limit(10)->get(), inOrder: true);
+            ->assertCanSeeTableRecords(CrateIcon::query()->ordered()->get(), inOrder: true);
     });
 
     it('draws each icon', function () {
+        $icon = CrateIcon::factory()->create();
+
         Livewire::test(ListCrateIcons::class)
-            ->assertSeeHtml('<i class="fa-solid fa-record-vinyl fa-lg"></i>');
+            ->assertSeeHtml('<i class="fa-solid '.$icon->icon.' fa-lg"></i>');
     });
 
     it('finds an icon by its class', function () {
+        $match = CrateIcon::factory()->create(['icon' => 'fa-record-vinyl']);
+        $other = CrateIcon::factory()->create(['icon' => 'fa-music']);
+
         Livewire::test(ListCrateIcons::class)
             ->searchTable('fa-record-vinyl')
-            ->assertCanSeeTableRecords(CrateIcon::query()->where('icon', 'fa-record-vinyl')->get())
-            ->assertCanNotSeeTableRecords(CrateIcon::query()->where('icon', 'fa-music')->get());
+            ->assertCanSeeTableRecords([$match])
+            ->assertCanNotSeeTableRecords([$other]);
     });
 
     it('counts the crates using each icon', function () {
-        $icon = CrateIcon::query()->where('icon', 'fa-guitar')->firstOrFail();
+        $icon = CrateIcon::factory()->create();
         Crate::factory()->count(2)->create(['crate_icon_id' => $icon->getKey()]);
 
         Livewire::test(ListCrateIcons::class)
@@ -50,6 +61,8 @@ describe('the icon table', function () {
     });
 
     it('reorders the picker by dragging', function () {
+        CrateIcon::factory()->count(3)->create();
+
         $reversed = CrateIcon::query()->ordered()->pluck('id')->reverse()->map(fn (int $id) => (string) $id)->values()->all();
 
         Livewire::test(ListCrateIcons::class)

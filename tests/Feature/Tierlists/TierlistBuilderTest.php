@@ -3,6 +3,7 @@
 use App\Livewire\Tierlist\TierlistBuilder;
 use App\Models\Tierlist;
 use App\Models\TierlistItem;
+use App\Models\User;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
@@ -10,30 +11,31 @@ use function Pest\Laravel\get;
 
 describe('who gets the builder', function () {
     it('is what an owner sees while the board is unfinished', function () {
-        $tierlist = Tierlist::factory()->for(kyle())->create();
+        $tierlist = Tierlist::factory()->for(User::factory())->create();
 
         actingAs($tierlist->user);
 
         get(route('tierlist', ['id' => $tierlist->getKey()]))
             ->assertOk()
-            ->assertSee('Unranked')
-            ->assertSee('Publish');
+            ->assertSeeLivewire(TierlistBuilder::class)
+            ->assertSee('wire:click="confirmFinish"', escape: false);
     });
 
     it('gives way to the finished board once it is published', function () {
-        $tierlist = Tierlist::factory()->for(kyle())->complete()->create();
+        $tierlist = Tierlist::factory()->for(User::factory())->complete()->create();
 
         actingAs($tierlist->user);
 
         get(route('tierlist', ['id' => $tierlist->getKey()]))
             ->assertOk()
-            ->assertDontSee('Publish');
+            ->assertDontSeeLivewire(TierlistBuilder::class)
+            ->assertDontSee('wire:click="confirmFinish"', escape: false);
     });
 
     it('refuses to build somebody else board', function () {
         $tierlist = Tierlist::factory()->create();
 
-        Livewire::actingAs(kyle())
+        Livewire::actingAs(User::factory()->createOne())
             ->test(TierlistBuilder::class, ['tierlist' => $tierlist])
             ->assertForbidden();
     });
@@ -41,7 +43,7 @@ describe('who gets the builder', function () {
 
 describe('dragging', function () {
     it('places an entry into a tier', function () {
-        $board = builder();
+        $board = tierlistBuilder();
 
         $board->component->call('moveItem', $board->item->getKey(), 0, $board->tier->getKey());
 
@@ -49,7 +51,7 @@ describe('dragging', function () {
     });
 
     it('will not move an entry belonging to another board', function () {
-        $board = builder();
+        $board = tierlistBuilder();
         $theirs = TierlistItem::factory()->inTier(Tierlist::factory()->create()->bank)->create();
 
         $board->component->call('moveItem', $theirs->getKey(), 0, $board->tier->getKey())
@@ -59,7 +61,7 @@ describe('dragging', function () {
     });
 
     it('will not drop an entry into a tier on another board', function () {
-        $board = builder();
+        $board = tierlistBuilder();
         $theirTier = Tierlist::factory()->create()->placementTiers()->first();
 
         $board->component->call('moveItem', $board->item->getKey(), 0, $theirTier->getKey())
@@ -71,28 +73,29 @@ describe('dragging', function () {
 
 describe('tiers', function () {
     it('adds one to the bottom of the board', function () {
-        $board = builder();
+        $board = tierlistBuilder();
 
         $board->component->call('addTier');
 
-        expect($board->tierlist->fresh()->placementTiers())->toHaveCount(7);
+        expect($board->tierlist->fresh()->placementTiers())->toHaveCount(count(config('tierlists.default_tiers')) + 1);
     });
 
     it('stops at the tier ceiling', function () {
-        config()->set('tierlists.max_tiers', 6);
+        $defaults = count(config('tierlists.default_tiers'));
+        config()->set('tierlists.max_tiers', $defaults);
 
-        $board = builder();
+        $board = tierlistBuilder();
         $board->component->call('addTier');
 
-        expect($board->tierlist->fresh()->placementTiers())->toHaveCount(6);
+        expect($board->tierlist->fresh()->placementTiers())->toHaveCount($defaults);
     });
 
     it('renames and recolors one', function () {
-        $board = builder();
+        $board = tierlistBuilder();
 
         $board->component
             ->call('editTier', $board->tier->getKey())
-            ->assertSet('tierName', 'S')
+            ->assertSet('tierName', $board->tier->name)
             ->set('tierName', 'God Tier')
             ->set('tierColor', '#123456')
             ->call('saveTier')
@@ -103,7 +106,7 @@ describe('tiers', function () {
     });
 
     it('rejects a color that is not a hex color', function () {
-        $board = builder();
+        $board = tierlistBuilder();
 
         $board->component
             ->call('editTier', $board->tier->getKey())
@@ -115,7 +118,7 @@ describe('tiers', function () {
     });
 
     it('rejects an empty name', function () {
-        $board = builder();
+        $board = tierlistBuilder();
 
         $board->component
             ->call('editTier', $board->tier->getKey())
@@ -125,27 +128,27 @@ describe('tiers', function () {
     });
 
     it('deletes one, handing its entries back to the bank', function () {
-        $board = builder();
+        $board = tierlistBuilder();
 
         $board->component
             ->call('moveItem', $board->item->getKey(), 0, $board->tier->getKey())
             ->call('deleteTier', $board->tier->getKey());
 
-        expect($board->tierlist->fresh()->placementTiers())->toHaveCount(5)
+        expect($board->tierlist->fresh()->placementTiers())->toHaveCount(count(config('tierlists.default_tiers')) - 1)
             ->and($board->item->fresh()->tier_id)->toBe($board->tierlist->bank->getKey());
     });
 
     it('moves one up the board', function () {
-        $board = builder();
+        $board = tierlistBuilder();
         $second = $board->tierlist->placementTiers()->get(1);
 
         $board->component->call('moveTier', $second->getKey(), 'up');
 
-        expect($board->tierlist->fresh()->placementTiers()->first()->name)->toBe('A');
+        expect($board->tierlist->fresh()->placementTiers()->first()->is($second))->toBeTrue();
     });
 
     it('will not delete the bank', function () {
-        $board = builder();
+        $board = tierlistBuilder();
 
         $board->component->call('deleteTier', $board->tierlist->bank->getKey())
             ->assertNotFound();
@@ -154,7 +157,7 @@ describe('tiers', function () {
     });
 
     it('will not rename the bank', function () {
-        $board = builder();
+        $board = tierlistBuilder();
 
         $board->component->call('editTier', $board->tierlist->bank->getKey())
             ->assertNotFound();
@@ -163,7 +166,7 @@ describe('tiers', function () {
     });
 
     it('will not shuffle the bank up the board', function () {
-        $board = builder();
+        $board = tierlistBuilder();
 
         $board->component->call('moveTier', $board->tierlist->bank->getKey(), 'down')
             ->assertNotFound();
@@ -172,7 +175,7 @@ describe('tiers', function () {
     });
 
     it('will not touch a tier on another board', function () {
-        $board = builder();
+        $board = tierlistBuilder();
         $theirTier = Tierlist::factory()->create()->placementTiers()->first();
 
         $board->component->call('deleteTier', $theirTier->getKey())
@@ -184,7 +187,7 @@ describe('tiers', function () {
 
 describe('publishing', function () {
     it('will not publish while the bank still holds something', function () {
-        $board = builder();
+        $board = tierlistBuilder();
 
         $board->component->call('finish')->assertNoRedirect();
 
@@ -192,27 +195,68 @@ describe('publishing', function () {
     });
 
     it('publishes once everything is placed', function () {
-        $board = builder();
+        $board = tierlistBuilder();
 
         $board->component
             ->call('moveItem', $board->item->getKey(), 0, $board->tier->getKey())
             ->call('finish')
             ->assertRedirect(route('tierlist', ['id' => $board->tierlist->getKey()]));
 
-        expect($board->tierlist->fresh()->is_complete)->toBeTrue();
+        expect($board->tierlist->fresh())
+            ->is_complete->toBeTrue()
+            ->completed_at->not->toBeNull();
     });
 
 });
 
+describe('a tab left open past publishing', function () {
+    it('stops a free owner rearranging the board once it is published', function () {
+        $board = tierlistBuilder();
+
+        $board->tierlist->update(['is_complete' => true, 'completed_at' => now()]);
+
+        $board->component
+            ->call('moveItem', $board->item->getKey(), 0, $board->tier->getKey())
+            ->assertForbidden();
+
+        expect($board->item->fresh()->tier_id)->toBe($board->tierlist->bank->getKey());
+    });
+
+    it('stops a free owner changing the tiers once it is published', function () {
+        $board = tierlistBuilder();
+        $tiers = $board->tierlist->placementTiers()->count();
+
+        $board->tierlist->update(['is_complete' => true, 'completed_at' => now()]);
+
+        $board->component->call('addTier')->assertForbidden();
+
+        expect($board->tierlist->fresh()->placementTiers())->toHaveCount($tiers);
+    });
+
+    it('lets a Pro owner keep rearranging a published board', function () {
+        $user = proUser();
+        $tierlist = Tierlist::factory()->for($user)->complete()->create();
+        $item = $tierlist->items->first();
+        $tier = $tierlist->placementTiers()->first();
+
+        Livewire::actingAs($user)
+            ->test(TierlistBuilder::class, ['tierlist' => $tierlist])
+            ->call('moveItem', $item->getKey(), 0, $tier->getKey())
+            ->assertOk();
+
+        expect($item->fresh()->tier_id)->toBe($tier->getKey());
+    });
+});
+
 describe('the players toggle', function () {
     it('is off to begin with, so the board is artwork', function () {
-        builder()->component
+        tierlistBuilder()->component
             ->assertSet('showEmbeds', false)
             ->assertDontSee('open.spotify.com/embed');
     });
 
     it('swaps the artwork for players when switched on', function () {
-        builder()->component
+        tierlistBuilder()->component
             ->set('showEmbeds', true)
             ->assertSee('open.spotify.com/embed', escape: false);
     });
@@ -221,9 +265,9 @@ describe('the players toggle', function () {
 /**
  * A mounted builder over a board with one entry in the bank, plus its top tier.
  */
-function builder(): object
+function tierlistBuilder(): object
 {
-    $user = kyle();
+    $user = User::factory()->createOne();
     $tierlist = Tierlist::factory()->for($user)->create();
     $item = TierlistItem::factory()->inTier($tierlist->bank)->create();
 

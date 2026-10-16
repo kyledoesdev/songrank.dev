@@ -7,6 +7,7 @@ use App\Models\Artist;
 use App\Models\Playlist;
 use App\Models\Tierlist;
 use App\Models\Track;
+use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 
@@ -14,7 +15,7 @@ describe('album setup', function () {
     it('searches albums by default', function () {
         fakeSearch('albums', [spotifyAlbum()]);
 
-        $component = Livewire::actingAs(kyle())
+        $component = Livewire::actingAs(User::factory()->createOne())
             ->test(AlbumSetup::class)
             ->assertSet('mode', 'album')
             ->set('searchTerm', 'currents')
@@ -37,7 +38,7 @@ describe('album setup', function () {
             ]),
         ]);
 
-        Livewire::actingAs(kyle())
+        Livewire::actingAs(User::factory()->createOne())
             ->test(AlbumSetup::class)
             ->call('switchMode', 'artist')
             ->set('searchTerm', 'radiohead')
@@ -62,7 +63,7 @@ describe('track setup', function () {
     it('searches tracks by default', function () {
         fakeSearch('tracks', [spotifyTrack()]);
 
-        $component = Livewire::actingAs(kyle())
+        $component = Livewire::actingAs(User::factory()->createOne())
             ->test(TrackSetup::class)
             ->assertSet('mode', 'track')
             ->set('searchTerm', 'the less i know')
@@ -73,7 +74,7 @@ describe('track setup', function () {
     });
 
     it('rejects something that is not a playlist url', function () {
-        $component = Livewire::actingAs(kyle())
+        $component = Livewire::actingAs(User::factory()->createOne())
             ->test(TrackSetup::class)
             ->call('switchMode', 'playlist')
             ->set('searchTerm', 'not a url')
@@ -84,12 +85,15 @@ describe('track setup', function () {
     });
 
     it('pours a playlist straight onto the board and remembers it', function () {
-        fakePlaylist();
+        fakePlaylist([
+            spotifyTrack(['id' => 'one', 'name' => 'One']),
+            spotifyTrack(['id' => 'two', 'name' => 'Two']),
+        ], ['name' => 'Late Night']);
 
-        Livewire::actingAs(kyle())
+        Livewire::actingAs(User::factory()->createOne())
             ->test(TrackSetup::class)
             ->call('switchMode', 'playlist')
-            ->set('searchTerm', 'https://open.spotify.com/playlist/abc123')
+            ->set('searchTerm', 'https://open.spotify.com/playlist/psych-rock-id')
             ->call('search')
             ->set('form.name', '')
             ->call('startTierlist')
@@ -103,34 +107,3 @@ describe('track setup', function () {
             ->and(Track::count())->toBe(2);
     });
 });
-
-function fakePlaylist(): void
-{
-    Http::fake([
-        'https://accounts.spotify.com/*' => Http::response(['access_token' => 'fresh-token']),
-        'https://api.spotify.com/v1/playlists/*/tracks*' => Http::response([
-            'items' => [
-                ['track' => spotifyPlaylistTrack('one', 'One')],
-                ['track' => spotifyPlaylistTrack('two', 'Two')],
-            ],
-        ]),
-        'https://api.spotify.com/v1/playlists/*' => Http::response([
-            'id' => 'playlist-id',
-            'name' => 'Late Night',
-            'description' => 'after hours',
-            'owner' => ['id' => 'owner-id', 'display_name' => 'Someone'],
-            'images' => [['url' => 'https://example.test/playlist.png']],
-            'tracks' => ['total' => 2],
-        ]),
-    ]);
-}
-
-function spotifyPlaylistTrack(string $id, string $name): array
-{
-    return [
-        'id' => $id,
-        'name' => $name,
-        'album' => ['images' => [['url' => 'https://example.test/currents.png']]],
-        'artists' => [['id' => 'tame-impala-id', 'name' => 'Tame Impala', 'type' => 'artist']],
-    ];
-}

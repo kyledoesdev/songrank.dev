@@ -73,15 +73,19 @@ describe('deleting a Pro account', function () {
 
 describe('the settings warning', function () {
     it('tells a Pro user their licence goes with the account', function () {
-        Livewire::actingAs(proUser())
+        $user = proUser();
+
+        Livewire::actingAs($user)
             ->test(Billing::class)
-            ->assertSee('Deleting your account ends it');
+            ->assertViewHas('license', fn (ProLicense $license) => $license->is($user->proLicenses()->sole()))
+            ->assertDontSee(route('billing.checkout'), escape: false);
     });
 
     it('says nothing of the sort to a free user', function () {
         Livewire::actingAs(User::factory()->createOne())
             ->test(Billing::class)
-            ->assertDontSee('Deleting your account ends it');
+            ->assertViewHas('license', null)
+            ->assertSee(route('billing.checkout'), escape: false);
     });
 });
 

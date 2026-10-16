@@ -13,16 +13,20 @@ describe('paid users widget', function () {
         ProLicense::factory()->refunded()->create();
         ProLicense::factory()->revoked()->create();
 
-        Livewire::actingAs(kyle())
-            ->test(PaidUsersWidget::class)
-            ->assertSeeInOrder(['Paid Users', '2', '2 complimentary or gifted'])
-            ->assertSeeInOrder(['All Pro Users', '4']);
+        [$paid, $allPro] = widgetStats(Livewire::actingAs(kyle())->test(PaidUsersWidget::class));
+
+        expect($paid)->toBe('2')
+            ->and($allPro)->toBe('4');
     });
 
     test('renders with no licences at all', function () {
-        Livewire::actingAs(kyle())
+        $widget = Livewire::actingAs(kyle())
             ->test(PaidUsersWidget::class)
-            ->assertOk()
-            ->assertSee('0 complimentary or gifted');
+            ->assertOk();
+
+        [$paid, $allPro] = widgetStats($widget);
+
+        expect($paid)->toBe('0')
+            ->and($allPro)->toBe('0');
     });
 });

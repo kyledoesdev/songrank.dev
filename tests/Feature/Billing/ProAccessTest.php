@@ -4,20 +4,9 @@ use App\Http\Middleware\EnsureUserIsPro;
 use App\Models\ProLicense;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
-use Laravel\Pennant\Feature;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
-
-describe('the songrank-pro feature flag', function () {
-    it('is active for any signed-in user', function () {
-        expect(Feature::for(User::factory()->createOne())->active('songrank-pro'))->toBeTrue();
-    });
-
-    it('is inactive for guests without throwing', function () {
-        expect(Feature::for(null)->active('songrank-pro'))->toBeFalse();
-    });
-});
 
 describe('billing routes', function () {
     it('are reachable for any signed-in user', function () {

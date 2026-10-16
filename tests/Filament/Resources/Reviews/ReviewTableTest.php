@@ -20,8 +20,8 @@ describe('review table', function () {
 
         Livewire::actingAs(kyle())
             ->test(ListReviews::class)
-            ->assertSee('8.5/10')
-            ->assertSee($review->subject->name());
+            ->assertTableColumnFormattedStateSet('stars', $review->score().'/10', $review)
+            ->assertTableColumnStateSet('subject', $review->subject->name(), $review);
     });
 
     test('hides drafts by default', function () {

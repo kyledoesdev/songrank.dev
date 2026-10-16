@@ -154,15 +154,11 @@ describe('account deletion', function () {
         DeleteUserJob::dispatchSync($tierlist->user);
         DeleteUserJob::dispatchSync($review->user);
 
-        Livewire::actingAs(kyle())
-            ->test(TierlistsFeed::class)
-            ->assertOk()
-            ->assertDontSee($tierlist->name);
+        $tierlists = Livewire::test(TierlistsFeed::class)->assertOk()->instance()->tierlists;
+        $reviews = Livewire::test(ReviewsFeed::class)->assertOk()->instance()->reviews;
 
-        Livewire::actingAs(kyle())
-            ->test(ReviewsFeed::class)
-            ->assertOk()
-            ->assertDontSee($review->name);
+        expect($tierlists)->toBeEmpty()
+            ->and($reviews)->toBeEmpty();
     });
 
     test('account deletion erases spotify tokens and technical data', function () {

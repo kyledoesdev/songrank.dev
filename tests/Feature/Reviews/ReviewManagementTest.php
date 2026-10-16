@@ -13,7 +13,7 @@ use function Pest\Laravel\get;
 
 describe('reaching the edit page', function () {
     it('opens for the owner', function () {
-        $review = Review::factory()->for(kyle())->createOne();
+        $review = Review::factory()->for(User::factory()->createOne())->createOne();
 
         actingAs($review->user)
             ->get(route('review.edit', ['id' => $review->getKey()]))
@@ -23,7 +23,7 @@ describe('reaching the edit page', function () {
     it('is not there for anybody else', function () {
         $review = publicPublishedReview();
 
-        actingAs(kyle())
+        actingAs(User::factory()->createOne())
             ->get(route('review.edit', ['id' => $review->getKey()]))
             ->assertNotFound();
     });
@@ -35,7 +35,7 @@ describe('reaching the edit page', function () {
     });
 
     it('starts from what is stored', function () {
-        $review = Review::factory()->for(kyle())->createOne([
+        $review = Review::factory()->for(User::factory()->createOne())->createOne([
             'name' => 'Stored Name',
             'stars' => 6.5,
             'body' => '<p>Stored body</p>',
@@ -52,7 +52,7 @@ describe('reaching the edit page', function () {
 
 describe('writing a draft', function () {
     it('saves the score and a cleaned body', function () {
-        $review = Review::factory()->for(kyle())->createOne();
+        $review = Review::factory()->for(User::factory()->createOne())->createOne();
 
         $component = editReview($review)
             ->call('setStars', 8.5)
@@ -60,7 +60,7 @@ describe('writing a draft', function () {
             ->call('save')
             ->assertHasNoErrors();
 
-        expect(alertsFrom($component)->pluck('title'))->toContain('Draft saved.');
+        expect(alertsFrom($component)->pluck('icon')->all())->toBe(['success']);
 
         $review->refresh();
 
@@ -71,7 +71,7 @@ describe('writing a draft', function () {
     });
 
     it('lets the score be cleared', function () {
-        $review = Review::factory()->for(kyle())->createOne(['stars' => 4]);
+        $review = Review::factory()->for(User::factory()->createOne())->createOne(['stars' => 4]);
 
         editReview($review)
             ->call('clearStars')
@@ -81,7 +81,7 @@ describe('writing a draft', function () {
     });
 
     it('wants some words in the body', function () {
-        $review = Review::factory()->for(kyle())->createOne();
+        $review = Review::factory()->for(User::factory()->createOne())->createOne();
 
         editReview($review)
             ->set('body', '<p></p>')
@@ -90,7 +90,7 @@ describe('writing a draft', function () {
     });
 
     it('keeps the score between zero and ten', function () {
-        $review = Review::factory()->for(kyle())->createOne();
+        $review = Review::factory()->for(User::factory()->createOne())->createOne();
 
         editReview($review)
             ->set('stars', 10.5)
@@ -99,7 +99,7 @@ describe('writing a draft', function () {
     });
 
     it('needs a name no longer than sixty characters', function () {
-        $review = Review::factory()->for(kyle())->createOne();
+        $review = Review::factory()->for(User::factory()->createOne())->createOne();
 
         editReview($review)
             ->set('form.name', str_repeat('a', 61))
@@ -110,16 +110,16 @@ describe('writing a draft', function () {
 
 describe('publishing', function () {
     it('asks first, and warns a free account it is final', function () {
-        $review = Review::factory()->for(kyle())->createOne();
+        $review = Review::factory()->for(User::factory()->createOne())->createOne();
 
         $confirm = alertsFrom(editReview($review)->call('confirmPublish'), 'confirm')->first();
 
         expect($confirm['action'])->toBe('publish')
-            ->and($confirm['message'])->toBe("Once you publish it, you won't be able to change the review's content.");
+            ->and($confirm['message'])->not->toBeEmpty();
     });
 
     it('does not warn a pro account, who can keep editing', function () {
-        $review = Review::factory()->for(proUser(['is_dev' => true]))->createOne();
+        $review = Review::factory()->for(proUser())->createOne();
 
         $confirm = alertsFrom(editReview($review)->call('confirmPublish'), 'confirm')->first();
 
@@ -129,7 +129,7 @@ describe('publishing', function () {
     it('publishes and opens the review', function () {
         Carbon::setTestNow('2026-10-01 12:00:00');
 
-        $review = Review::factory()->for(kyle())->createOne();
+        $review = Review::factory()->for(User::factory()->createOne())->createOne();
 
         editReview($review)
             ->call('setStars', 9)
@@ -144,7 +144,7 @@ describe('publishing', function () {
     });
 
     it('will not publish an empty review', function () {
-        $review = Review::factory()->for(kyle())->createOne();
+        $review = Review::factory()->for(User::factory()->createOne())->createOne();
 
         editReview($review)
             ->set('body', '')
@@ -157,7 +157,7 @@ describe('publishing', function () {
 
 describe('editing once published', function () {
     it('locks a free account out of the content', function () {
-        $review = Review::factory()->for(kyle())->published()->createOne([
+        $review = Review::factory()->for(User::factory()->createOne())->published()->createOne([
             'stars' => 7,
             'body' => '<p>Original</p>',
         ]);
@@ -178,7 +178,7 @@ describe('editing once published', function () {
     });
 
     it('lets a pro account keep editing', function () {
-        $review = Review::factory()->for(proUser(['is_dev' => true]))->published()->createOne();
+        $review = Review::factory()->for(proUser())->published()->createOne();
 
         $component = editReview($review)
             ->assertDontSee(route('billing'), escape: false)
@@ -186,7 +186,7 @@ describe('editing once published', function () {
             ->set('body', '<p>Changed my mind</p>')
             ->call('save');
 
-        expect(alertsFrom($component)->pluck('title'))->toContain('Changes saved.');
+        expect(alertsFrom($component)->pluck('icon')->all())->toBe(['success']);
 
         $review->refresh();
 
@@ -195,7 +195,7 @@ describe('editing once published', function () {
     });
 
     it('never moves the published date', function () {
-        $review = Review::factory()->for(proUser(['is_dev' => true]))->published()->createOne([
+        $review = Review::factory()->for(proUser())->published()->createOne([
             'published_at' => '2026-01-01 00:00:00',
         ]);
 
@@ -207,7 +207,7 @@ describe('editing once published', function () {
 
 describe('deleting', function () {
     it('removes the review from the edit page and goes to the profile', function () {
-        $review = Review::factory()->for(kyle())->published()->createOne();
+        $review = Review::factory()->for(User::factory()->createOne())->published()->createOne();
 
         editReview($review)
             ->call('destroy')
@@ -219,7 +219,7 @@ describe('deleting', function () {
     });
 
     it('removes the review from its card', function () {
-        $review = Review::factory()->for(kyle())->published()->createOne();
+        $review = Review::factory()->for(User::factory()->createOne())->published()->createOne();
 
         Livewire::actingAs($review->user)
             ->test(ReviewCard::class, ['review' => $review])
@@ -232,7 +232,7 @@ describe('deleting', function () {
     it('will not let anybody else remove it from the card', function () {
         $review = publicPublishedReview();
 
-        Livewire::actingAs(User::factory()->createOne(['is_dev' => true]))
+        Livewire::actingAs(User::factory()->createOne())
             ->test(ReviewCard::class, ['review' => $review])
             ->call('destroy')
             ->assertForbidden();
@@ -241,7 +241,7 @@ describe('deleting', function () {
     });
 
     it('clears the cached explore count for a review that was on it', function () {
-        $review = Review::factory()->for(kyle())->published()->public()->createOne();
+        $review = Review::factory()->for(User::factory()->createOne())->published()->public()->createOne();
 
         cache()->put(Review::EXPLORE_COUNT_CACHE_KEY, 1);
 

@@ -32,5 +32,17 @@
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <env name="LOG_CHANNEL" value="null"/>
+        <env name="BUGSNAG_API_KEY" value=""/>
+        <env name="DISCORD_WEBHOOK_USER_UPDATES" value=""/>
+        <env name="DISCORD_WEBHOOK_OTHER_UPDATES" value=""/>
+        <env name="SPOTIFY_CLIENT_ID" value="spotify-test-client-id"/>
+        <env name="SPOTIFY_CLIENT_SECRET" value="spotify-test-client-secret"/>
+        <env name="STRIPE_KEY" value="pk_test_songrank"/>
+        <env name="STRIPE_SECRET" value="sk_test_songrank"/>
+        <env name="STRIPE_WEBHOOK_SECRET" value="whsec_test_songrank"/>
+        <env name="STRIPE_PRICE_SONG_RANK_PRO_ID" value="price_test_songrank"/>
+        <env name="STRIPE_AUTOMATIC_TAX" value="false"/>
     </php>
 </phpunit>

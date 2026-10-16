@@ -1,6 +1,10 @@
 <?php
 
+use App\Enums\LegalDocumentType;
+use App\Livewire\Legal\Privacy;
+use App\Livewire\Legal\Terms;
 use App\Models\LegalDocument;
+use Livewire\Livewire;
 
 use function Pest\Laravel\get;
 
@@ -8,73 +12,64 @@ describe('legal document pages', function () {
     test('terms renders the document currently in force', function () {
         LegalDocument::query()->forceDelete();
 
-        LegalDocument::factory()->terms()->create([
+        $document = LegalDocument::factory()->terms()->create([
             'content' => '<h2>Acceptance of These Terms</h2><p>You agree to be bound.</p>',
         ]);
 
-        get(route('terms'))
-            ->assertOk()
-            ->assertSee('Terms of Service')
-            ->assertSee('Acceptance of These Terms')
-            ->assertSee('You agree to be bound.');
+        get(route('terms'))->assertOk();
+
+        Livewire::test(Terms::class)
+            ->assertViewHas('type', LegalDocumentType::TERMS)
+            ->assertViewHas('document', fn (LegalDocument $current) => $current->is($document))
+            ->assertSeeHtml('<p>You agree to be bound.</p>');
     });
 
     test('privacy renders the document currently in force', function () {
         LegalDocument::query()->forceDelete();
 
-        LegalDocument::factory()->privacy()->create([
+        $document = LegalDocument::factory()->privacy()->create([
             'content' => '<h2>Information We Get From Spotify</h2><p>Your display name.</p>',
         ]);
 
-        get(route('privacy'))
-            ->assertOk()
-            ->assertSee('Privacy Policy')
-            ->assertSee('Information We Get From Spotify')
-            ->assertSee('Your display name.');
+        get(route('privacy'))->assertOk();
+
+        Livewire::test(Privacy::class)
+            ->assertViewHas('type', LegalDocumentType::PRIVACY)
+            ->assertViewHas('document', fn (LegalDocument $current) => $current->is($document))
+            ->assertSeeHtml('<p>Your display name.</p>');
     });
 
     test('the most recently effective revision wins', function () {
         LegalDocument::query()->forceDelete();
 
-        LegalDocument::factory()->terms()->effectiveAt('2020-01-01 00:00:00')->create([
-            'content' => '<h2>Old Section</h2>',
-        ]);
+        LegalDocument::factory()->terms()->effectiveAt('2020-01-01 00:00:00')->create();
+        $current = LegalDocument::factory()->terms()->effectiveAt('2024-01-01 00:00:00')->create();
 
-        LegalDocument::factory()->terms()->effectiveAt('2024-01-01 00:00:00')->create([
-            'content' => '<h2>Current Section</h2>',
-        ]);
-
-        get(route('terms'))
-            ->assertOk()
-            ->assertSee('Current Section')
-            ->assertDontSee('Old Section');
+        Livewire::test(Terms::class)
+            ->assertViewHas('document', fn (LegalDocument $document) => $document->is($current));
     });
 
     test('a revision dated in the future is not served yet', function () {
         LegalDocument::query()->forceDelete();
 
-        LegalDocument::factory()->terms()->create([
-            'content' => '<h2>Published Section</h2>',
-        ]);
+        $current = LegalDocument::factory()->terms()->create();
+        LegalDocument::factory()->terms()->effectiveAt(now()->addWeek()->toDateTimeString())->create();
 
-        LegalDocument::factory()->terms()->effectiveAt(now()->addWeek()->toDateTimeString())->create([
-            'content' => '<h2>Unpublished Section</h2>',
-        ]);
-
-        get(route('terms'))
-            ->assertOk()
-            ->assertSee('Published Section')
-            ->assertDontSee('Unpublished Section');
+        Livewire::test(Terms::class)
+            ->assertViewHas('document', fn (LegalDocument $document) => $document->is($current));
     });
 
     test('each document only serves its own type', function () {
         LegalDocument::query()->forceDelete();
 
-        LegalDocument::factory()->terms()->create(['content' => '<h2>Terms Only Section</h2>']);
-        LegalDocument::factory()->privacy()->create(['content' => '<h2>Privacy Only Section</h2>']);
+        $terms = LegalDocument::factory()->terms()->create();
+        $privacy = LegalDocument::factory()->privacy()->create();
 
-        get(route('terms'))->assertOk()->assertDontSee('Privacy Only Section');
-        get(route('privacy'))->assertOk()->assertDontSee('Terms Only Section');
+        Livewire::test(Terms::class)
+            ->assertViewHas('document', fn (LegalDocument $document) => $document->is($terms));
+
+        Livewire::test(Privacy::class)
+            ->assertViewHas('document', fn (LegalDocument $document) => $document->is($privacy));
     });
 
     test('headings get anchors and a table of contents', function () {
@@ -95,12 +90,10 @@ describe('legal document pages', function () {
     test('an unpublished document shows an empty state instead of erroring', function () {
         LegalDocument::query()->forceDelete();
 
-        get(route('terms'))
-            ->assertOk()
-            ->assertDontSee('<h2', escape: false);
+        get(route('terms'))->assertOk();
+        get(route('privacy'))->assertOk();
 
-        get(route('privacy'))
-            ->assertOk()
-            ->assertDontSee('<h2', escape: false);
+        Livewire::test(Terms::class)->assertViewHas('document', null);
+        Livewire::test(Privacy::class)->assertViewHas('document', null);
     });
 });

@@ -1,6 +1,6 @@
 # Testing Reference
 
-Billing tests in this application **never call Stripe.** They bind a fake `StripeClient` into the container and feed synthetic payloads to the actions. There are no `pm_card_*` tokens, no test-mode API keys in CI, and no network access in the suite.
+Billing tests in this application **never call Stripe.** `Tests\TestCase::setUp()` binds a `StripeClient` whose every call fails as if Stripe could not be reached, tests swap in stand-ins for the services they need, and synthetic payloads go straight to the actions. There are no `pm_card_*` tokens, `phpunit.xml` pins dummy `STRIPE_*` values, and the suite passes with no network at all.
 
 Everything lives in `tests/Feature/Billing/`:
 
@@ -16,12 +16,12 @@ Everything lives in `tests/Feature/Billing/`:
 
 ## Faking Stripe
 
-Two helpers, each at the bottom of the file that uses it (helper names are global, so they stay unique across the suite):
+`fakeStripeServices()` in `tests/Helpers/stripe.php` binds a client whose services are the stand-ins you pass, keyed by the client's service name; any service you do not pass stays unreachable. `Cashier::stripe()` resolves its client from the container, so this reaches every call the app makes. Two file-level helpers build on it:
 
-- **`fakeStripe()`** in `ProCheckoutTest.php` binds a client whose `sessions->create()` records the payload instead of calling the API and returns a `Session::constructFrom([...])`. The returned spy exposes `sessionPayload`, which is how the tests assert on `line_items`, `mode` and `metadata` — assert on **what we sent Stripe**, not on a mock expectation.
-- **`fakeStripeInvoices()`** in `StripeWebhookTest.php` binds a client whose `invoices->retrieve()` returns a constructed `Invoice`. Call it in `beforeEach`. Without it every fulfillment test makes a real request that 401s, so the invoice-capture path only ever runs in its failure mode — slower and flakier, and it stops proving anything.
+- **`fakeStripe()`** in `ProCheckoutTest.php` stands in for `checkout` and `customers`: `sessions->create()` records the payload instead of calling the API and returns a `Session::constructFrom([...])`. The returned spy exposes `sessionPayload`, which is how the tests assert on `line_items`, `mode` and `metadata` — assert on **what we sent Stripe**, not on a mock expectation.
+- **`fakeStripeInvoices()`** in `StripeWebhookTest.php` stands in for `invoices`: `retrieve()` returns a constructed `Invoice`. Call it in `beforeEach`. Without it every fulfillment test takes the invoice-capture path's failure branch, and stops proving anything about the happy one.
 
-Both work the same way: build an anonymous class, then `app()->bind(StripeClient::class, fn () => $client)`.
+To test Stripe being down, change nothing — the default client already fails every call with an `ApiConnectionException`, which is what the app catches.
 
 ## Driving a Webhook
 

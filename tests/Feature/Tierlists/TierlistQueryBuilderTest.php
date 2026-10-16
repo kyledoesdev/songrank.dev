@@ -100,11 +100,11 @@ describe('card previews', function () {
         TierlistItem::factory()->inTier($tierlist->bank)->create();
         TierlistItem::factory()->inTier($tierlist->placementTiers()->first())->create();
 
-        $loaded = Tierlist::query()->withTopTier()->find($tierlist->getKey());
+        $loaded = Tierlist::query()->withTopTier(tiers: 3)->find($tierlist->getKey());
 
-        expect($loaded->tiers)->toHaveCount(5)
+        expect($loaded->tiers)->toHaveCount(3)
             ->and($loaded->tiers->pluck('is_bank'))->each->toBeFalse()
-            ->and($loaded->tiers->first()->name)->toBe('S')
+            ->and($loaded->tiers->first()->is($tierlist->placementTiers()->first()))->toBeTrue()
             ->and($loaded->tiers->first()->items)->toHaveCount(1);
     });
 

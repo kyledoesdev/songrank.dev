@@ -5,7 +5,6 @@ use App\Models\ProLicense;
 use App\Models\User;
 use Stripe\Checkout\Session;
 use Stripe\Customer;
-use Stripe\StripeClient;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseCount;
@@ -13,7 +12,6 @@ use function Pest\Laravel\post;
 
 beforeEach(function () {
     config()->set('billing.pro.price_id', 'price_test_pro');
-    config()->set('cashier.secret', config('cashier.secret') ?: 'sk_test_dummy');
 });
 
 describe('starting a checkout', function () {
@@ -153,6 +151,26 @@ describe('returning from Stripe', function () {
             ->and($user->fresh()->is_pro)->toBeFalse();
     });
 
+    it('never hands Pro to someone returning with another buyer\'s session', function () {
+        $stripe = fakeStripe();
+        $buyer = User::factory()->createOne();
+
+        actingAs($buyer)->post(route('billing.checkout'));
+
+        $license = ProLicense::first();
+        $stripe->sessions->retrieved = paidSession($license->uuid);
+
+        $stranger = User::factory()->createOne();
+
+        actingAs($stranger)
+            ->get(route('billing.success', ['session_id' => 'cs_test_songrank']))
+            ->assertRedirect(route('billing'));
+
+        expect($stranger->fresh()->is_pro)->toBeFalse()
+            ->and($stranger->proLicenses()->exists())->toBeFalse()
+            ->and($license->fresh()->user->is($buyer))->toBeTrue();
+    });
+
     it('sends the user back to billing when no session id comes back', function () {
         actingAs(User::factory()->createOne())
             ->get(route('billing.success'))
@@ -273,40 +291,13 @@ function fakeStripe(): object
         }
     };
 
-    /*
-     * A real StripeClient with its service factory swapped out, rather than a
-     * mock: Stripe resolves `$client->checkout` through getService(), which a
-     * Mockery double cannot intercept cleanly.
-     */
-    $client = new class(['api_key' => 'sk_test_songrank'], $sessions, $customers) extends StripeClient
-    {
-        /** @var array<string, object> */
-        private array $stubs;
-
-        public function __construct(array $config, object $sessions, object $customers)
+    fakeStripeServices([
+        'checkout' => new class($sessions)
         {
-            parent::__construct($config);
-
-            $this->stubs = [
-                'checkout' => new class($sessions)
-                {
-                    public function __construct(public object $sessions) {}
-                },
-                'customers' => $customers,
-            ];
-        }
-
-        public function getService($name)
-        {
-            return $this->stubs[$name] ?? parent::getService($name);
-        }
-    };
-
-    /*
-     * bind(), not instance(): Cashier::stripe() resolves the client with build
-     * parameters, and the container skips shared instances when any are given.
-     */
-    app()->bind(StripeClient::class, fn () => $client);
+            public function __construct(public object $sessions) {}
+        },
+        'customers' => $customers,
+    ]);
 
     return $spy;
 }

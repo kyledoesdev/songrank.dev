@@ -11,7 +11,7 @@ describe('tierlist infolist', function () {
         Livewire::actingAs(kyle())
             ->test(ViewTierlist::class, ['record' => $tierlist->getKey()])
             ->assertOk()
-            ->assertSee('Tier List Details');
+            ->assertSchemaComponentStateSet('name', $tierlist->name);
     });
 
     test('shows source section when a source exists', function () {
@@ -20,7 +20,7 @@ describe('tierlist infolist', function () {
         Livewire::actingAs(kyle())
             ->test(ViewTierlist::class, ['record' => $tierlist->getKey()])
             ->assertOk()
-            ->assertSee('Source');
+            ->assertSchemaComponentVisible('source-details');
     });
 
     test('hides source section when no source exists', function () {
@@ -32,6 +32,6 @@ describe('tierlist infolist', function () {
         Livewire::actingAs(kyle())
             ->test(ViewTierlist::class, ['record' => $tierlist->getKey()])
             ->assertOk()
-            ->assertDontSee('Source');
+            ->assertSchemaComponentHidden('source-details');
     });
 });

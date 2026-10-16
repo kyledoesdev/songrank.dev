@@ -1,39 +1,30 @@
 <?php
 
 use App\Enums\ReviewType;
+use App\Livewire\Explorer;
+use App\Livewire\Explorer\RankingsFeed;
 use App\Livewire\Explorer\ReviewsFeed;
 use App\Livewire\Explorer\TierlistsFeed;
 use App\Models\Review;
 use App\Models\Tierlist;
 use Livewire\Livewire;
 
-use function Pest\Laravel\actingAs;
-
 describe('explore tabs', function () {
     test('rankings tab is the default', function () {
-        $user = kyle();
-        publicCompletedRanking(attributes: ['user_id' => $user->getKey()]);
-
-        actingAs($user)
-            ->get(route('explore'))
-            ->assertOk()
-            ->assertSee("tab = 'rankings'", escape: false);
+        Livewire::test(Explorer::class)
+            ->assertSeeHtml("x-data=\"{ tab: 'rankings' }\"")
+            ->assertSeeLivewire(RankingsFeed::class);
     });
 
-    test('tier lists tab is visible when feature flag is active', function () {
-        $user = kyle();
-
-        actingAs($user)
-            ->get(route('explore'))
-            ->assertOk()
-            ->assertSee('Tier Lists');
+    test('shows a tier lists tab', function () {
+        Livewire::test(Explorer::class)
+            ->assertSeeHtml("@click=\"tab = 'tierlists'\"")
+            ->assertSeeLivewire(TierlistsFeed::class);
     });
 
-    test('reviews tab is visible when feature flag is active', function () {
-        actingAs(kyle())
-            ->get(route('explore'))
-            ->assertOk()
-            ->assertSee("tab = 'reviews'", escape: false)
+    test('shows a reviews tab', function () {
+        Livewire::test(Explorer::class)
+            ->assertSeeHtml("@click=\"tab = 'reviews'\"")
             ->assertSeeLivewire(ReviewsFeed::class);
     });
 });
@@ -42,51 +33,36 @@ describe('tier lists feed', function () {
     test('public completed tier lists are visible', function () {
         $tierlist = publicCompletedTierlist();
 
-        Livewire::actingAs(kyle())
-            ->test(TierlistsFeed::class)
-            ->assertSee($tierlist->name);
+        expect(Livewire::test(TierlistsFeed::class)->instance()->tierlists->modelKeys())->toBe([$tierlist->getKey()]);
     });
 
     test('private tier lists are hidden', function () {
-        $tierlist = Tierlist::factory()->create([
-            'is_public' => false,
-            'is_complete' => true,
-            'completed_at' => now(),
-            'name' => 'Secret List',
-        ]);
+        $public = publicCompletedTierlist();
+        Tierlist::factory()->complete()->create();
 
-        Livewire::actingAs(kyle())
-            ->test(TierlistsFeed::class)
-            ->assertDontSee('Secret List');
+        expect(Livewire::test(TierlistsFeed::class)->instance()->tierlists->modelKeys())->toBe([$public->getKey()]);
     });
 
     test('incomplete tier lists are hidden', function () {
-        $tierlist = Tierlist::factory()->create([
-            'is_public' => true,
-            'is_complete' => false,
-            'name' => 'Unfinished List',
-        ]);
+        $public = publicCompletedTierlist();
+        Tierlist::factory()->public()->create();
 
-        Livewire::actingAs(kyle())
-            ->test(TierlistsFeed::class)
-            ->assertDontSee('Unfinished List');
+        expect(Livewire::test(TierlistsFeed::class)->instance()->tierlists->modelKeys())->toBe([$public->getKey()]);
     });
 
     test('can search tier lists by name', function () {
         $match = publicCompletedTierlist(['name' => 'Best Albums Ever']);
-        $other = publicCompletedTierlist(['name' => 'Other Tier List']);
+        publicCompletedTierlist(['name' => 'Other Tier List']);
 
-        Livewire::actingAs(kyle())
-            ->test(TierlistsFeed::class)
+        $feed = Livewire::test(TierlistsFeed::class)
             ->set('search', 'Best Albums')
-            ->call('performSearch')
-            ->assertSee('Best Albums Ever')
-            ->assertDontSee('Other Tier List');
+            ->call('performSearch');
+
+        expect($feed->instance()->tierlists->modelKeys())->toBe([$match->getKey()]);
     });
 
     test('load more increases visible results', function () {
-        Livewire::actingAs(kyle())
-            ->test(TierlistsFeed::class)
+        Livewire::test(TierlistsFeed::class)
             ->assertSet('perPage', 12)
             ->call('loadMore')
             ->assertSet('perPage', 24);
@@ -97,50 +73,43 @@ describe('reviews feed', function () {
     test('public published reviews are visible', function () {
         $review = publicPublishedReview();
 
-        Livewire::actingAs(kyle())
-            ->test(ReviewsFeed::class)
-            ->assertSee($review->name);
+        expect(Livewire::test(ReviewsFeed::class)->instance()->reviews->modelKeys())->toBe([$review->getKey()]);
     });
 
     test('private reviews and drafts are hidden', function () {
-        Review::factory()->published()->createOne(['name' => 'Secret Review']);
-        Review::factory()->public()->createOne(['name' => 'Unfinished Review']);
+        $public = publicPublishedReview();
+        Review::factory()->published()->createOne();
+        Review::factory()->public()->createOne();
 
-        Livewire::actingAs(kyle())
-            ->test(ReviewsFeed::class)
-            ->assertDontSee('Secret Review')
-            ->assertDontSee('Unfinished Review');
+        expect(Livewire::test(ReviewsFeed::class)->instance()->reviews->modelKeys())->toBe([$public->getKey()]);
     });
 
     test('can search reviews', function () {
-        publicPublishedReview(['name' => 'Best Record Ever']);
+        $match = publicPublishedReview(['name' => 'Best Record Ever']);
         publicPublishedReview(['name' => 'Other Review', 'body_text' => 'nothing to see']);
 
-        Livewire::actingAs(kyle())
-            ->test(ReviewsFeed::class)
+        $feed = Livewire::test(ReviewsFeed::class)
             ->set('search', 'Best Record')
-            ->call('performSearch')
-            ->assertSee('Best Record Ever')
-            ->assertDontSee('Other Review');
+            ->call('performSearch');
+
+        expect($feed->instance()->reviews->modelKeys())->toBe([$match->getKey()]);
     });
 
     test('filters by type, and a second click clears it', function () {
-        publicPublishedReview(['name' => 'An Album Review']);
-        Review::factory()->published()->public()->ofType(ReviewType::TRACK)->createOne(['name' => 'A Track Review']);
+        $album = publicPublishedReview();
+        $track = Review::factory()->published()->public()->ofType(ReviewType::TRACK)->createOne();
 
-        Livewire::actingAs(kyle())
-            ->test(ReviewsFeed::class)
-            ->call('filterByType', 'track')
-            ->assertSee('A Track Review')
-            ->assertDontSee('An Album Review')
-            ->call('filterByType', 'track')
-            ->assertSet('type', null)
-            ->assertSee('An Album Review');
+        $feed = Livewire::test(ReviewsFeed::class)->call('filterByType', 'track');
+
+        expect($feed->instance()->reviews->modelKeys())->toBe([$track->getKey()]);
+
+        $feed->call('filterByType', 'track')->assertSet('type', null);
+
+        expect($feed->instance()->reviews->modelKeys())->toEqualCanonicalizing([$album->getKey(), $track->getKey()]);
     });
 
     test('resetting clears the search and the type', function () {
-        Livewire::actingAs(kyle())
-            ->test(ReviewsFeed::class)
+        Livewire::test(ReviewsFeed::class)
             ->set('search', 'anything')
             ->call('filterByType', 'album')
             ->call('resetSearch')
@@ -149,8 +118,7 @@ describe('reviews feed', function () {
     });
 
     test('load more increases visible results', function () {
-        Livewire::actingAs(kyle())
-            ->test(ReviewsFeed::class)
+        Livewire::test(ReviewsFeed::class)
             ->assertSet('perPage', 12)
             ->call('loadMore')
             ->assertSet('perPage', 24);

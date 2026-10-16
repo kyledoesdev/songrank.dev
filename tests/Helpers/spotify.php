@@ -28,6 +28,32 @@ function fakeDiscography(int $total, array $items): void
     ]);
 }
 
+/**
+ * A public playlist holding the given tracks, answered the way the playlist
+ * search reads it: the playlist itself, then its tracks a page at a time.
+ */
+function fakePlaylist(array $tracks, array $overrides = [], ?int $total = null): void
+{
+    $playlist = array_merge([
+        'id' => 'psych-rock-id',
+        'name' => 'Psych Rock',
+        'description' => 'Everything Kevin Parker touched',
+        'owner' => ['id' => 'playlist-owner-id', 'display_name' => 'Playlist Owner'],
+        'images' => [['url' => 'https://example.test/psych-rock.png']],
+    ], $overrides);
+
+    Http::fake([
+        'https://accounts.spotify.com/*' => Http::response(['access_token' => 'fresh-token']),
+        "https://api.spotify.com/v1/playlists/{$playlist['id']}/tracks*" => Http::response([
+            'items' => collect($tracks)->map(fn (array $track) => ['track' => $track])->all(),
+        ]),
+        "https://api.spotify.com/v1/playlists/{$playlist['id']}" => Http::response([
+            ...$playlist,
+            'tracks' => ['total' => $total ?? count($tracks)],
+        ]),
+    ]);
+}
+
 function spotifyArtist(array $overrides = []): array
 {
     return array_merge([
@@ -55,7 +81,7 @@ function spotifyTrack(array $overrides = []): array
     return array_merge([
         'id' => 'less-i-know-id',
         'name' => 'The Less I Know The Better',
-        'artists' => [['id' => 'tame-impala-id', 'name' => 'Tame Impala']],
+        'artists' => [['id' => 'tame-impala-id', 'name' => 'Tame Impala', 'type' => 'artist']],
         'album' => [
             'name' => 'Currents',
             'images' => [['url' => 'https://example.test/currents.png']],

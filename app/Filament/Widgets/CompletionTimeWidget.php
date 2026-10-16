@@ -76,10 +76,14 @@ class CompletionTimeWidget extends ChartWidget
     private function getBuckets(string $model, string $finishedColumn): array
     {
         $range = $this->getTrendConfig();
+        $tz = auth()->user()->timezone;
 
         $records = $model::query()
             ->whereNotNull($finishedColumn)
-            ->whereBetween($finishedColumn, [$range['start'], $range['end']])
+            ->whereBetween($finishedColumn, [
+                $range['start']->copy()->tz($tz),
+                $range['end']->copy()->tz($tz),
+            ])
             ->toBase()
             ->get(['created_at', $finishedColumn]);
 

@@ -3,6 +3,7 @@
 use App\Enums\Billing\ProLicenseSource;
 use App\Enums\Billing\ProLicenseStatus;
 use App\Filament\Resources\ProLicenses\Pages\ListProLicenses;
+use App\Filament\Resources\ProLicenses\ProLicenseResource;
 use App\Models\ProLicense;
 use App\Models\User;
 use Filament\Actions\Testing\TestAction;
@@ -156,9 +157,13 @@ describe('revoking a licence', function () {
 
 describe('licences are not hand-editable', function () {
     it('offers no create, edit or delete route', function () {
-        expect(ProLicense::query()->count())->toBe(0);
+        $license = ProLicense::factory()->active()->create();
+
+        expect(ProLicenseResource::getPages())->not->toHaveKeys(['create', 'edit']);
 
         Livewire::test(ListProLicenses::class)
-            ->assertDontSee('New Pro Licence');
+            ->assertActionDoesNotExist('create')
+            ->assertActionDoesNotExist(TestAction::make('edit')->table($license))
+            ->assertActionDoesNotExist(TestAction::make('delete')->table($license));
     });
 });

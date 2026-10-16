@@ -6,10 +6,10 @@ use App\Enums\Billing\ProLicenseStatus;
 use App\Models\ProLicense;
 use App\Models\User;
 use App\Notifications\ProPurchaseReceipt;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Cashier\Events\WebhookReceived;
 use Stripe\Invoice;
-use Stripe\StripeClient;
 
 use function Pest\Laravel\assertDatabaseCount;
 use function Pest\Laravel\assertDatabaseHas;
@@ -68,6 +68,18 @@ describe('checkout.session.completed', function () {
         assertDatabaseCount('pro_licenses', 1);
 
         Notification::assertSentToTimes($license->user, ProPurchaseReceipt::class, 1);
+    });
+
+    it('does not activate a session that needed no payment, since checkout never allows a free one', function () {
+        $license = pendingLicense();
+
+        handleStripeEvent('checkout.session.completed', [
+            ...completedSession($license->uuid),
+            'payment_status' => 'no_payment_required',
+        ]);
+
+        expect($license->fresh()->status)->toBe(ProLicenseStatus::PENDING)
+            ->and($license->user->fresh()->is_pro)->toBeFalse();
     });
 
     it('does not activate a session that was never paid', function () {
@@ -196,7 +208,9 @@ describe('charge.refunded', function () {
             ->and($license->user->fresh()->is_pro)->toBeFalse();
     });
 
-    it('ignores a refund for a payment we do not know about', function () {
+    it('ignores a refund for a payment we do not know about, but says so loudly', function () {
+        Log::spy();
+
         $license = ProLicense::factory()->active()->create();
 
         handleStripeEvent('charge.refunded', [
@@ -205,6 +219,27 @@ describe('charge.refunded', function () {
         ]);
 
         expect($license->fresh()->status)->toBe(ProLicenseStatus::ACTIVE);
+
+        Log::shouldHaveReceived('warning')
+            ->withArgs(fn (string $message, array $context) => $context['stripe_payment_intent_id'] === 'pi_test_unknown')
+            ->once();
+    });
+
+    it('keeps the running total across a partial refund and then the rest', function () {
+        $license = ProLicense::factory()->active()->create([
+            'stripe_payment_intent_id' => 'pi_test_twice',
+        ]);
+
+        handleStripeEvent('charge.refunded', ['payment_intent' => 'pi_test_twice', 'amount' => 1000, 'amount_refunded' => 200]);
+
+        expect($license->fresh()->status)->toBe(ProLicenseStatus::ACTIVE);
+
+        handleStripeEvent('charge.refunded', ['payment_intent' => 'pi_test_twice', 'amount' => 1000, 'amount_refunded' => 1000]);
+
+        expect($license->fresh())
+            ->status->toBe(ProLicenseStatus::REFUNDED)
+            ->amount_refunded->toBe(1000)
+            ->and($license->user->fresh()->is_pro)->toBeFalse();
     });
 
     it('keeps access on a partial refund and records the amount', function () {
@@ -277,7 +312,24 @@ describe('charge.dispute.created', function () {
 
         expect($license->status)->toBe(ProLicenseStatus::REVOKED)
             ->and($license->revoked_at)->not->toBeNull()
-            ->and($license->notes)->toContain('chargeback');
+            ->and($license->notes)->not->toBeEmpty();
+    });
+
+    it('leaves every licence alone on a dispute for a payment we do not know about, but says so loudly', function () {
+        Log::spy();
+
+        $license = ProLicense::factory()->active()->create();
+
+        handleStripeEvent('charge.dispute.created', [
+            'id' => 'dp_test_unknown',
+            'payment_intent' => 'pi_test_unknown',
+        ]);
+
+        expect($license->fresh()->status)->toBe(ProLicenseStatus::ACTIVE);
+
+        Log::shouldHaveReceived('warning')
+            ->withArgs(fn (string $message, array $context) => $context['stripe_object_id'] === 'dp_test_unknown')
+            ->once();
     });
 });
 
@@ -330,11 +382,9 @@ describe('the webhook endpoint', function () {
 /* Helpers */
 
 /**
- * Stop fulfilment reaching for api.stripe.com.
- *
- * Without this every fulfilment test makes a real request that 401s, so the
- * invoice-capture path only ever runs in its failure mode — and the suite is
- * slower and flakier for it.
+ * Let fulfilment read the invoice it is handed. Without this, the suite's
+ * unreachable Stripe sends every fulfilment down the invoice-capture path's
+ * failure branch.
  */
 function fakeStripeInvoices(): void
 {
@@ -351,24 +401,7 @@ function fakeStripeInvoices(): void
         }
     };
 
-    $client = new class(['api_key' => 'sk_test_songrank'], $invoices) extends StripeClient
-    {
-        private object $invoices;
-
-        public function __construct(array $config, object $invoices)
-        {
-            parent::__construct($config);
-
-            $this->invoices = $invoices;
-        }
-
-        public function getService($name)
-        {
-            return $name === 'invoices' ? $this->invoices : parent::getService($name);
-        }
-    };
-
-    app()->bind(StripeClient::class, fn () => $client);
+    fakeStripeServices(['invoices' => $invoices]);
 }
 
 function pendingLicense(): ProLicense

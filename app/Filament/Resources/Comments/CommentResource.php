@@ -24,6 +24,13 @@ class CommentResource extends Resource
 
     protected static ?string $model = Comment::class;
 
+    /**
+     * Spatie's comment policy lets only a comment's author edit or delete it.
+     * The panel is developer-only, so moderation here skips it; the comment
+     * relation managers defer to this resource and skip it too.
+     */
+    protected static bool $shouldSkipAuthorization = true;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'id';

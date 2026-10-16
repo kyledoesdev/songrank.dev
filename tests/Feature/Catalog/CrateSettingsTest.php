@@ -16,7 +16,7 @@ use function Pest\Laravel\assertModelMissing;
 describe('updating a crate', function () {
     it('renames, recolours and re-icons it', function () {
         $crate = Crate::factory()->create();
-        $icon = CrateIcon::query()->where('icon', 'fa-record-vinyl')->firstOrFail();
+        $icon = CrateIcon::factory()->create();
 
         $updated = (new UpdateCrate)->handle($crate, crateSettings(['crate_icon_id' => $icon->getKey()]));
 
@@ -24,7 +24,7 @@ describe('updating a crate', function () {
             ->and($crate->fresh())
             ->name->toBe('Sacred Hearts Club')
             ->color->toBe('#1E90FF')
-            ->and($crate->fresh()->iconClass())->toBe('fa-record-vinyl');
+            ->and($crate->fresh()->iconClass())->toBe($icon->icon);
     });
 
     it('falls back to a folder once the icon is cleared', function () {
@@ -140,7 +140,7 @@ describe('the settings popover', function () {
 
     it('saves and tells the page', function () {
         $crate = Crate::factory()->create();
-        $icon = CrateIcon::query()->where('icon', 'fa-record-vinyl')->firstOrFail();
+        $icon = CrateIcon::factory()->create();
 
         Livewire::actingAs($crate->user)
             ->test(CrateSettings::class, ['crate' => $crate])

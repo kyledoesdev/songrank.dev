@@ -124,6 +124,7 @@ class TierlistResource extends Resource
                     ]),
 
                 Section::make('Source')
+                    ->key('source-details')
                     ->visible(fn (Tierlist $record): bool => $record->source !== null)
                     ->schema([
                         TextEntry::make('source')

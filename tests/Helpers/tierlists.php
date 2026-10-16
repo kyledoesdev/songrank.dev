@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Tierlist;
+use Illuminate\Support\Facades\DB;
 
 /**
  * A tier list anyone may open: finished and public.
@@ -51,4 +52,21 @@ function trackEntry(array $overrides = []): array
         'artist_name' => 'Tame Impala',
         'album_name' => 'Currents',
     ], $overrides);
+}
+
+/**
+ * How many queries the work runs, for checks that a path stays cheap as a list grows.
+ */
+function queriesRunBy(Closure $work): int
+{
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+
+    $work();
+
+    $count = count(DB::getQueryLog());
+
+    DB::disableQueryLog();
+
+    return $count;
 }

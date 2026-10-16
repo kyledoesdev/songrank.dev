@@ -4,6 +4,7 @@ use App\Contracts\SpotifyEntity;
 use App\Enums\RankingType;
 use App\Models\Artist;
 use App\Models\Ranking;
+use App\Models\RankingSortingState;
 use App\Models\Song;
 use App\Models\User;
 use Livewire\Features\SupportTesting\Testable;
@@ -90,4 +91,21 @@ function simulateRankingComparisons(Testable $component, int $maxComparisons): v
 
         $component->call('chooseSong', $winningSongId);
     }
+}
+
+/**
+ * The sorting state a ranking starts from, over its songs in a fixed order
+ * rather than the shuffle a real ranking gets, so a test sorts the same list
+ * every run. By default the songs go in back to front, the furthest from sorted.
+ *
+ * @param  list<int>|null  $songIds
+ */
+function sortingStateInOrder(Ranking $ranking, ?array $songIds = null): RankingSortingState
+{
+    $songIds ??= $ranking->songs()->orderByDesc('id')->pluck('id')->all();
+
+    return RankingSortingState::create([
+        'ranking_id' => $ranking->getKey(),
+        ...RankingSortingState::startingWith($songIds),
+    ]);
 }

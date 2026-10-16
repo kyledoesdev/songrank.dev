@@ -138,6 +138,7 @@ Three Pennant flags: `songrank-pro` (`app/Features/SongRankPro.php`), `tierlists
 - The board's shape is `config/tierlists.php`: `max_tiers`, the `default_tiers` every new list starts from, and the **bank**. The bank is a tier row like any other so that every item carries a tier id and every drag target is uniform — but it always sits at position zero, cannot be renamed, reordered or deleted, and must be emptied before a list can be finished (`Tierlist::bankIsEmpty()`).
 - Per-type list limits live in `config/billing.php` under `tierlist_limits`, and the per-list entry ceiling under `tierlist_item_limits`. That second one is **never null**: a board has to stay draggable, and every tile is an image the browser has to paint.
 - `TierlistBuilder` keeps Spotify embeds off by default — every player is a cross-origin document to build.
+- Publishing locks a free account's board: `Tierlist::canBeRearranged()` (owner, and unfinished or on Pro) is checked when the builder mounts and again on every request through its `hydrate()`, because a builder left open in another tab outlives the publish. The show and edit pages draw a read-only board for the same rule.
 
 ## Reviews
 
@@ -188,7 +189,7 @@ Other notes:
 
 ## Admin Panel
 
-Filament 5 at `/admin`, restricted to users with the `is_dev` flag via the `IsDeveloper` middleware. Resources live in `app/Filament/Resources/<Plural>/`, each with the `Pages/`, `Schemas/`, `Tables/`, `Filters/` and `RelationManagers/` subdirectories it needs. Shared pieces are in `app/Filament/Concerns/` (`HasCachedNavigationBadge`, `HasDateFilters`); dashboard widgets are in `app/Filament/Widgets/`.
+Filament 5 at `/admin`, restricted to users with the `is_dev` flag via the `IsDeveloper` middleware. `CommentResource` skips authorization: Spatie's comment policy lets only a comment's author edit or delete it, which would leave the panel unable to moderate. The comment relation managers defer to the resource, and like every relation manager they are read-only on view pages, so moderation happens from the edit pages. Resources live in `app/Filament/Resources/<Plural>/`, each with the `Pages/`, `Schemas/`, `Tables/`, `Filters/` and `RelationManagers/` subdirectories it needs. Shared pieces are in `app/Filament/Concerns/` (`HasCachedNavigationBadge`, `HasDateFilters`); dashboard widgets are in `app/Filament/Widgets/`.
 
 Namespaces that are easy to get wrong: form fields are `Filament\Forms\Components\`, infolist entries `Filament\Infolists\Components\`, layout components (`Grid`, `Section`, `Fieldset`, `Tabs`, `Wizard`) `Filament\Schemas\Components\`, schema utilities (`Get`, `Set`) `Filament\Schemas\Components\Utilities\`, and **every** action `Filament\Actions\`. Icons are the `Filament\Support\Icons\Heroicon` enum.
 
@@ -197,7 +198,7 @@ Namespaces that are easy to get wrong: form fields are `Filament\Forms\Component
 Every change must be covered by a test. Three suites are registered in `phpunit.xml`, and `tests/Pest.php` binds all of them to `Tests\TestCase`:
 
 - **Feature** (`tests/Feature/`) — application behaviour; gets `RefreshDatabase`. Grouped by product area:
-    - `Account/` — signed-in user's own surfaces (profile, settings, notification bell)
+    - `Account/` — signed-in user's own surfaces (profile, settings, the dashboard's in-progress list, notification bell, comment emails)
     - `Auth/` — Spotify OAuth login, callback and logout
     - `System/` — application-wide plumbing rather than a product area (session toasts)
     - `Discovery/` — public browse surfaces (explore feeds, leaderboards)
@@ -230,7 +231,19 @@ Every Pest test file follows this order, top to bottom:
 Additional conventions:
 - Use `Pest\Laravel` functions (`get()`, `actingAs()`, `assertGuest()`, ...) instead of `$this->get()` etc. — Intelephense cannot resolve `$this` inside Pest closures
 - Avoid `$this->property` state in `beforeEach()` for the same reason; prefer helper functions
-- Cross-file helpers live in `tests/Helpers/`, grouped by the domain they build for (`users.php`, `rankings.php`, `tierlists.php`, `reviews.php`, `catalog.php`, `spotify.php`) and required from `tests/Pest.php`. `alerts.php` holds `alertsFrom()`, which reads the sweetalert2 `flash`/`confirm` payloads a component sent on its last request. Helper function names are global, so they must be unique across the whole suite; anything used by a single test file still lives at the bottom of that file
+- Cross-file helpers live in `tests/Helpers/`, grouped by the domain they build for (`users.php`, `rankings.php`, `tierlists.php`, `reviews.php`, `catalog.php`, `spotify.php`, `stripe.php`) and required from `tests/Pest.php`. `alerts.php` holds `alertsFrom()`, which reads the sweetalert2 `flash`/`confirm` payloads a component sent on its last request, and `filament.php` holds `widgetStats()` / `widgetChartData()`, which read a dashboard widget's numbers. Helper function names are global, so they must be unique across the whole suite and specific (`tierlistBoard()`, not `board()`); anything used by a single test file still lives at the bottom of that file
+
+#### The Outside World
+- `Tests\TestCase::setUp()` seals every test: `Http::preventStrayRequests()`, a Stripe client that fails every call as if Stripe were down (`fakeStripeServices()` swaps in stand-ins), and both Discord log channels sent to a `NullHandler`. `phpunit.xml` pins dummy Spotify and Stripe credentials, `LOG_CHANNEL=null` and `NIGHTWATCH_ENABLED=false`, so a run never uses `.env` secrets or writes to `storage/logs`, and the suite passes offline
+- The Spotify actions catch every exception, so a blocked stray request is swallowed rather than failing a test. A guard that should stop a Spotify call needs `Http::fake()` first and `Http::assertNothingSent()` last
+
+#### Assertions
+A test passes or fails on behaviour, never on wording. Prefer, in order: **state** (a component's computed collection via `->instance()`, `assertSet`, `assertViewHas`, the database), then **structure** (a route URL, a `wire:` hook or `wire:key`, `assertSeeLivewire`), then **behaviour** (redirects, dispatched events, `assertForbidden()`, alert payloads by `icon` or `action`).
+- Never assert interface copy (headings, labels, placeholders, alert titles), a record's name in rendered HTML, or a bare number. When only a rendered string will do, derive it from the app (`$status->label()`, `$license->formattedTotal()`)
+- Guard against vacuous assertions: test the component with `Livewire::test()` when the layout's nav or `<head>` would also contain the value, and pair every negative assertion with a positive control
+- Filament: `assertTableColumnStateSet()` for columns, `->key()` on infolist sections with `assertSchemaComponentVisible()` / `Hidden()`, `TestAction` for actions, `widgetStats()` for widgets
+- Derive limits from `config()` or pin them in `beforeEach`; build data with factories rather than seeded rows; order anything compared as a list; start rankings from `sortingStateInOrder()` rather than the shuffle
+- Prove a new assertion by breaking the behaviour and watching it fail. After editing a Blade file to do that, run `php artisan view:clear`
 
 ## CI/CD
 

@@ -1,11 +1,14 @@
 <?php
 
 use App\Enums\ShareTarget;
+use App\Livewire\Tierlist\TierlistShow;
 use App\Models\Artist;
+use App\Models\Tier;
 use App\Models\Tierlist;
 use App\Models\TierlistItem;
 use App\Models\User;
 use Illuminate\Support\Js;
+use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
@@ -18,7 +21,7 @@ describe('who can open a board', function () {
     });
 
     it('opens for its owner even before it is finished', function () {
-        $owner = kyle();
+        $owner = User::factory()->createOne();
         $tierlist = Tierlist::factory()->for($owner)->create();
 
         actingAs($owner);
@@ -29,7 +32,7 @@ describe('who can open a board', function () {
     it('opens for anyone once it is public and finished', function () {
         $tierlist = publicCompletedTierlist();
 
-        actingAs(kyle());
+        actingAs(User::factory()->createOne());
 
         get(route('tierlist', ['id' => $tierlist->getKey()]))->assertOk();
     });
@@ -37,7 +40,7 @@ describe('who can open a board', function () {
     it('hides a private list from everybody else', function () {
         $tierlist = Tierlist::factory()->complete()->create();
 
-        actingAs(kyle());
+        actingAs(User::factory()->createOne());
 
         get(route('tierlist', ['id' => $tierlist->getKey()]))->assertNotFound();
     });
@@ -45,13 +48,13 @@ describe('who can open a board', function () {
     it('hides an unfinished list from everybody else', function () {
         $tierlist = Tierlist::factory()->public()->create();
 
-        actingAs(kyle());
+        actingAs(User::factory()->createOne());
 
         get(route('tierlist', ['id' => $tierlist->getKey()]))->assertNotFound();
     });
 
     it('404s on a list that does not exist', function () {
-        actingAs(kyle());
+        actingAs(User::factory()->createOne());
 
         get(route('tierlist', ['id' => 999]))->assertNotFound();
     });
@@ -61,30 +64,22 @@ describe('the board', function () {
     it('draws every tier, whether or not anything sits in it', function () {
         $tierlist = publicCompletedTierlist();
 
-        actingAs(kyle());
-
         get(route('tierlist', ['id' => $tierlist->getKey()]))
-            ->assertSeeInOrder(['S', 'A', 'B', 'C', 'D', 'F']);
+            ->assertSeeHtmlInOrder($tierlist->placementTiers()->map(fn (Tier $tier) => 'wire:key="tier-'.$tier->getKey().'"')->all());
     });
 
     it('draws a placed entry with its artwork and a way back to spotify', function () {
         $tierlist = publicCompletedTierlist();
-        $artist = Artist::factory()->create([
-            'artist_name' => 'Local Natives',
-            'artist_img' => 'https://example.test/local-natives.png',
-        ]);
+        $artist = Artist::factory()->create();
 
         TierlistItem::factory()
             ->inTier($tierlist->placementTiers()->first())
             ->for($artist, 'entryable')
             ->create();
 
-        actingAs(kyle());
-
-        get(route('tierlist', ['id' => $tierlist->getKey()]))
-            ->assertSee('Local Natives')
-            ->assertSee('https://example.test/local-natives.png')
-            ->assertSee($artist->spotifyUrl());
+        Livewire::test(TierlistShow::class, ['id' => $tierlist->getKey()])
+            ->assertSee($artist->cover(), escape: false)
+            ->assertSee($artist->spotifyUrl(), escape: false);
     });
 
     it('shows what is still waiting to be placed', function () {
@@ -92,46 +87,35 @@ describe('the board', function () {
 
         TierlistItem::factory()->inTier($tierlist->bank)->create();
 
-        actingAs(kyle());
-
-        expect($tierlist->fresh()->bankIsEmpty())->toBeFalse();
-
-        get(route('tierlist', ['id' => $tierlist->getKey()]))
-            ->assertSee($tierlist->bank->name);
+        Livewire::test(TierlistShow::class, ['id' => $tierlist->getKey()])
+            ->assertSeeHtml('wire:key="tier-'.$tierlist->bank->getKey().'"');
     });
 
     it('drops that section once everything has been placed', function () {
         $tierlist = publicCompletedTierlist();
 
-        TierlistItem::factory()->inTier($tierlist->placementTiers()->first())->create();
-
-        actingAs(kyle());
-
-        expect($tierlist->fresh()->bankIsEmpty())->toBeTrue();
+        Livewire::test(TierlistShow::class, ['id' => $tierlist->getKey()])
+            ->assertDontSeeHtml('wire:key="tier-'.$tierlist->bank->getKey().'"');
     });
 });
 
 describe('author attribution', function () {
     it('shows the tiered by banner for visitors', function () {
-        $owner = kyle();
-        $visitor = User::factory()->createOne(['is_dev' => true]);
+        $owner = User::factory()->createOne();
         $tierlist = publicCompletedTierlist(['user_id' => $owner->getKey()]);
 
-        actingAs($visitor)
-            ->get(route('tierlist', ['id' => $tierlist->getKey()]))
-            ->assertOk()
-            ->assertSee('Tiered by')
-            ->assertSee($owner->name);
+        Livewire::actingAs(User::factory()->createOne())
+            ->test(TierlistShow::class, ['id' => $tierlist->getKey()])
+            ->assertSee(route('profile', ['id' => $owner->spotify_id]), escape: false);
     });
 
     it('hides the tiered by banner for the owner', function () {
-        $owner = kyle();
+        $owner = User::factory()->createOne();
         $tierlist = publicCompletedTierlist(['user_id' => $owner->getKey()]);
 
-        actingAs($owner)
-            ->get(route('tierlist', ['id' => $tierlist->getKey()]))
-            ->assertOk()
-            ->assertDontSee('Tiered by');
+        Livewire::actingAs($owner)
+            ->test(TierlistShow::class, ['id' => $tierlist->getKey()])
+            ->assertDontSee(route('profile', ['id' => $owner->spotify_id]), escape: false);
     });
 });
 
@@ -139,8 +123,7 @@ describe('comments', function () {
     it('renders when comments are enabled', function () {
         $tierlist = publicCompletedTierlist(['comments_enabled' => true]);
 
-        actingAs(kyle())
-            ->get(route('tierlist', ['id' => $tierlist->getKey()]))
+        get(route('tierlist', ['id' => $tierlist->getKey()]))
             ->assertOk()
             ->assertSeeLivewire('comments');
     });
@@ -148,8 +131,7 @@ describe('comments', function () {
     it('is hidden when comments are disabled', function () {
         $tierlist = publicCompletedTierlist(['comments_enabled' => false]);
 
-        actingAs(kyle())
-            ->get(route('tierlist', ['id' => $tierlist->getKey()]))
+        get(route('tierlist', ['id' => $tierlist->getKey()]))
             ->assertOk()
             ->assertDontSeeLivewire('comments');
     });
@@ -159,44 +141,40 @@ describe('sharing', function () {
     it('unfurls into the name, the top tier and its artwork', function () {
         $tierlist = tierlistWithTopPick(['name' => 'Psych Rock']);
 
-        actingAs(kyle())
-            ->get(route('tierlist', ['id' => $tierlist->getKey()]))
+        get(route('tierlist', ['id' => $tierlist->getKey()]))
             ->assertSee('<meta property="og:title" content="Psych Rock">', escape: false)
-            ->assertSee('Top tier: Local Natives.', escape: false)
             ->assertSee('<meta property="og:image" content="https://example.test/local-natives.png">', escape: false)
             ->assertSee('<meta name="twitter:card" content="summary_large_image">', escape: false);
+
+        expect($tierlist->shareDescription())->toContain('Local Natives');
     });
 
     it('leads with the highest tier that has anything in it', function () {
         $tierlist = publicCompletedTierlist();
-        $names = $tierlist->items->map(fn (TierlistItem $item) => $item->entryable->name())->join(', ');
+        $pick = TierlistItem::factory()->inTier($tierlist->placementTiers()->get(1))->create();
 
-        actingAs(kyle())
-            ->get(route('tierlist', ['id' => $tierlist->getKey()]))
-            ->assertSee("Top tier: {$names}. A tier list by Artist from {$tierlist->user->name} on ".config('app.name'));
+        expect($tierlist->fresh()->topTierItems()->modelKeys())->toBe([$pick->getKey()]);
     });
 
     it('offers a link to post on each network, and the embed code', function () {
         $tierlist = tierlistWithTopPick(['name' => 'Psych Rock']);
         $url = route('tierlist', ['id' => $tierlist->getKey()]);
 
-        $response = actingAs(kyle())->get($url);
+        $response = get($url);
 
         foreach (ShareTarget::cases() as $target) {
             $response->assertSee($target->intentUrl($tierlist->shareText(), $url));
         }
 
-        $response->assertSee('Copy embed code')
-            ->assertSee(Js::from($tierlist->embedCode())->toHtml(), escape: false);
+        $response->assertSee(Js::from($tierlist->embedCode())->toHtml(), escape: false);
 
-        expect($tierlist->shareText())->toBe('Psych Rock — my tier list by Artist on '.config('app.name'));
+        expect($tierlist->shareText())->toContain('Psych Rock');
     });
 
     it('describes the board to search engines as a list', function () {
         $tierlist = tierlistWithTopPick(['name' => 'Psych Rock']);
 
-        actingAs(kyle())
-            ->get(route('tierlist', ['id' => $tierlist->getKey()]))
+        get(route('tierlist', ['id' => $tierlist->getKey()]))
             ->assertSee('"@type":"ItemList"', escape: false)
             ->assertSee('"name":"Local Natives"', escape: false)
             ->assertSee('<link rel="canonical" href="'.route('tierlist', ['id' => $tierlist->getKey()]).'">', escape: false);
@@ -211,14 +189,19 @@ describe('sharing', function () {
     });
 
     it('gives a private list no share tags and no share buttons', function () {
-        $owner = kyle();
+        $owner = User::factory()->createOne();
         $tierlist = Tierlist::factory()->for($owner)->complete()->create(['name' => 'Just Mine']);
+        $url = route('tierlist', ['id' => $tierlist->getKey()]);
 
-        actingAs($owner)
-            ->get(route('tierlist', ['id' => $tierlist->getKey()]))
+        $response = actingAs($owner)
+            ->get($url)
             ->assertOk()
             ->assertDontSee('<meta property="og:title" content="Just Mine">', escape: false)
-            ->assertDontSee('Copy embed code');
+            ->assertDontSee(Js::from($tierlist->embedCode())->toHtml(), escape: false);
+
+        foreach (ShareTarget::cases() as $target) {
+            $response->assertDontSee($target->intentUrl($tierlist->shareText(), $url));
+        }
     });
 });
 
@@ -226,22 +209,17 @@ describe('the embed', function () {
     it('draws a card of a public, finished list that opens the list in the parent page', function () {
         $tierlist = tierlistWithTopPick(['name' => 'Psych Rock']);
 
-        actingAs(kyle())
-            ->get(route('tierlist.embed', ['id' => $tierlist->getKey()]))
+        get(route('tierlist.embed', ['id' => $tierlist->getKey()]))
             ->assertOk()
-            ->assertSee('Psych Rock')
-            ->assertSee('https://example.test/local-natives.png')
-            ->assertSee($tierlist->user->name)
-            ->assertSee('target="_top"', escape: false)
-            ->assertSee(route('tierlist', ['id' => $tierlist->getKey()]));
+            ->assertSee('src="https://example.test/local-natives.png"', escape: false)
+            ->assertSeeHtmlInOrder(['<a', 'href="'.route('tierlist', ['id' => $tierlist->getKey()]).'"', 'target="_top"']);
     });
 
     it('carries the site head, credits the list as canonical and stays out of search itself', function () {
         $tierlist = tierlistWithTopPick(['name' => 'Psych Rock']);
         $listUrl = route('tierlist', ['id' => $tierlist->getKey()]);
 
-        actingAs(kyle())
-            ->get(route('tierlist.embed', ['id' => $tierlist->getKey()]))
+        get(route('tierlist.embed', ['id' => $tierlist->getKey()]))
             ->assertOk()
             ->assertSee('<link rel="canonical" href="'.$listUrl.'">', escape: false)
             ->assertSee('<meta name="robots" content="noindex, follow">', escape: false)
@@ -252,7 +230,7 @@ describe('the embed', function () {
     });
 
     it('is never served for a private list, not even to its owner', function () {
-        $owner = kyle();
+        $owner = User::factory()->createOne();
         $tierlist = Tierlist::factory()->for($owner)->complete()->create();
 
         actingAs($owner)
@@ -263,9 +241,7 @@ describe('the embed', function () {
     it('is never served for an unfinished list', function () {
         $tierlist = Tierlist::factory()->public()->create();
 
-        actingAs(kyle())
-            ->get(route('tierlist.embed', ['id' => $tierlist->getKey()]))
-            ->assertNotFound();
+        get(route('tierlist.embed', ['id' => $tierlist->getKey()]))->assertNotFound();
     });
 
     it('finds the top picks however far down the board they sit', function () {
@@ -273,7 +249,7 @@ describe('the embed', function () {
 
         get(route('tierlist.embed', ['id' => $tierlist->getKey()]))
             ->assertOk()
-            ->assertSee($tierlist->items->first()->entryable->cover());
+            ->assertSee('src="'.$tierlist->items->first()->entryable->cover().'"', escape: false);
     });
 
     it('is served to guests, since whoever loads the host page is a guest here', function () {

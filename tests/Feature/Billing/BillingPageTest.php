@@ -1,8 +1,10 @@
 <?php
 
 use App\Livewire\Billing\Billing;
+use App\Models\PlanFeature;
 use App\Models\ProLicense;
 use App\Models\User;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 
 describe('the free plan view', function () {
@@ -13,18 +15,21 @@ describe('the free plan view', function () {
     });
 
     it('compares the two plans', function () {
-        Livewire::actingAs(User::factory()->createOne())
-            ->test(Billing::class)
-            ->assertSee(config('app.name').' Pro')
-            ->assertSee((string) config('billing.ranking_limits.free'));
+        $component = Livewire::actingAs(User::factory()->createOne())->test(Billing::class);
+
+        foreach (PlanFeature::cached()->flatten() as $feature) {
+            $component->assertSee($feature->renderedLabel());
+        }
     });
 });
 
 describe('the Pro view', function () {
     it('names the plan and drops the upgrade call to action', function () {
-        Livewire::actingAs(proUser())
+        $user = proUser();
+
+        Livewire::actingAs($user)
             ->test(Billing::class)
-            ->assertSee(config('app.name').' Pro')
+            ->assertSee($user->proLicenses()->sole()->uuid)
             ->assertDontSee(route('billing.checkout'), escape: false);
     });
 
@@ -38,25 +43,26 @@ describe('the Pro view', function () {
         Livewire::actingAs($user)
             ->test(Billing::class)
             ->assertSee($license->uuid)
-            ->assertSee('$10.00')
-            ->assertSee('Active');
+            ->assertSee($license->formattedTotal())
+            ->assertSee($license->status->label());
     });
 
     it('breaks out tax when there was any', function () {
         $user = User::factory()->createOne();
 
-        ProLicense::factory()->active()->withTax(210, 'DE')->for($user)->create();
+        $license = ProLicense::factory()->active()->withTax(210, 'DE')->for($user)->create();
 
         Livewire::actingAs($user)
             ->test(Billing::class)
-            ->assertSee('Includes tax')
-            ->assertSee('$2.10');
+            ->assertSee($license->formattedTax());
     });
 
     it('omits the tax row when none was charged', function () {
-        Livewire::actingAs(proUser())
+        $user = proUser();
+
+        Livewire::actingAs($user)
             ->test(Billing::class)
-            ->assertDontSee('Includes tax');
+            ->assertDontSee($user->proLicenses()->sole()->formattedTax());
     });
 
     it('links out to the Stripe invoice and PDF', function () {
@@ -70,12 +76,8 @@ describe('the Pro view', function () {
     });
 
     it('never shows card details, because none are stored', function () {
-        $user = User::factory()->createOne();
-        ProLicense::factory()->active()->for($user)->create();
-
-        Livewire::actingAs($user)
-            ->test(Billing::class)
-            ->assertOk();
+        expect(Schema::hasColumn('users', 'pm_type'))->toBeFalse()
+            ->and(Schema::hasColumn('users', 'pm_last_four'))->toBeFalse();
     });
 });
 

@@ -13,9 +13,11 @@ describe('the board a new list starts with', function () {
     it('comes with a bank and the default tiers', function () {
         $tierlist = storeTierlist();
 
-        expect($tierlist->tiers)->toHaveCount(7)
+        $defaults = collect(config('tierlists.default_tiers'));
+
+        expect($tierlist->tiers)->toHaveCount($defaults->count() + 1)
             ->and($tierlist->bank)->not->toBeNull()
-            ->and($tierlist->placementTiers()->pluck('name')->all())->toBe(['S', 'A', 'B', 'C', 'D', 'F']);
+            ->and($tierlist->placementTiers()->pluck('name')->all())->toBe($defaults->pluck('name')->all());
     });
 
     it('drops every entry into the bank, in the order they were picked', function () {

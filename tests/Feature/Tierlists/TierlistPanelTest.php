@@ -3,6 +3,7 @@
 use App\Enums\TierlistType;
 use App\Livewire\Tierlist\TierlistPanel;
 use App\Models\Tierlist;
+use App\Models\User;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
@@ -10,11 +11,10 @@ use function Pest\Laravel\get;
 
 describe('the panel on the dashboard', function () {
 
-    it('appears for somebody the feature is on for, offering every type', function () {
-        actingAs(kyle());
+    it('appears on the dashboard, offering every type', function () {
+        actingAs(User::factory()->createOne());
 
         get(route('dashboard'))
-            ->assertSee('Tier Lists')
             ->assertSee(route('tierlists.create', ['type' => 'artist']), escape: false)
             ->assertSee(route('tierlists.create', ['type' => 'album']), escape: false)
             ->assertSee(route('tierlists.create', ['type' => 'track']), escape: false);
@@ -24,8 +24,8 @@ describe('the panel on the dashboard', function () {
 
 describe('what the panel offers', function () {
     it('sends a spent type to billing instead of to the setup page', function () {
-        $user = kyle();
-        Tierlist::factory()->for($user)->count(3)->create(['type' => TierlistType::ARTIST->value]);
+        $user = User::factory()->createOne();
+        Tierlist::factory()->for($user)->count(config('billing.tierlist_limits.free.artist'))->create(['type' => TierlistType::ARTIST->value]);
 
         Livewire::actingAs($user)
             ->test(TierlistPanel::class)
@@ -35,7 +35,7 @@ describe('what the panel offers', function () {
     });
 
     it('shows how much of each allowance is used', function () {
-        $user = kyle();
+        $user = User::factory()->createOne();
         Tierlist::factory()->for($user)->create(['type' => TierlistType::ALBUM->value]);
 
         $component = Livewire::actingAs($user)->test(TierlistPanel::class);
@@ -45,10 +45,10 @@ describe('what the panel offers', function () {
     });
 
     it('says unlimited for a pro account', function () {
-        $user = proUser(['is_dev' => true]);
+        $component = Livewire::actingAs(proUser())->test(TierlistPanel::class);
 
-        Livewire::actingAs($user)
-            ->test(TierlistPanel::class)
-            ->assertSee('Unlimited');
+        foreach (TierlistType::cases() as $type) {
+            expect($component->instance()->limitFor($type))->toBeNull();
+        }
     });
 });
