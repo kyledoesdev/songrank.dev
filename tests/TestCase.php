@@ -24,6 +24,7 @@ abstract class TestCase extends BaseTestCase
         config([
             'logging.channels.discord_user_updates' => ['driver' => 'monolog', 'handler' => NullHandler::class],
             'logging.channels.discord_other_updates' => ['driver' => 'monolog', 'handler' => NullHandler::class],
+            'logging.channels.discord_billing_updates' => ['driver' => 'monolog', 'handler' => NullHandler::class],
         ]);
     }
 }

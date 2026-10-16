@@ -39,7 +39,8 @@
             
             <p style="font-size: 14px; color: #6b7280; margin: 0;">
                 You're receiving this because you have newsletter emails enabled in your preferences. 
-                You can <a href="{{ route('settings') }}" style="color: #3b82f6; text-decoration: none;">update your email preferences</a> anytime.
+                You can <a href="{{ route('settings') }}" style="color: #3b82f6; text-decoration: none;">update your email preferences</a>
+                or <a href="{{ $notifiable->newsletterUnsubscribeUrl() }}" style="color: #3b82f6; text-decoration: none;">unsubscribe</a> anytime.
             </p>
         </div>
     </div>

@@ -101,7 +101,7 @@ final class HandleStripeWebhook
             attributes: ['notes' => 'Revoked automatically: chargeback opened on '.now()->toDateString().'.'],
         );
 
-        Log::warning('Chargeback opened on a Pro license.', [
+        Log::channel('discord_billing_updates')->warning('Chargeback opened on a Pro license.', [
             'pro_license_uuid' => $license->uuid,
             'dispute_id' => data_get($dispute, 'id'),
         ]);
@@ -125,7 +125,7 @@ final class HandleStripeWebhook
      */
     private function reportOrphanedMoney(string $kind, array $object): void
     {
-        Log::warning("Stripe reported a {$kind} for a payment no Pro license claims.", [
+        Log::channel('discord_billing_updates')->warning("Stripe reported a {$kind} for a payment no Pro license claims.", [
             'stripe_payment_intent_id' => data_get($object, 'payment_intent'),
             'stripe_object_id' => data_get($object, 'id'),
             'amount_refunded' => data_get($object, 'amount_refunded'),

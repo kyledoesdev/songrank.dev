@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\URL;
 use Kyledoesdev\Essentials\Concerns\HasStatsAfterEvents;
 use Laravel\Cashier\Billable;
 use Laravel\Pennant\Concerns\HasFeatures;
@@ -160,6 +161,11 @@ class User extends Authenticatable implements CanComment, FilamentUser
 
         $this->is_pro = $isPro;
         $this->syncOriginalAttribute('is_pro');
+    }
+
+    public function newsletterUnsubscribeUrl(): string
+    {
+        return URL::signedRoute('newsletter.unsubscribe', $this);
     }
 
     public function canAccessPanel(Panel $panel): bool

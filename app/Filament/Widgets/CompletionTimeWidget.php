@@ -76,7 +76,7 @@ class CompletionTimeWidget extends ChartWidget
     private function getBuckets(string $model, string $finishedColumn): array
     {
         $range = $this->getTrendConfig();
-        $tz = auth()->user()->timezone;
+        $tz = config('app.timezone');
 
         $records = $model::query()
             ->whereNotNull($finishedColumn)

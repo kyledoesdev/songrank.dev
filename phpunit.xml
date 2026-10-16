@@ -37,6 +37,7 @@
         <env name="BUGSNAG_API_KEY" value=""/>
         <env name="DISCORD_WEBHOOK_USER_UPDATES" value=""/>
         <env name="DISCORD_WEBHOOK_OTHER_UPDATES" value=""/>
+        <env name="DISCORD_WEBHOOK_BILLING_UPDATES" value=""/>
         <env name="SPOTIFY_CLIENT_ID" value="spotify-test-client-id"/>
         <env name="SPOTIFY_CLIENT_SECRET" value="spotify-test-client-secret"/>
         <env name="STRIPE_KEY" value="pk_test_songrank"/>

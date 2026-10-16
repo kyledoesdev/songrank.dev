@@ -153,7 +153,7 @@ Filament surfaces have their own assertions; use them instead of text:
 
 ## Faking the Outside World
 
-`Tests\TestCase::setUp()` seals the suite: `Http::preventStrayRequests()`, a Stripe client whose every call fails as if Stripe could not be reached, and both Discord log channels sent to a `NullHandler`. `phpunit.xml` pins dummy Spotify and Stripe credentials, empty Discord webhooks, `LOG_CHANNEL=null` and `NIGHTWATCH_ENABLED=false`, so a run never uses your `.env` secrets or writes to `storage/logs`. The whole suite passes offline (`unshare -rn php vendor/bin/pest`).
+`Tests\TestCase::setUp()` seals the suite: `Http::preventStrayRequests()`, a Stripe client whose every call fails as if Stripe could not be reached, and every Discord log channel sent to a `NullHandler`. `phpunit.xml` pins dummy Spotify and Stripe credentials, empty Discord webhooks, `LOG_CHANNEL=null` and `NIGHTWATCH_ENABLED=false`, so a run never uses your `.env` secrets or writes to `storage/logs`. The whole suite passes offline (`unshare -rn php vendor/bin/pest`).
 
 - **Spotify:** `fakeSearch()`, `fakeDiscography()` and `fakePlaylist()` fake `accounts.spotify.com` and `api.spotify.com`. The fixtures describe Tame Impala's *Currents*, so a failing assertion reads like a record rather than like `album-1`.
 - **A guard that should stop a Spotify call:** the Spotify actions catch every exception, so a blocked stray request is swallowed rather than failing the test. Call `Http::fake()` first and `Http::assertNothingSent()` last.

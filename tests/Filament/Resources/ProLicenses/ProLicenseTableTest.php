@@ -64,6 +64,31 @@ describe('the licence table', function () {
             ->assertCanNotSeeTableRecords([$active]);
     });
 
+    it('finds a licence by any of its Stripe ids', function (string $column) {
+        $license = ProLicense::factory()->active()->create();
+        $others = ProLicense::factory()->count(2)->active()->create();
+
+        Livewire::test(ListProLicenses::class)
+            ->filterTable('stripe_reference', ['reference' => $license->{$column}])
+            ->assertCanSeeTableRecords([$license])
+            ->assertCanNotSeeTableRecords($others);
+    })->with([
+        'checkout session' => 'stripe_checkout_session_id',
+        'payment intent' => 'stripe_payment_intent_id',
+        'invoice' => 'stripe_invoice_id',
+        'customer' => 'stripe_customer_id',
+    ]);
+
+    it('keeps the other filters when finding a licence by Stripe id', function () {
+        $active = ProLicense::factory()->active()->create();
+        $refunded = ProLicense::factory()->refunded()->create(['stripe_customer_id' => $active->stripe_customer_id]);
+
+        Livewire::test(ListProLicenses::class)
+            ->filterTable('stripe_reference', ['reference' => $active->stripe_customer_id])
+            ->assertCanSeeTableRecords([$active])
+            ->assertCanNotSeeTableRecords([$refunded]);
+    });
+
     it('counts only active licences in the navigation badge', function () {
         ProLicense::factory()->count(2)->active()->create();
         ProLicense::factory()->comp()->create();

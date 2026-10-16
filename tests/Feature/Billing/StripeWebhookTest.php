@@ -209,7 +209,7 @@ describe('charge.refunded', function () {
     });
 
     it('ignores a refund for a payment we do not know about, but says so loudly', function () {
-        Log::spy();
+        watchBillingLog();
 
         $license = ProLicense::factory()->active()->create();
 
@@ -316,7 +316,7 @@ describe('charge.dispute.created', function () {
     });
 
     it('leaves every licence alone on a dispute for a payment we do not know about, but says so loudly', function () {
-        Log::spy();
+        watchBillingLog();
 
         $license = ProLicense::factory()->active()->create();
 
@@ -463,4 +463,10 @@ function stripeSignature(array $payload): string
     $signature = hash_hmac('sha256', "{$timestamp}.".json_encode($payload), $secret);
 
     return "t={$timestamp},v1={$signature}";
+}
+
+function watchBillingLog(): void
+{
+    Log::spy();
+    Log::shouldReceive('channel')->with('discord_billing_updates')->once()->andReturnSelf();
 }

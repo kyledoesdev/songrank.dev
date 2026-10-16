@@ -24,7 +24,7 @@ class LoginsWidget extends StatsOverviewWidget
 
         $totalUsers = User::query()->count();
         $newUsersThisMonth = User::query()
-            ->where('created_at', '>=', $now->copy()->startOfMonth())
+            ->where('created_at', '>=', $now->copy()->startOfMonth()->tz(config('app.timezone')))
             ->count();
         $deletedUsers = User::onlyTrashed()->count();
 
@@ -59,7 +59,7 @@ class LoginsWidget extends StatsOverviewWidget
             ->where('name', (new LoginStat)->getName())
             ->where('type', DataPoint::TYPE_CHANGE)
             ->where('value', '>', 0)
-            ->whereBetween('created_at', [$start->copy()->tz(Auth::user()->timezone), $end->copy()->tz(Auth::user()->timezone)])
+            ->whereBetween('created_at', [$start->copy()->tz(config('app.timezone')), $end->copy()->tz(config('app.timezone'))])
             ->sum('value');
     }
 

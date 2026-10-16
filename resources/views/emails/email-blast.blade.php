@@ -14,4 +14,8 @@
 
 Thanks for using {{ config('app.name') }}!<br>
 {{ config('app.name') }}
+
+@component('mail::subcopy')
+You're receiving this because you have newsletter emails enabled in your preferences. You can [update your email preferences]({{ route('settings') }}) or [unsubscribe]({{ $notifiable->newsletterUnsubscribeUrl() }}) anytime.
+@endcomponent
 @endcomponent

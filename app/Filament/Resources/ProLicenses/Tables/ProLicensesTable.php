@@ -95,11 +95,11 @@ class ProLicensesTable
                     ])
                     ->query(fn (Builder $query, array $data): Builder => $query->when(
                         $data['reference'] ?? null,
-                        fn (Builder $query, string $reference) => $query
+                        fn (Builder $query, string $reference) => $query->where(fn (Builder $query) => $query
                             ->where('stripe_checkout_session_id', $reference)
                             ->orWhere('stripe_payment_intent_id', $reference)
                             ->orWhere('stripe_invoice_id', $reference)
-                            ->orWhere('stripe_customer_id', $reference),
+                            ->orWhere('stripe_customer_id', $reference)),
                     )),
             ])
             ->recordActions([

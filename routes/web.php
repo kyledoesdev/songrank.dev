@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\NewsletterUnsubscribeController;
 use App\Http\Controllers\SpotifyAuthController;
 use App\Livewire\About;
 use App\Livewire\Dashboard\Dashboard;
@@ -58,6 +59,13 @@ Route::middleware(ValidateSignature::class)->group(function () {
         ->name('comments::notifications.unsubscribe');
 
     Route::post('/comment-subscription/{commentNotificationSubscription}/unsubscribe', [UnsubscribeFromNotificationsController::class, 'unsubscribe']);
+
+    Route::get('/newsletter/{user}/unsubscribe', [NewsletterUnsubscribeController::class, 'create'])
+        ->name('newsletter.unsubscribe')
+        ->withHead(title: 'Unsubscribe', robots: 'noindex, nofollow');
+
+    Route::post('/newsletter/{user}/unsubscribe', [NewsletterUnsubscribeController::class, 'store'])
+        ->withHead(title: 'Unsubscribe', robots: 'noindex, nofollow');
 });
 
 Route::middleware(Authenticate::class)->group(function () {

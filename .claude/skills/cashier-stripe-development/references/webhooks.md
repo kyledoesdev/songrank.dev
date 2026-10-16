@@ -28,7 +28,7 @@ php artisan route:list --path=stripe/webhook -v
 | `checkout.session.expired` | `HandleStripeWebhook::abandon` | pending → abandoned |
 | `checkout.session.async_payment_failed` | `HandleStripeWebhook::abandon` | pending → abandoned |
 | `charge.refunded` | `HandleStripeWebhook::refund` | partial refund records the amount; a full one revokes |
-| `charge.dispute.created` | `HandleStripeWebhook::dispute` | revoke and `Log::warning` |
+| `charge.dispute.created` | `HandleStripeWebhook::dispute` | revoke and warn `discord_billing_updates` |
 
 Anything else falls through `match`'s `default => null`. **Returning quietly is deliberate** — throwing on an unrecognised event would put Stripe into a retry loop.
 

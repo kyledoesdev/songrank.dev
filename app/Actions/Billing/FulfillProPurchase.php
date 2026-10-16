@@ -29,7 +29,7 @@ final class FulfillProPurchase
             ->first();
 
         if (is_null($license)) {
-            Log::warning('A paid Stripe session referenced no known Pro license.', [
+            Log::channel('discord_billing_updates')->warning('A paid Stripe session referenced no known Pro license.', [
                 'stripe_checkout_session_id' => data_get($session, 'id'),
             ]);
 
@@ -113,7 +113,7 @@ final class FulfillProPurchase
         $buyer = $license->user;
 
         if (is_null($buyer)) {
-            Log::warning('Fulfilled a Pro license for a buyer who deleted themself during the checkout process. This payment likely needs refunding.', [
+            Log::channel('discord_billing_updates')->warning('Fulfilled a Pro license for a buyer who deleted themself during the checkout process. This payment likely needs refunding.', [
                 'pro_license_uuid' => $license->uuid,
                 'stripe_payment_intent_id' => $license->stripe_payment_intent_id,
             ]);
