@@ -2,25 +2,40 @@
 
 namespace App\Models;
 
+use App\Contracts\CrateEntity;
 use App\Enums\RankingType;
+use App\Models\Concerns\BelongsToCrates;
+use App\Observers\ExploreCountObserver;
 use App\QueryBuilders\RankingQueryBuilder;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 use Kyledoesdev\Essentials\Concerns\HasStatsAfterEvents;
 use Spatie\Comments\Models\Concerns\HasComments;
 
+#[ObservedBy(ExploreCountObserver::class)]
 #[UseEloquentBuilder(RankingQueryBuilder::class)]
-class Ranking extends Model
+class Ranking extends Model implements CrateEntity
 {
+    use BelongsToCrates;
     use HasComments;
+    use HasFactory;
     use HasStatsAfterEvents;
+    use SoftDeletes;
+
+    public const MIN_SONGS = 2;
 
     public const MAX_SONGS = 500;
+
+    public const string EXPLORE_COUNT_CACHE_KEY = 'explore:total-rankings';
 
     protected $fillable = [
         'user_id',
@@ -100,6 +115,11 @@ class Ranking extends Model
 
     /* Helpers */
 
+    public function canBeEdited(): bool
+    {
+        return $this->user_id === Auth::id();
+    }
+
     public function canBeSeen(): bool
     {
         if ($this->user_id == Auth::id()) {
@@ -111,6 +131,26 @@ class Ranking extends Model
 
     /* contracts */
 
+    public function cover(): ?string
+    {
+        return $this->source?->cover();
+    }
+
+    public function label(): string
+    {
+        return $this->type->label().' ranking';
+    }
+
+    public function url(): string
+    {
+        return route('ranking', ['id' => $this->getKey()]);
+    }
+
+    public function progressLabel(): ?string
+    {
+        return $this->is_ranked ? null : 'In progress';
+    }
+
     public function commentableName(): string
     {
         return $this->name;
@@ -118,6 +158,6 @@ class Ranking extends Model
 
     public function commentUrl(): string
     {
-        return route('ranking', ['id' => $this->getKey()]);
+        return $this->url();
     }
 }

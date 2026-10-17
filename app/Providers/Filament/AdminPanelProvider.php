@@ -6,11 +6,14 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\MenuItem;
 use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
+use Filament\Support\Icons\Heroicon;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -35,10 +38,24 @@ class AdminPanelProvider extends PanelProvider
             ->maxContentWidth(Width::Full)
             ->brandName('songrank.dev')
             ->navigationGroups([
-                NavigationGroup::make('Song Rank')
+                NavigationGroup::make('Billing')
+                    ->collapsible(),
+                NavigationGroup::make(config('app.name'))
+                    ->collapsible(),
+                NavigationGroup::make('Spotify Entities')
                     ->collapsible(),
                 NavigationGroup::make('System')
                     ->collapsible(),
+            ])
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn (): string => '<script src="https://kit.fontawesome.com/07b7751319.js" crossorigin="anonymous"></script>',
+            )
+            ->userMenuItems([
+                MenuItem::make()
+                    ->label('Application Health')
+                    ->url(fn (): string => route('health').'?fresh', shouldOpenInNewTab: true)
+                    ->icon(Heroicon::Heart),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')

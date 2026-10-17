@@ -12,7 +12,7 @@ use Livewire\Livewire;
 
 describe('the featured tracks toggle', function () {
     test('is off by default so featured tracks stay out of the ranking', function () {
-        artistSetup()
+        featuredTracksSetup()
             ->set('includeFeaturedTracks', false)
             ->call('beginRanking')
             ->assertHasNoErrors();
@@ -25,7 +25,7 @@ describe('the featured tracks toggle', function () {
     });
 
     test('pulls featured tracks into the ranking once switched on', function () {
-        artistSetup()
+        featuredTracksSetup()
             ->call('beginRanking')
             ->assertHasNoErrors();
 
@@ -40,7 +40,7 @@ describe('the featured tracks toggle', function () {
     });
 
     test('reports whether the artist has any featured tracks at all', function () {
-        artistSetup()
+        featuredTracksSetup()
             ->call('hasFeaturedTracks')
             ->assertReturned(true)
             ->set('featuredTracks', collect())
@@ -49,7 +49,7 @@ describe('the featured tracks toggle', function () {
     });
 
     test('removing a featured track keeps it out even when the toggle is on', function () {
-        $component = artistSetup();
+        $component = featuredTracksSetup();
 
         $featuredUuid = $component->get('featuredTracks')->first()['uuid'];
 
@@ -65,7 +65,7 @@ describe('the featured tracks toggle', function () {
     });
 
     test('the quick filters reach into the featured list too', function () {
-        $component = artistSetup()
+        $component = featuredTracksSetup()
             ->call('removeTracksMatching', 'guest');
 
         expect($component->get('removedTrackUuids'))->toHaveCount(1);
@@ -80,7 +80,7 @@ describe('featured track storage', function () {
     test('stores a featured track under its primary artist', function () {
         expect(Artist::where('artist_id', 'other-artist-id')->exists())->toBeFalse();
 
-        artistSetup()
+        featuredTracksSetup()
             ->call('beginRanking')
             ->assertHasNoErrors();
 
@@ -94,7 +94,7 @@ describe('featured track storage', function () {
     });
 
     test('keeps owned tracks pointed at the ranked artist', function () {
-        artistSetup()
+        featuredTracksSetup()
             ->call('beginRanking')
             ->assertHasNoErrors();
 
@@ -106,7 +106,7 @@ describe('featured track storage', function () {
     });
 
     test('leaves the ranking pointed at the ranked artist, not the primary artist', function () {
-        artistSetup()
+        featuredTracksSetup()
             ->call('beginRanking')
             ->assertHasNoErrors();
 
@@ -146,7 +146,7 @@ describe('lazy loading featured tracks', function () {
     test('does not refetch once the featured tracks are loaded', function () {
         Http::fake();
 
-        artistSetup()->set('includeFeaturedTracks', true);
+        featuredTracksSetup()->set('includeFeaturedTracks', true);
 
         Http::assertNothingSent();
     });
@@ -223,19 +223,35 @@ describe('lazy loading featured tracks', function () {
             ->set('appearsOnCount', 2)
             ->set('includeFeaturedTracks', true);
 
-        expect($component->get('featuredTracks'))->toHaveCount(1);
+        expect($component->get('featuredTracks'))->toHaveCount(1)
+            ->and($component->instance()->rankableTracks())->toHaveCount(Ranking::MAX_SONGS + 1);
 
-        $component
-            ->assertSee('501 / 500')
-            ->assertSee('Remove 1 to begin');
+        $component->call('confirmBeginRanking');
+
+        expect(alertsFrom($component)->pluck('icon')->all())->toBe(['error'])
+            ->and(alertsFrom($component, 'confirm'))->toBeEmpty();
     });
 
     test('the featured card only renders when the artist has known appearances', function () {
-        $component = artistSetup();
+        $component = featuredTracksSetup();
 
-        $component->assertDontSee('Featured On');
+        $component->assertDontSee('wire:model.live="includeFeaturedTracks"', escape: false);
 
-        $component->set('appearsOnCount', 4)->assertSee('Featured On');
+        $component->set('appearsOnCount', 4)->assertSee('wire:model.live="includeFeaturedTracks"', escape: false);
+    });
+});
+
+describe('filter modals with featured tracks loaded', function () {
+    test('render once, so a filters button opens a single modal', function () {
+        $component = featuredTracksSetup()->set('appearsOnCount', 1);
+
+        $component->call('removeTrack', $component->get('selectedTracks')->first()['uuid']);
+
+        $html = $component->html();
+
+        expect(substr_count($html, '@open-album-modal.window'))->toBe(1);
+        expect(substr_count($html, '@open-removed-tracks-modal.window'))->toBe(1);
+        expect(substr_count($html, "\$dispatch('open-album-modal')"))->toBe(2);
     });
 });
 
@@ -279,7 +295,7 @@ function fakeAppearsOnApi(): void
     ]);
 }
 
-function artistSetup(): Testable
+function featuredTracksSetup(): Testable
 {
     return Livewire::actingAs(User::factory()->createOne())
         ->test(ArtistSetup::class)

@@ -7,7 +7,10 @@ use App\Filament\Resources\Users\Pages\EditUser;
 use App\Filament\Resources\Users\Pages\ListUsers;
 use App\Filament\Resources\Users\Pages\ViewUser;
 use App\Filament\Resources\Users\RelationManagers\PreferencesRelationManager;
+use App\Filament\Resources\Users\RelationManagers\ProLicensesRelationManager;
 use App\Filament\Resources\Users\RelationManagers\RankingsRelationManager;
+use App\Filament\Resources\Users\RelationManagers\ReviewsRelationManager;
+use App\Filament\Resources\Users\RelationManagers\TierlistsRelationManager;
 use App\Models\User;
 use BackedEnum;
 use Carbon\Carbon;
@@ -21,8 +24,10 @@ use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 use UnitEnum;
@@ -35,7 +40,7 @@ class UserResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUser;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Song Rank';
+    protected static string|UnitEnum|null $navigationGroup = 'System';
 
     public static function form(Schema $schema): Schema
     {
@@ -73,6 +78,10 @@ class UserResource extends Resource
                 TextColumn::make('email')
                     ->searchable()
                     ->sortable(),
+                IconColumn::make('is_pro')
+                    ->label('Pro')
+                    ->boolean()
+                    ->sortable(),
                 TextColumn::make('timezone')
                     ->sortable()
                     ->searchable(),
@@ -95,7 +104,10 @@ class UserResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([])
+            ->filters([
+                TernaryFilter::make('is_pro')
+                    ->label('Pro'),
+            ])
             ->recordActions([
                 ViewAction::make(),
             ])
@@ -123,6 +135,10 @@ class UserResource extends Resource
                                 TextEntry::make('name'),
                                 TextEntry::make('email'),
                                 TextEntry::make('timezone'),
+                                TextEntry::make('stripe_id')
+                                    ->label('Stripe Customer')
+                                    ->placeholder('Never checked out')
+                                    ->url(fn (User $record): ?string => static::stripeCustomerUrl($record), shouldOpenInNewTab: true),
                                 TextEntry::make('ip_address')
                                     ->label('Ip Address'),
                                 TextEntry::make('created_at')
@@ -157,11 +173,28 @@ class UserResource extends Resource
             ]);
     }
 
+    /**
+     * Test-mode customers only exist under the dashboard's `/test` path.
+     */
+    private static function stripeCustomerUrl(User $user): ?string
+    {
+        if (blank($user->stripe_id)) {
+            return null;
+        }
+
+        $mode = str_starts_with((string) config('cashier.secret'), 'sk_test_') ? '/test' : '';
+
+        return "https://dashboard.stripe.com{$mode}/customers/{$user->stripe_id}";
+    }
+
     public static function getRelations(): array
     {
         return [
             RelationGroup::make('', [
                 RankingsRelationManager::class,
+                TierlistsRelationManager::class,
+                ReviewsRelationManager::class,
+                ProLicensesRelationManager::class,
                 PreferencesRelationManager::class,
             ]),
         ];

@@ -1,5 +1,5 @@
 <div>
-    <div class="bg-white shadow-md rounded-xl">
+    <x-card>
         @include('livewire.song-rank.setup.partials.setup-header', [
             'type' => $this->rankingType(),
             'locked' => filled($selectedShow),
@@ -36,7 +36,15 @@
                         ])
                     </div>
                 </div>
+
+                @include('livewire.song-rank.setup.partials.album-filters', ['albums' => null])
+
+                @if (count($this->removedTrackUuids) > 0)
+                    @include('livewire.song-rank.setup.partials.removed-tracks', [
+                        'removedTracks' => $this->removedTracks(),
+                    ])
+                @endif
             @endif
         </div>
-    </div>
+    </x-card>
 </div>

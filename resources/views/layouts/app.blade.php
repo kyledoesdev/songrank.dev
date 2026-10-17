@@ -20,14 +20,18 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=fredoka:400,500,600" rel="stylesheet">
         <link href="https://fonts.bunny.net/css?family=inter:400,500,600&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=pacifico:400&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        @fluxAppearance
+        <script>window.Flux.applyAppearance('light')</script>
     </head>
     <body class="flex flex-col min-h-screen gradient-background">
         <main class="flex-1" id="app">
             <div class="container mx-auto p-4">
-                @include('layouts.partials.messages')
+                <livewire:session-toasts />
                 
                 {{-- TODO - this sucks --}}
                 @if (! in_array(Route::currentRouteName(), ['welcome']))
@@ -46,5 +50,7 @@
                 <x-support-bubble />
             @endauth
         </footer>
+
+        @fluxScripts
     </body>
 </html>

@@ -15,13 +15,4 @@ describe('about page', function () {
             ->assertSee('Welcome to SongRank')
             ->assertSee('Rank the tracks you love.');
     });
-
-    test('shows the developer section', function () {
-        get(route('about'))
-            ->assertOk()
-            ->assertSee('https://kyledoes.dev', false)
-            ->assertSee('https://github.com/kyledoesdev', false)
-            ->assertSee('https://ko-fi.com/spacelampsix', false)
-            ->assertSee('https://twitch.tv/spacelampsix', false);
-    });
 });

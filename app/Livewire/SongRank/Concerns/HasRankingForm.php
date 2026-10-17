@@ -2,39 +2,39 @@
 
 namespace App\Livewire\SongRank\Concerns;
 
+use App\Livewire\Catalog\Concerns\FilesIntoCrates;
+use App\Livewire\Concerns\InteractsWithAlerts;
 use App\Livewire\Forms\RankingForm;
 use App\Models\Ranking;
+use Illuminate\Support\Facades\Auth;
 
 trait HasRankingForm
 {
+    use FilesIntoCrates;
+    use InteractsWithAlerts;
+
     public RankingForm $form;
 
     public function confirmBeginRanking(): void
     {
-        $songCount = $this->rankableTracks()->count();
-
-        if ($songCount > Ranking::MAX_SONGS) {
-            $this->tooManyTracks($songCount, Ranking::MAX_SONGS);
-
+        if (! $this->ensureRankingCanBegin()) {
             return;
         }
+
+        $songCount = $this->rankableTracks()->count();
 
         $message = 'Are you sure you are ready to begin? After starting the ranking process, you WILL NOT be able to remove or edit the songs in the ranking.';
 
         if ($songCount >= 50) {
-            $extraWarning = "Your ranking has {$songCount} songs, it may take > ~30 minutes to complete the ranking. (You can always start it now and pick back up where you left off later).";
-            $message = $message.' '.$extraWarning;
+            $message .= " Your ranking has {$songCount} songs, it may take > ~30 minutes to complete the ranking. (You can always start it now and pick back up where you left off later).";
         }
 
-        $this->js("
-            window.confirm({
-                title: 'Begin Ranking?',
-                message: '{$message}',
-                confirmText: 'Let\\'s Go!',
-                componentId: '{$this->getId()}',
-                action: 'beginRanking'
-            });
-        ");
+        $this->confirmAction(
+            action: 'beginRanking',
+            title: 'Begin Ranking?',
+            message: $message,
+            confirmText: "Let's Go!",
+        );
     }
 
     public function updatedFormCommentsEnabled($value): void
@@ -42,6 +42,53 @@ trait HasRankingForm
         if (! $value || $value === '0') {
             $this->form->comments_replies_enabled = '0';
         }
+    }
+
+    public function rankingLimitReached(): bool
+    {
+        return ! Auth::user()->canCreateRanking();
+    }
+
+    /**
+     * Backstop for the disabled search box: a request can still arrive from a
+     * stale page, or from a session that crossed the limit in another tab.
+     */
+    protected function ensureCanCreateRanking(): bool
+    {
+        if (! $this->rankingLimitReached()) {
+            return true;
+        }
+
+        $this->flashRankingLimitReached(Auth::user()->rankingLimit());
+
+        return false;
+    }
+
+    /**
+     * Checked when the confirmation opens and again when it is accepted:
+     * beginRanking() is public, so it can be called without the confirmation.
+     */
+    protected function ensureRankingCanBegin(): bool
+    {
+        if (! $this->ensureCanCreateRanking()) {
+            return false;
+        }
+
+        $songCount = $this->rankableTracks()->count();
+
+        if ($songCount < Ranking::MIN_SONGS) {
+            $this->tooFewTracks(Ranking::MIN_SONGS);
+
+            return false;
+        }
+
+        if ($songCount > Ranking::MAX_SONGS) {
+            $this->tooManyTracks($songCount, Ranking::MAX_SONGS);
+
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -65,6 +112,7 @@ trait HasRankingForm
             'form.is_public',
             'form.comments_enabled',
             'form.comments_replies_enabled',
+            'crateIds',
         ]);
     }
 }

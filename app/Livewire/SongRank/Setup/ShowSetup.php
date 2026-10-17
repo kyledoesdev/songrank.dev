@@ -34,6 +34,10 @@ class ShowSetup extends Component
 
     public function search(): void
     {
+        if (! $this->ensureCanCreateRanking()) {
+            return;
+        }
+
         $this->resetTrackList();
         $this->selectedShow = [];
 
@@ -59,10 +63,16 @@ class ShowSetup extends Component
 
     public function beginRanking(): void
     {
+        if (! $this->ensureRankingCanBegin()) {
+            return;
+        }
+
         $ranking = (new StoreShowRanking)->handle(Auth::user(), [
             ...$this->rankingAttributes(),
             'show' => $this->selectedShow,
         ]);
+
+        $this->fileIntoCrates($ranking);
 
         $this->redirect(route('ranking', ['id' => $ranking->getKey()]));
     }

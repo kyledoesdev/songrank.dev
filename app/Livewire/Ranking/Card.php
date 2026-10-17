@@ -4,6 +4,7 @@ namespace App\Livewire\Ranking;
 
 use App\Actions\Rankings\DestroyRanking;
 use App\Exports\SongExport;
+use App\Livewire\Concerns\InteractsWithAlerts;
 use App\Models\Ranking;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -12,6 +13,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class Card extends Component
 {
+    use InteractsWithAlerts;
+
     public Ranking $ranking;
 
     public function render()
@@ -27,11 +30,7 @@ class Card extends Component
 
         $this->dispatch('rankings-updated');
 
-        $this->js("
-            window.flash({
-                title: 'Ranking Deleted!',
-            });
-        ");
+        $this->flash('Ranking Deleted!');
     }
 
     public function download(): BinaryFileResponse

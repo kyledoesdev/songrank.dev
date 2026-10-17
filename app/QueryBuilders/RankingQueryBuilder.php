@@ -37,6 +37,29 @@ class RankingQueryBuilder extends Builder
             ->orderByRaw('completed_at IS NULL DESC, completed_at DESC');
     }
 
+    public function forDashboard(User $user): static
+    {
+        return $this->newQuery()
+            ->where('user_id', $user->getKey())
+            ->with('user', 'source')
+            ->with('songs', fn ($query) => $query->where('rank', 1))
+            ->withCount('songs')
+            ->orderByRaw('completed_at IS NULL DESC, completed_at DESC');
+    }
+
+    /**
+     * Every ranking the user has, finished or not, to file into a crate.
+     */
+    public function forAddItemsModal(User $user, ?string $search = null): static
+    {
+        return $this->newQuery()
+            ->where('user_id', $user->getKey())
+            ->when($search, fn (Builder $query, string $search) => $query->whereNameOrSourceLike($search))
+            ->with('source')
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id');
+    }
+
     public function forNewsletter(): static
     {
         return $this->newQuery()
@@ -73,6 +96,13 @@ class RankingQueryBuilder extends Builder
         return $this->newQuery()->public()->completed()->count();
     }
 
+    public function whereNameOrSourceLike(string $search): static
+    {
+        return $this->where(fn (Builder $query) => $query
+            ->where('name', 'LIKE', "%{$search}%")
+            ->orWhere(fn (Builder $query) => $query->whereSourceNameLike($search)));
+    }
+
     public function whereSourceNameLike(string $search): static
     {
         return $this->whereHasMorph('source', [Artist::class, Playlist::class, Show::class],
@@ -101,6 +131,11 @@ class RankingQueryBuilder extends Builder
     public function public(): static
     {
         return $this->where('is_public', true);
+    }
+
+    public function inProgress(): static
+    {
+        return $this->where('is_ranked', false);
     }
 
     public function completed(): static

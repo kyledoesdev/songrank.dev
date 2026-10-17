@@ -14,7 +14,9 @@ class NewUsersWidget extends ChartWidget
 
     protected ?string $heading = 'New Users';
 
-    protected static ?int $sort = 2;
+    protected int|string|array $columnSpan = 2;
+
+    protected ?string $maxHeight = '300px';
 
     protected function getData(): array
     {

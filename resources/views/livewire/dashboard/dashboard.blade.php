@@ -1,5 +1,11 @@
 <div class="mt-4 space-y-6">
-    <livewire:SongRank.song-rank-setup />
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <livewire:SongRank.ranking-panel />
 
-    <livewire:Dashboard.in-process-rankings />
+        <livewire:Tierlist.tierlist-panel />
+
+        <livewire:Reviews.review-panel />
+    </div>
+
+    <livewire:Dashboard.in-progress />
 </div>

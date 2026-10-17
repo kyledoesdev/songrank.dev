@@ -12,15 +12,15 @@
             {{-- Cover + Spotify Logo --}}
             <td width="112" style="vertical-align: top; padding-right: 16px;">
                 <img
-                    src="{{ $ranking->source?->cover() }}"
+                    src="{{ $ranking->source->cover() }}"
                     width="112"
                     height="112"
                     style="border-radius: 12px; border: 1px solid #e4e4e7; display: block; object-fit: cover;"
-                    alt="{{ $ranking->source?->name() }}"
+                    alt="{{ $ranking->source->name() }}"
                 >
                 <div style="margin-top: 8px;">
                     <a
-                        href="{{ $ranking->source?->spotifyUrl() }}"
+                        href="{{ $ranking->source->spotifyUrl() }}"
                         target="_blank"
                         style="display: inline-flex; align-items: center; gap: 4px; border-bottom: 2px solid #06D6A0; padding-bottom: 2px; text-decoration: none; color: #06D6A0; font-size: 12px;"
                     >
@@ -41,7 +41,7 @@
 
                 {{-- Source Name --}}
                 <div style="font-size: 14px; color: #71717a; margin-bottom: 12px;">
-                    {{ $ranking->source?->name() }}
+                    {{ $ranking->source->name() }}
                 </div>
 
                 {{-- Stats Pills --}}

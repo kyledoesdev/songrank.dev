@@ -19,7 +19,7 @@
                 </h5>
                 @if ($song->featured_artist)
                     <p class="mx-2 mb-0.5 text-[10px] sm:text-xs text-zinc-500">
-                        (feat. {{ $ranking->source?->name() }})
+                        (feat. {{ $ranking->source->name() }})
                     </p>
                 @endif
                 @unless ($ranking->isShowType())

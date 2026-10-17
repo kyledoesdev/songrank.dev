@@ -14,8 +14,6 @@ class CommentsCreatedWidget extends ChartWidget
 
     protected ?string $heading = 'Comment Stats';
 
-    protected static ?int $sort = 6;
-
     protected function getData(): array
     {
         $trendConfig = $this->getTrendConfig();

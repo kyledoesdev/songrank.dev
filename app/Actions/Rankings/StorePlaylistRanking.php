@@ -2,6 +2,8 @@
 
 namespace App\Actions\Rankings;
 
+use App\Actions\MaskProfanity;
+use App\Actions\Playlists\ResolvePlaylist;
 use App\Enums\RankingType;
 use App\Models\Artist;
 use App\Models\Playlist;
@@ -17,16 +19,7 @@ final class StorePlaylistRanking
     public function handle(User $user, array $attributes): Ranking
     {
         return DB::transaction(function () use ($user, $attributes) {
-            $playlist = Playlist::updateOrCreate([
-                'playlist_id' => data_get($attributes, 'playlist.id'),
-            ], [
-                'creator_id' => data_get($attributes, 'playlist.creator.id'),
-                'creator_name' => data_get($attributes, 'playlist.creator.display_name'),
-                'name' => data_get($attributes, 'playlist.name'),
-                'description' => data_get($attributes, 'playlist.description'),
-                'cover' => data_get($attributes, 'playlist.cover'),
-                'track_count' => data_get($attributes, 'playlist.track_count'),
-            ]);
+            $playlist = (new ResolvePlaylist)->handle($attributes['playlist']);
 
             $name = $attributes['ranking_name'] === '' || is_null($attributes['ranking_name'])
                 ? $playlist->name.' List'
@@ -36,7 +29,7 @@ final class StorePlaylistRanking
                 'type' => RankingType::PLAYLIST->value,
                 'source_id' => $playlist->getKey(),
                 'user_id' => $user->getKey(),
-                'name' => Str::limit($name, 30),
+                'name' => Str::limit((new MaskProfanity)->handle($name, keep: $playlist->name), 30),
                 'is_public' => $attributes['is_public'] ?? false,
                 'comments_enabled' => $attributes['comments_enabled'] ?? false,
                 'comments_replies_enabled' => $attributes['comments_replies_enabled'] ?? false,

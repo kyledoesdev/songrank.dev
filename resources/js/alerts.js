@@ -3,9 +3,10 @@ import Swal from 'sweetalert2';
 export default class LivewireSweetAlert {
     constructor() {
         this.flash_styles = {
-            'confirm-btn': 'btn-primary m-2 p-2 cursor-pointer shadow-md',
-            'cancel-btn': 'btn-secondary m-2 p-2 cursor-pointer shadow-md',
-            'redirect-btn': 'btn-primary m-2 p-2 cursor-pointer shadow-md',
+            'confirm-btn': 'btn-primary m-2 p-2',
+            'destructive-btn': 'btn-danger m-2 p-2',
+            'cancel-btn': 'btn-secondary text-zinc-800 m-2 p-2',
+            'redirect-btn': 'btn-primary m-2 p-2',
         };
 
         window.Swal = Swal;
@@ -14,13 +15,11 @@ export default class LivewireSweetAlert {
         window.flashSupport = this.flashSupport.bind(this);
     }
 
-    async confirm({ title, message, confirmText, componentId = null, entityId = null, action = null, styles = {}}) {
-        const confirmStyles = {
-            'confirm-btn': styles['confirm-btn'] || 'btn-primary m-2 p-2',
-            'cancel-btn': styles['cancel-btn'] || 'btn-secondary m-2 p-2'
-        };
-    
-        const result = await this.swal(confirmStyles).fire({
+    async confirm({ title, message, confirmText, componentId = null, entityId = null, action = null, destructive = false }) {
+        const result = await this.swal({
+            ...this.flash_styles,
+            'confirm-btn': this.flash_styles[destructive ? 'destructive-btn' : 'confirm-btn'],
+        }).fire({
             title: title,
             text: message,
             icon: 'info',

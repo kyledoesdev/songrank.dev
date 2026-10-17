@@ -12,7 +12,7 @@ use Livewire\Component;
 
 class SongRankProcess extends Component
 {
-    private const MAX_UNDO_HISTORY = 10;
+    public const MAX_UNDO_HISTORY = 10;
 
     public Ranking $ranking;
 
@@ -60,26 +60,7 @@ class SongRankProcess extends Component
             ->pluck('id')
             ->toArray();
 
-        $songsCount = count($songIds);
-
-        $this->sortingState->update([
-            'sorting_state' => [
-                'stack' => [
-                    [
-                        'type' => 'sort',
-                        'ids' => $songIds,
-                        'start' => 0,
-                        'end' => $songsCount - 1,
-                        'depth' => 0,
-                    ],
-                ],
-                'current_merge' => null,
-                'completed_segments' => [],
-                'decision_history' => [],
-            ],
-            'aprox_comparisons' => $songsCount > 1 ? intval($songsCount * log($songsCount, 2)) : 0,
-            'completed_comparisons' => 0,
-        ]);
+        $this->sortingState->update(RankingSortingState::startingWith($songIds));
     }
 
     protected function continueSort(): void

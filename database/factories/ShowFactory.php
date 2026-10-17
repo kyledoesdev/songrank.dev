@@ -17,7 +17,7 @@ class ShowFactory extends Factory
             'publisher' => fake()->company(),
             'name' => fake()->sentence(1),
             'description' => fake()->sentence(1),
-            'cover' => fake()->imageUrl(200, 200, 'show', true),
+            'cover' => 'https://example.test/shows/'.str()->random(16).'.png',
             'episode_count' => rand(5, 100),
             'data' => null,
         ];

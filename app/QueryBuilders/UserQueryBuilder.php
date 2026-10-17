@@ -16,6 +16,13 @@ class UserQueryBuilder extends Builder
             ->limit($limit);
     }
 
+    public function forGrantPicker(string $search): static
+    {
+        return $this->whereAny(['name', 'email', 'spotify_id'], 'like', "%{$search}%")
+            ->orderBy('name')
+            ->limit(25);
+    }
+
     public function wherePreviouslyDeleted(string $spotifyId): static
     {
         return $this->newQuery()

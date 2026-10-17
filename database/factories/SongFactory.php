@@ -21,7 +21,7 @@ class SongFactory extends Factory
             'spotify_song_id' => str()->random(16),
             'title' => fake()->sentence(rand(1, 5)),
             'rank' => 0,
-            'cover' => fake()->imageUrl(200, 200, 'song', true),
+            'cover' => 'https://example.test/songs/'.str()->random(16).'.png',
             'uuid' => Str::uuid(),
         ];
     }

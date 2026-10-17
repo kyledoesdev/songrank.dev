@@ -1,7 +1,7 @@
 <?php
 
 use App\Actions\CompleteSongRankProcess;
-use App\Livewire\Explorer;
+use App\Livewire\Explorer\RankingsFeed;
 use App\Models\Artist;
 use App\Models\Playlist;
 use App\Models\Ranking;
@@ -15,45 +15,45 @@ describe('ranking visibility', function () {
     test('public completed rankings are visible', function () {
         $ranking = publicCompletedRanking();
 
-        get(route('explore'))
-            ->assertOk()
-            ->assertSee($ranking->name);
+        get(route('explore'))->assertOk();
+
+        expect(exploredRankingKeys())->toBe([$ranking->getKey()]);
     });
 
     test('public uncompleted rankings are hidden', function () {
-        $ranking = Ranking::factory()->create([
+        $public = publicCompletedRanking();
+
+        Ranking::factory()->create([
             'is_public' => true,
             'is_ranked' => false,
             'completed_at' => null,
         ]);
 
-        get(route('explore'))
-            ->assertOk()
-            ->assertDontSee($ranking->name);
+        expect(exploredRankingKeys())->toBe([$public->getKey()]);
     });
 
     test('private completed rankings are hidden', function () {
-        $ranking = Ranking::factory()->create([
+        $public = publicCompletedRanking();
+
+        Ranking::factory()->create([
             'is_public' => false,
             'is_ranked' => true,
             'completed_at' => now(),
         ]);
 
-        get(route('explore'))
-            ->assertOk()
-            ->assertDontSee($ranking->name);
+        expect(exploredRankingKeys())->toBe([$public->getKey()]);
     });
 
     test('private uncompleted rankings are hidden', function () {
-        $ranking = Ranking::factory()->create([
+        $public = publicCompletedRanking();
+
+        Ranking::factory()->create([
             'is_public' => false,
             'is_ranked' => false,
             'completed_at' => null,
         ]);
 
-        get(route('explore'))
-            ->assertOk()
-            ->assertDontSee($ranking->name);
+        expect(exploredRankingKeys())->toBe([$public->getKey()]);
     });
 });
 
@@ -74,13 +74,12 @@ describe('explorable rankings counter', function () {
             'completed_at' => null,
         ]);
 
-        get(route('explore'))
-            ->assertOk()
-            ->assertSee('2 completed rankings to explore');
+        Livewire::test(RankingsFeed::class)
+            ->assertViewHas('totalRankings', 2);
     });
 
     test('completing a ranking busts the counter cache', function () {
-        cache()->put('explore:total-rankings', 99);
+        cache()->put(Ranking::EXPLORE_COUNT_CACHE_KEY, 99);
 
         $ranking = Ranking::factory()->create([
             'is_public' => true,
@@ -94,7 +93,7 @@ describe('explorable rankings counter', function () {
             'finalSongIds' => $ranking->songs()->pluck('id')->all(),
         ]);
 
-        expect(cache()->has('explore:total-rankings'))->toBeFalse();
+        expect(cache()->has(Ranking::EXPLORE_COUNT_CACHE_KEY))->toBeFalse();
     });
 });
 
@@ -105,13 +104,9 @@ describe('searching', function () {
 
         $matchingRanking = publicCompletedRanking($match, ['name' => 'Matching Ranking']);
 
-        $otherRanking = publicCompletedRanking($other, ['name' => 'Other Ranking']);
+        publicCompletedRanking($other, ['name' => 'Other Ranking']);
 
-        Livewire::test(Explorer::class)
-            ->set('search', 'Matching Artist')
-            ->call('performSearch')
-            ->assertSee($matchingRanking->name)
-            ->assertDontSee($otherRanking->name);
+        expect(exploredRankingKeys('Matching Artist'))->toBe([$matchingRanking->getKey()]);
     });
 
     test('can search rankings by playlist name', function () {
@@ -119,13 +114,9 @@ describe('searching', function () {
 
         $matchingRanking = publicCompletedRanking($playlist, ['name' => 'Matching Playlist Ranking']);
 
-        $otherRanking = publicCompletedRanking(attributes: ['name' => 'Other Ranking']);
+        publicCompletedRanking(attributes: ['name' => 'Other Ranking']);
 
-        Livewire::test(Explorer::class)
-            ->set('search', 'Chill Vibes')
-            ->call('performSearch')
-            ->assertSee($matchingRanking->name)
-            ->assertDontSee($otherRanking->name);
+        expect(exploredRankingKeys('Chill Vibes'))->toBe([$matchingRanking->getKey()]);
     });
 
     test('can search rankings by show name', function () {
@@ -133,12 +124,24 @@ describe('searching', function () {
 
         $matchingRanking = publicCompletedRanking($show, ['name' => 'Matching Show Ranking']);
 
-        $otherRanking = publicCompletedRanking(attributes: ['name' => 'Other Ranking']);
+        publicCompletedRanking(attributes: ['name' => 'Other Ranking']);
 
-        Livewire::test(Explorer::class)
-            ->set('search', 'True Crime Weekly')
-            ->call('performSearch')
-            ->assertSee($matchingRanking->name)
-            ->assertDontSee($otherRanking->name);
+        expect(exploredRankingKeys('True Crime Weekly'))->toBe([$matchingRanking->getKey()]);
     });
 });
+
+/**
+ * The rankings the explore feed lists, after searching for $search when given.
+ *
+ * @return list<int>
+ */
+function exploredRankingKeys(?string $search = null): array
+{
+    $feed = Livewire::test(RankingsFeed::class);
+
+    if (filled($search)) {
+        $feed->set('search', $search)->call('performSearch');
+    }
+
+    return $feed->instance()->rankings->modelKeys();
+}

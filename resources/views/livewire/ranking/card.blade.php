@@ -1,5 +1,5 @@
 <div
-    class="relative"
+    class="relative h-full"
     :key="'card-'.$ranking->getKey()"
 >
     <x-rankings.card :ranking="$ranking" />
@@ -23,9 +23,7 @@
                     confirmText: 'Delete',
                     componentId: '{{ $this->getId() }}',
                     action: 'destroy',
-                    styles: {
-                        'confirm-btn': 'btn-danger m-2 p-2 text-white'
-                    }
+                    destructive: true
                 })"
                 title="Delete Ranking"
             >

@@ -4,7 +4,7 @@ namespace App\Filament\Resources\Rankings;
 
 use App\Enums\RankingType;
 use App\Filament\Concerns\HasCachedNavigationBadge;
-use App\Filament\Resources\Rankings\Filters\InProcessFilter;
+use App\Filament\Filters\HideIncompleteFilter;
 use App\Filament\Resources\Rankings\Pages\EditRanking;
 use App\Filament\Resources\Rankings\Pages\ListRankings;
 use App\Filament\Resources\Rankings\Pages\ViewRanking;
@@ -38,7 +38,10 @@ class RankingResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::ListBullet;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Song Rank';
+    public static function getNavigationGroup(): string|UnitEnum|null
+    {
+        return config('app.name');
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -62,7 +65,7 @@ class RankingResource extends Resource
     {
         return RankingTable::configure($table)
             ->filters([
-                InProcessFilter::make(),
+                HideIncompleteFilter::make(),
                 TrashedFilter::make(),
             ])
             ->recordActions([
@@ -102,6 +105,7 @@ class RankingResource extends Resource
                     ]),
 
                 Section::make('Artist Details')
+                    ->key('artist')
                     ->visible(fn (Ranking $record): bool => $record->type === RankingType::ARTIST)
                     ->schema([
                         TextEntry::make('source.artist_name')
@@ -112,6 +116,7 @@ class RankingResource extends Resource
                     ]),
 
                 Section::make('Playlist Details')
+                    ->key('playlist')
                     ->visible(fn (Ranking $record): bool => $record->type === RankingType::PLAYLIST)
                     ->schema([
                         TextEntry::make('source.name')
@@ -123,6 +128,7 @@ class RankingResource extends Resource
                     ]),
 
                 Section::make('Show Details')
+                    ->key('show')
                     ->visible(fn (Ranking $record): bool => $record->type === RankingType::SHOW)
                     ->schema([
                         TextEntry::make('source.name')

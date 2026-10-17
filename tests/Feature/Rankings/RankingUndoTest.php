@@ -2,7 +2,6 @@
 
 use App\Livewire\SongRank\SongRankProcess;
 use App\Models\Artist;
-use App\Models\RankingSortingState;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -16,9 +15,7 @@ describe('undo last choice', function () {
         $user = User::factory()->createOne();
         $ranking = algorithmRanking($user, 'Undo Test', expectedSongTitles(5));
 
-        $sortingState = RankingSortingState::create([
-            'ranking_id' => $ranking->getKey(),
-        ]);
+        $sortingState = sortingStateInOrder($ranking);
 
         $component = Livewire::actingAs($user)
             ->test(SongRankProcess::class, [
@@ -49,9 +46,7 @@ describe('undo last choice', function () {
         $user = User::factory()->createOne();
         $ranking = algorithmRanking($user, 'No Undo Test', expectedSongTitles(5));
 
-        $sortingState = RankingSortingState::create([
-            'ranking_id' => $ranking->getKey(),
-        ]);
+        $sortingState = sortingStateInOrder($ranking);
 
         $component = Livewire::actingAs($user)
             ->test(SongRankProcess::class, [
@@ -72,9 +67,7 @@ describe('undo last choice', function () {
         $user = User::factory()->createOne();
         $ranking = algorithmRanking($user, 'Exhaust Undo Test', expectedSongTitles(5));
 
-        $sortingState = RankingSortingState::create([
-            'ranking_id' => $ranking->getKey(),
-        ]);
+        $sortingState = sortingStateInOrder($ranking);
 
         $component = Livewire::actingAs($user)
             ->test(SongRankProcess::class, [
@@ -102,9 +95,7 @@ describe('undo last choice', function () {
         $expectedSongTitles = expectedSongTitles(5);
         $ranking = algorithmRanking($user, 'Undo Then Complete', $expectedSongTitles);
 
-        $sortingState = RankingSortingState::create([
-            'ranking_id' => $ranking->getKey(),
-        ]);
+        $sortingState = sortingStateInOrder($ranking);
 
         $component = Livewire::actingAs($user)
             ->test(SongRankProcess::class, [
@@ -130,11 +121,9 @@ describe('undo last choice', function () {
 
     test('decision history respects the undo cap', function () {
         $user = User::factory()->createOne();
-        $ranking = algorithmRanking($user, 'Undo Cap Test', expectedSongTitles(10));
+        $ranking = algorithmRanking($user, 'Undo Cap Test', expectedSongTitles(20));
 
-        $sortingState = RankingSortingState::create([
-            'ranking_id' => $ranking->getKey(),
-        ]);
+        $sortingState = sortingStateInOrder($ranking);
 
         $component = Livewire::actingAs($user)
             ->test(SongRankProcess::class, [
@@ -142,21 +131,18 @@ describe('undo last choice', function () {
                 'sortingState' => $sortingState,
             ]);
 
-        simulateRankingComparisons($component, maxComparisons: 15);
+        simulateRankingComparisons($component, maxComparisons: SongRankProcess::MAX_UNDO_HISTORY + 5);
 
         $sortingState->refresh();
-        $history = $sortingState->sorting_state['decision_history'] ?? [];
 
-        expect(count($history))->toBeLessThanOrEqual(10);
+        expect($sortingState->sorting_state['decision_history'])->toHaveCount(SongRankProcess::MAX_UNDO_HISTORY);
     });
 
     test('undo persists across sessions', function () {
         $user = User::factory()->createOne();
         $ranking = algorithmRanking($user, 'Undo Persist Test', expectedSongTitles(5));
 
-        $sortingState = RankingSortingState::create([
-            'ranking_id' => $ranking->getKey(),
-        ]);
+        $sortingState = sortingStateInOrder($ranking);
 
         $firstSession = Livewire::actingAs($user)
             ->test(SongRankProcess::class, [

@@ -33,13 +33,14 @@
 
         <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
             <p style="margin: 0 0 16px 0; color: #374151;">
-                Thanks for using Song Rank!<br>
+                Thanks for using {{ config('app.name') }}!<br>
                 {{ config('app.name') }}
             </p>
             
             <p style="font-size: 14px; color: #6b7280; margin: 0;">
                 You're receiving this because you have newsletter emails enabled in your preferences. 
-                You can <a href="{{ route('settings') }}" style="color: #3b82f6; text-decoration: none;">update your email preferences</a> anytime.
+                You can <a href="{{ route('settings') }}" style="color: #3b82f6; text-decoration: none;">update your email preferences</a>
+                or <a href="{{ $notifiable->newsletterUnsubscribeUrl() }}" style="color: #3b82f6; text-decoration: none;">unsubscribe</a> anytime.
             </p>
         </div>
     </div>

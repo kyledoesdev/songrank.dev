@@ -55,6 +55,14 @@ describe('editing rankings', function () {
         expect($ranking->is_public)->toBeTrue();
     });
 
+    test('non-owner cannot view the edit page of a public ranking', function () {
+        $ranking = publicCompletedRanking();
+
+        actingAs(User::factory()->createOne())
+            ->get(route('rank.edit', ['id' => $ranking->getKey()]))
+            ->assertNotFound();
+    });
+
     test('non-owner cannot update name and visibility', function () {
         $user = User::factory()->createOne();
 
@@ -75,12 +83,31 @@ describe('deleting rankings', function () {
         $ranking = $user->rankings->first();
 
         expect($ranking->deleted_at)->toBeNull();
-        expect(Song::where('ranking_id', $ranking->getKey())->count())->toBe(10);
+        expect(Song::where('ranking_id', $ranking->getKey())->count())->toBeGreaterThan(0);
 
         Livewire::actingAs($user)
             ->test(ProfileRankingCard::class, ['ranking' => $ranking])
             ->call('destroy')
             ->assertDispatched('rankings-updated');
+
+        $ranking->refresh();
+
+        expect($ranking->deleted_at)->not->toBeNull();
+        expect(Song::where('ranking_id', $ranking->getKey())->count())->toBe(0);
+    });
+
+    test('owner can delete their ranking from the edit page', function () {
+        $user = User::factory()
+            ->has(Ranking::factory())
+            ->createOne();
+
+        $ranking = $user->rankings->first();
+
+        Livewire::actingAs($user)
+            ->test(EditRanking::class, ['id' => $ranking->getKey()])
+            ->call('destroy')
+            ->assertRedirect(route('profile', ['id' => $user->spotify_id]))
+            ->assertSessionHas('success');
 
         $ranking->refresh();
 
@@ -95,6 +122,7 @@ describe('deleting rankings', function () {
 
         $nonOwner = User::factory()->createOne();
         $ranking = $owner->rankings->first();
+        $songs = $ranking->songs()->count();
 
         Livewire::actingAs($nonOwner)
             ->test(ProfileRankingCard::class, ['ranking' => $ranking])
@@ -104,6 +132,6 @@ describe('deleting rankings', function () {
         $ranking->refresh();
 
         expect($ranking->deleted_at)->toBeNull();
-        expect(Song::where('ranking_id', $ranking->getKey())->count())->toBe(10);
+        expect(Song::where('ranking_id', $ranking->getKey())->count())->toBe($songs);
     });
 });

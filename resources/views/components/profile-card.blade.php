@@ -38,10 +38,36 @@
                     </div>
                     <div>
                         <p class="text-sm font-medium text-gray-700">Rankings</p>
-                        <p class="text-xs text-gray-500">{{ number_format($user->rankings->where('is_ranked', true)->count()) }}</p>
+                        <p class="text-xs text-gray-500">{{ number_format($user->completedRankingCount()) }}</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2 py-2 px-3 bg-gray-50 rounded-lg flex-shrink-0">
+                    <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                        <i class="fa-solid fa-table-cells-large text-sm text-purple-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-700">Tier Lists</p>
+                        <p class="text-xs text-gray-500">{{ number_format($user->completedTierlistCount()) }}</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2 py-2 px-3 bg-gray-50 rounded-lg flex-shrink-0">
+                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fa-solid fa-pen-nib text-sm text-blue-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-700">Reviews</p>
+                        <p class="text-xs text-gray-500">{{ number_format($user->publishedReviewCount()) }}</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    @if ($user->hasPublicCatalog())
+        <x-card.footer class="flex justify-end rounded-b-lg">
+            <livewire:catalog.catalog-modal :user="$user" wire:key="catalog-modal-{{ $user->getKey() }}" />
+        </x-card.footer>
+    @endif
 </div>

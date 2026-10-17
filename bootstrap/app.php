@@ -32,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->preventRequestForgery(except: [
             'support-bubble',
+            'newsletter/*/unsubscribe',
         ]);
     })
     ->withSchedule(function (Schedule $schedule) {})

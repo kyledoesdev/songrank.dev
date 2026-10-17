@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\EmailTemplate;
+use App\Notifications\Concerns\OffersNewsletterUnsubscribe;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -10,6 +11,7 @@ use Illuminate\Notifications\Notification;
 
 class EmailBlastNotification extends Notification implements ShouldQueue
 {
+    use OffersNewsletterUnsubscribe;
     use Queueable;
 
     public function __construct(private EmailTemplate $emailTemplate) {}
@@ -21,10 +23,13 @@ class EmailBlastNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)->markdown('emails.email-blast', [
-            'notifiable' => $notifiable,
-            'emailTemplate' => $this->emailTemplate,
-        ])->subject($this->emailTemplate->subject);
+        return (new MailMessage)
+            ->subject($this->emailTemplate->subject)
+            ->markdown('emails.email-blast', [
+                'notifiable' => $notifiable,
+                'emailTemplate' => $this->emailTemplate,
+            ])
+            ->withSymfonyMessage($this->listUnsubscribeHeaders($notifiable));
     }
 
     /**

@@ -38,6 +38,7 @@
                                     href="{{ $notification->actionUrl() }}"
                                     class="btn-secondary text-xs"
                                     target="_blank"
+                                    aria-label="Open"
                                     {{ is_null($notification->actionUrl()) ? 'disabled' : '' }}
                                 >
                                     <i class="fa fa-eye"></i>
@@ -45,6 +46,7 @@
                                 <button
                                     wire:click="$dispatch('show-notification-details', { notificationId: '{{ $notification->id }}' })"
                                     class="btn-helper text-xs"
+                                    aria-label="Details"
                                 >
                                     <i class="fa fa-list"></i>
                                 </button>

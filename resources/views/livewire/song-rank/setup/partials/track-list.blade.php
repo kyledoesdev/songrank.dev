@@ -6,7 +6,6 @@
     $toggle ??= null;
     $searchPlaceholder ??= 'Search tracks...';
     $scroller ??= 'card-scroller';
-    $albums ??= null;
 
     $tracks = collect($tracks);
 
@@ -54,7 +53,7 @@
     "
     class="border border-gray-200 bg-white rounded-lg overflow-hidden"
 >
-    <div class="px-4 py-3 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+    <x-card.header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         @if (filled($title))
             <div class="flex items-center gap-3">
                 <h4 class="font-semibold text-gray-800">
@@ -105,7 +104,7 @@
                 </button>
             @endif
         </div>
-    </div>
+    </x-card.header>
 
     <div class="p-4">
         <div class="grid grid-cols-1 lg:grid-cols-2 lg:gap-1 {{ $scroller }}">
@@ -136,12 +135,4 @@
             No {{ $type->itemLabel() }} match your search.
         </p>
     </div>
-
-    @include('livewire.song-rank.setup.partials.album-filters', ['albums' => $albums])
-
-    @if (count($this->removedTrackUuids) > 0)
-        @include('livewire.song-rank.setup.partials.removed-tracks', [
-            'removedTracks' => $this->removedTracks(),
-        ])
-    @endif
 </div>

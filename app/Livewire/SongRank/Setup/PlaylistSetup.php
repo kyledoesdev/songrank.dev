@@ -34,6 +34,10 @@ class PlaylistSetup extends Component
 
     public function search(): void
     {
+        if (! $this->ensureCanCreateRanking()) {
+            return;
+        }
+
         $this->resetTrackList();
         $this->selectedPlaylist = [];
 
@@ -67,10 +71,16 @@ class PlaylistSetup extends Component
 
     public function beginRanking(): void
     {
+        if (! $this->ensureRankingCanBegin()) {
+            return;
+        }
+
         $ranking = (new StorePlaylistRanking)->handle(Auth::user(), [
             ...$this->rankingAttributes(),
             'playlist' => $this->selectedPlaylist,
         ]);
+
+        $this->fileIntoCrates($ranking);
 
         $this->redirect(route('ranking', ['id' => $ranking->getKey()]));
     }

@@ -3,7 +3,10 @@
 namespace App\Livewire\Profile;
 
 use App\Models\Ranking;
+use App\Models\Review;
+use App\Models\Tierlist;
 use App\Models\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Laravel\Head\Facades\Head;
 use Livewire\Attributes\Computed;
@@ -19,14 +22,20 @@ class Profile extends Component
         $this->user = User::where('spotify_id', $id)->firstOrFail();
 
         Head::title($this->possessiveName().' Profile');
-
-        session()->put(['profile_name' => $this->user->name]);
     }
 
     public function render()
     {
+        $hasRankings = $this->rankings->isNotEmpty();
+        $hasTierlists = $this->tierlists->isNotEmpty();
+        $hasReviews = $this->reviews->isNotEmpty();
+
         return view('livewire.profile.profile', [
             'name' => $this->possessiveName(),
+            'hasRankings' => $hasRankings,
+            'hasTierlists' => $hasTierlists,
+            'hasReviews' => $hasReviews,
+            'showTabs' => collect([$hasRankings, $hasTierlists, $hasReviews])->filter()->count() > 1,
         ]);
     }
 
@@ -39,9 +48,27 @@ class Profile extends Component
 
     #[Computed]
     #[On('rankings-updated')]
-    public function rankings()
+    public function rankings(): Collection
     {
         return Ranking::query()
+            ->forProfilePage($this->user)
+            ->get();
+    }
+
+    #[Computed]
+    #[On('reviews-updated')]
+    public function reviews(): Collection
+    {
+        return Review::query()
+            ->forProfilePage($this->user)
+            ->get();
+    }
+
+    #[Computed]
+    #[On('tierlists-updated')]
+    public function tierlists(): Collection
+    {
+        return Tierlist::query()
             ->forProfilePage($this->user)
             ->get();
     }

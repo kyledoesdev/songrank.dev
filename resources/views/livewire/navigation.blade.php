@@ -31,11 +31,11 @@
             style="display: none;"
         >
             <div class="flex items-center justify-between h-16 px-4 border-b">
-                <a href="{{ auth()->check() ? route('dashboard') : route('welcome') }}" class="flex items-center">
-                    <img src="/images/logo.png" alt="Song Rank Logo" class="h-8 w-8 rounded-lg" />
+                <a href="{{ route('welcome') }}" class="flex items-center">
+                    <img src="{{ logo() }}" alt="{{ config('app.name') }} Logo" class="h-8 w-8 rounded-lg" />
                     <span class="text-sm font-medium text-zinc-800 ml-2">{{ config('app.name') }}</span>
                 </a>
-                <button x-on:click="sidebarOpen = false" class="text-gray-500 hover:text-gray-700">
+                <button x-on:click="sidebarOpen = false" class="text-gray-500 hover:text-gray-700" aria-label="Close menu">
                     <i class="fa fa-times fa-lg"></i>
                 </button>
             </div>
@@ -54,12 +54,18 @@
                     </a>
                 @endif
                 @auth
-                    {{-- @if (Route::currentRouteName() != 'profile' || (Route::currentRouteName() == 'profile' && Route::current()->parameter('id') != auth()->user()?->spotify_id))
-                        <a href="{{ route('profile', ['id' => auth()->user()->spotify_id ]) }}" class="flex items-center px-3 py-2 text-sm font-medium text-zinc-800 rounded-md hover:bg-gray-100">
-                            <i class="fa fa-user mr-3"></i>
-                            Profile
+                    @if (Route::currentRouteName() !== 'catalog')
+                        <a href="{{ route('catalog') }}" class="flex items-center px-3 py-2 text-sm font-medium text-zinc-800 rounded-md hover:bg-gray-100">
+                            <i class="fa fa-box-archive mr-3"></i>
+                            Catalog
                         </a>
-                    @endif --}}
+                    @endif
+                    @if (Route::currentRouteName() != 'billing')
+                        <a href="{{ route('billing') }}" class="flex items-center px-3 py-2 text-sm font-medium text-zinc-800 rounded-md hover:bg-gray-100">
+                            <i class="fa fa-credit-card mr-3"></i>
+                            Billing
+                        </a>
+                    @endif
                     @if (Route::currentRouteName() != 'settings')
                         <a href="{{ route('settings') }}" class="flex items-center px-3 py-2 text-sm font-medium text-zinc-800 rounded-md hover:bg-gray-100">
                             <i class="fa fa-cog mr-3"></i>
@@ -89,14 +95,23 @@
         <div class="hidden lg:block w-full">
             <div class="flex justify-between items-center shadow-md bg-white rounded-lg py-4 px-4 w-full">
                 <div class="flex items-center">
-                    <a href="{{ auth()->check() ? route('dashboard') : route('welcome') }}" class="h-10 flex items-center me-4">
+                    <a href="{{ route('welcome') }}" class="h-10 flex items-center me-4">
                         <div class="flex items-center justify-center h-8 rounded-sm overflow-hidden shrink-0">
-                            <img src="/images/logo.png" alt="Song Rank Logo" class="h-8 w-8 rounded-2xl" />
-                        </div>
-                        <div class="text-sm font-medium truncate text-zinc-800 mx-2 cursor-pointer">
-                            {{ config('app.name') }}
+                            <img src="{{ logo() }}" alt="{{ config('app.name') }} Logo" class="h-8 w-8 rounded-2xl" />
                         </div>
                     </a>
+
+                    <a href="{{ auth()->check() ? route('dashboard') : route('welcome') }}" class="h-10 flex items-center me-4 rounded-lg cursor-pointer p-2 {{ Route::currentRouteName() == 'dashboard' ? 'bg-purple-100 border-b-3 border-purple-400' : 'bg-gray-100' }}">
+                        <i class="fa fa-house mr-1"></i>
+                        <span class="text-xs font-medium text-zinc-800 mx-1">Home</span>
+                    </a>
+
+                    @auth
+                        <a href="{{ route('catalog') }}" class="h-10 flex items-center me-4 rounded-lg cursor-pointer p-2 {{ in_array(Route::currentRouteName(), ['catalog', 'catalog.crate']) ? 'bg-purple-100 border-b-3 border-purple-400' : 'bg-gray-100' }}">
+                            <i class="fa fa-box-archive mr-1"></i>
+                            <span class="text-xs font-medium text-zinc-800 mx-1">Catalog</span>
+                        </a>
+                    @endauth
 
                     <a href="{{ route('explore') }}" class="h-10 flex items-center me-4 rounded-lg cursor-pointer p-2 {{ Route::currentRouteName() == 'explore' ? 'bg-purple-100 border-b-3 border-purple-400' : 'bg-gray-100' }}">
                         <i class="fa fa-compass mr-1"></i>
@@ -164,6 +179,12 @@
                                         Profile
                                     </a>
                                 @endif
+                                @if (Route::currentRouteName() != 'billing')
+                                    <a href="{{ route('billing') }}" class="flex items-center gap-2 w-full first-of-type:rounded-t-md last-of-type:rounded-b-md px-4 py-2.5 text-left text-sm hover:bg-gray-50 disabled:text-gray-500">
+                                        <i class="fa fa-solid fa-credit-card"></i>
+                                        Billing
+                                    </a>
+                                @endif
                                 @if (Route::currentRouteName() != 'settings')
                                     <a href="{{ route('settings') }}" class="flex items-center gap-2 w-full first-of-type:rounded-t-md last-of-type:rounded-b-md px-4 py-2.5 text-left text-sm hover:bg-gray-50 disabled:text-gray-500">
                                         <i class="fa fa-solid fa-cog"></i>
@@ -178,7 +199,7 @@
                         </div>
                     @else
                         <div>
-                            <a href="{{ route('welcome') }}" class="btn-primary p-2">
+                            <a href="{{ route('welcome') }}" class="btn-primary p-2" aria-label="Home">
                                 <i class="fa fa-house"></i>
                             </a>
                         </div>
@@ -189,12 +210,12 @@
 
         <!-- Mobile top bar with hamburger -->
         <div class="lg:hidden flex justify-between items-center shadow-md bg-white p-4 rounded-lg">
-            <button x-on:click="sidebarOpen = true" class="text-zinc-800">
+            <button x-on:click="sidebarOpen = true" class="text-zinc-800" aria-label="Open menu">
                 <i class="fa fa-bars fa-lg"></i>
             </button>
             
             <a href="{{ auth()->check() ? route('dashboard') : route('welcome') }}" class="flex items-center">
-                <img src="/images/logo.png" alt="Song Rank Logo" class="h-8 w-8 rounded-2xl" />
+                <img src="{{ logo() }}" alt="{{ config('app.name') }} Logo" class="h-8 w-8 rounded-2xl" />
                 <span class="text-sm font-medium text-zinc-800 ml-2">{{ config('app.name') }}</span>
             </a>
 
@@ -206,7 +227,7 @@
                     </a>
                 </div>
             @else
-                <a href="{{ route('welcome') }}" class="btn-primary p-2">
+                <a href="{{ route('welcome') }}" class="btn-primary p-2" aria-label="Home">
                     <i class="fa fa-house"></i>
                 </a>
             @endauth

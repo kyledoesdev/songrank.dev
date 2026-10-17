@@ -15,9 +15,9 @@ describe('source column', function () {
         Livewire::actingAs(kyle())
             ->test(ListRankings::class)
             ->assertCanSeeTableRecords([$artistRanking, $playlistRanking, $showRanking])
-            ->assertSee('Column Artist')
-            ->assertSee('Column Playlist')
-            ->assertSee('Column Show');
+            ->assertTableColumnStateSet('source', 'Column Artist', $artistRanking)
+            ->assertTableColumnStateSet('source', 'Column Playlist', $playlistRanking)
+            ->assertTableColumnStateSet('source', 'Column Show', $showRanking);
     });
 
     test('searching by artist name finds only the artist ranking', function () {

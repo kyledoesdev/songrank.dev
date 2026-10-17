@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Ranking;
 
+use App\Actions\Rankings\DestroyRanking;
 use App\Actions\Rankings\UpdateRanking;
+use App\Livewire\Concerns\InteractsWithAlerts;
 use App\Livewire\Forms\RankingForm;
 use App\Models\Ranking;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +12,8 @@ use Livewire\Component;
 
 class EditRanking extends Component
 {
+    use InteractsWithAlerts;
+
     public ?Ranking $ranking;
 
     public RankingForm $form;
@@ -20,9 +24,7 @@ class EditRanking extends Component
             ->with('songs')
             ->findOrFail($id);
 
-        if (! $this->ranking->canBeSeen()) {
-            abort(404);
-        }
+        abort_unless($this->ranking->canBeEdited(), 404);
 
         $this->form->fill([
             'name' => $this->ranking->name,
@@ -43,8 +45,26 @@ class EditRanking extends Component
 
         (new UpdateRanking)->handle(Auth::user(), $this->ranking, $this->form);
 
-        $this->js("window.flash({
-            title: 'Ranking Updated!',
-        })");
+        $this->flash('Ranking Updated!');
+    }
+
+    public function confirmDestroy(): void
+    {
+        $this->confirmAction(
+            action: 'destroy',
+            title: 'Delete this ranking?',
+            message: 'This will remove it from your profile and the explore feed. You cannot undo this.',
+            confirmText: 'Delete it',
+            destructive: true,
+        );
+    }
+
+    public function destroy(): void
+    {
+        (new DestroyRanking)->handle(Auth::user(), $this->ranking);
+
+        session()->flash('success', 'Ranking removed successfully.');
+
+        $this->redirect(route('profile', ['id' => Auth::user()->spotify_id]));
     }
 }

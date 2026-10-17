@@ -7,6 +7,17 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ArtistQueryBuilder extends Builder
 {
+    /**
+     * The name of an artist we hold a picture for, for search placeholders.
+     */
+    public function randomName(): ?string
+    {
+        return $this->newQuery()
+            ->whereNotNull('artist_img')
+            ->inRandomOrder()
+            ->first()?->artist_name;
+    }
+
     public function topArtists(int $limit = 10): static
     {
         return $this->newQuery()
@@ -28,6 +39,16 @@ class ArtistQueryBuilder extends Builder
             ->groupBy('rankings.source_id')
             ->orderBy('artist_rankings_count', 'desc')
             ->orderBy('artists.artist_name', 'asc')
+            ->limit($limit);
+    }
+
+    public function topReviewed(int $limit = 10): static
+    {
+        return $this->newQuery()
+            ->whereHas('reviews', fn (Builder $query) => $query->public()->published())
+            ->withCount(['reviews' => fn (Builder $query) => $query->public()->published()])
+            ->orderByDesc('reviews_count')
+            ->orderBy('artist_name')
             ->limit($limit);
     }
 }

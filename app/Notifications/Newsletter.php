@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\OffersNewsletterUnsubscribe;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -10,6 +11,7 @@ use Illuminate\Support\Collection;
 
 class Newsletter extends Notification implements ShouldQueue
 {
+    use OffersNewsletterUnsubscribe;
     use Queueable;
 
     public function __construct(private Collection $rankings) {}
@@ -32,10 +34,13 @@ class Newsletter extends Notification implements ShouldQueue
             $html .= view('components.emails.ranking-card', ['ranking' => $ranking])->render();
         }
 
-        return (new MailMessage)->view('emails.newsletter', [
-            'notifiable' => $notifiable,
-            'html' => $html,
-            'rankingsCount' => $this->rankings->count(),
-        ])->subject('Kyle from songrank.dev - Monthly Newsletter');
+        return (new MailMessage)
+            ->subject('Kyle from songrank.dev - Monthly Newsletter')
+            ->view('emails.newsletter', [
+                'notifiable' => $notifiable,
+                'html' => $html,
+                'rankingsCount' => $this->rankings->count(),
+            ])
+            ->withSymfonyMessage($this->listUnsubscribeHeaders($notifiable));
     }
 }

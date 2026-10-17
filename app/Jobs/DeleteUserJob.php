@@ -2,6 +2,10 @@
 
 namespace App\Jobs;
 
+use App\Actions\Reviews\DestroyReview;
+use App\Actions\Tierlists\DestroyTierlist;
+use App\Models\Review;
+use App\Models\Tierlist;
 use App\Models\User;
 use App\Notifications\DownloadDataNotification;
 use Illuminate\Bus\Queueable;
@@ -20,15 +24,18 @@ class DeleteUserJob implements ShouldQueue
 
     public function handle(): void
     {
+        /* First, so nothing deleted below has to take itself out of a crate one row at a time. */
+        $this->user->crates()->delete();
+
         /* Get the user's rankings. */
         $rankings = $this->user
             ->rankings()
             ->with('songs', 'source')
             ->get();
 
-        /* Send the user their data. */
+        /* Send the user their data now: queued, it would be rebuilt after the songs below are gone. */
         if (count($rankings)) {
-            Notification::send($this->user, new DownloadDataNotification($rankings));
+            Notification::sendNow($this->user, new DownloadDataNotification($rankings));
 
             /* Delete the user's rankings & their songs in 1 transaction to be safe */
             DB::transaction(function () use ($rankings) {
@@ -38,6 +45,12 @@ class DeleteUserJob implements ShouldQueue
                 });
             });
         }
+
+        $this->user->tierlists->each(fn (Tierlist $tierlist) => (new DestroyTierlist)->handle($tierlist));
+
+        $this->user->reviews->each(fn (Review $review) => (new DestroyReview)->handle($review));
+
+        $this->detachProLicenses();
 
         $this->user->update([
             'external_token' => null,
@@ -49,5 +62,13 @@ class DeleteUserJob implements ShouldQueue
         ]);
 
         $this->user->delete();
+    }
+
+    private function detachProLicenses(): void
+    {
+        $this->user->proLicenses()->update(['user_id' => null]);
+
+        /* A mass update fires no model events, so ProLicenseObserver never runs. */
+        $this->user->syncProStatus();
     }
 }

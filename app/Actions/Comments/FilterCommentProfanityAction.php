@@ -13,9 +13,6 @@ final class FilterCommentProfanityAction implements CommentTransformer
      */
     public function handle(Comment $comment): void
     {
-        $comment->text = Blasp::language('english')
-            ->maskWith('*')
-            ->check($comment->original_text)
-            ->getCleanString();
+        $comment->text = Blasp::english()->mask('*')->check($comment->original_text)->clean();
     }
 }

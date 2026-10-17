@@ -2,21 +2,31 @@
 
 namespace App\Providers;
 
+use App\Actions\Billing\HandleStripeWebhook;
+use App\Checks\StripeWebhookSecretCheck;
 use App\Enums\RankingType;
+use App\Enums\TierlistType;
+use App\Models\Album;
 use App\Models\ApplicationDashboard as Seo;
 use App\Models\Artist;
 use App\Models\Playlist;
 use App\Models\Show;
+use App\Models\Track;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Foundation\DevCommands;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Cashier\Cashier;
+use Laravel\Cashier\Events\WebhookReceived;
 use Laravel\Head\Enums\OgType;
 use Laravel\Head\Enums\TwitterCard;
 use Laravel\Head\Facades\Head;
 use Laravel\Head\HeadBuilder;
+use Laravel\Pennant\Feature;
+use Livewire\Blaze\Blaze;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use SocialiteProviders\Spotify\Provider;
 use Spatie\Health\Checks\Checks\DatabaseCheck;
@@ -40,24 +50,56 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Event::listen(function (SocialiteWasCalled $event) {
-            $event->extendSocialite('spotify', Provider::class);
-        });
-
         DB::prohibitDestructiveCommands(app()->isProduction());
 
         Model::automaticallyEagerLoadRelationships();
 
         Vite::useAggressivePrefetching();
 
+        Event::listen(function (SocialiteWasCalled $event) {
+            $event->extendSocialite('spotify', Provider::class);
+        });
+
+        /* Artist is shared: it is a ranking source and a tier list entry under the same key. */
         Relation::morphMap([
             RankingType::ARTIST->value => Artist::class,
             RankingType::PLAYLIST->value => Playlist::class,
             RankingType::SHOW->value => Show::class,
+            TierlistType::ALBUM->value => Album::class,
+            TierlistType::TRACK->value => Track::class,
         ]);
 
+        $this->configureFeatures();
+        $this->configureBilling();
         $this->configureHealthChecks();
         $this->configureHead();
+        $this->configureDevTerminal();
+        $this->configureBlaze();
+    }
+
+    /**
+     * Email components are rendered with `view()` by the newsletter, which
+     * Blaze cannot compile, so they stay on plain Blade.
+     */
+    private function configureBlaze(): void
+    {
+        Blaze::optimize()
+            ->in(resource_path('views/components'))
+            ->in(resource_path('views/components/emails'), compile: false);
+    }
+
+    private function configureFeatures(): void
+    {
+        Feature::discover();
+    }
+
+    private function configureBilling(): void
+    {
+        if (config('billing.tax.automatic')) {
+            Cashier::calculateTaxes();
+        }
+
+        Event::listen(WebhookReceived::class, HandleStripeWebhook::class);
     }
 
     private function configureHealthChecks(): void
@@ -71,6 +113,7 @@ class AppServiceProvider extends ServiceProvider
             OptimizedAppCheck::new(),
             ScheduleCheck::new()
                 ->heartbeatMaxAgeInMinutes(15),
+            StripeWebhookSecretCheck::new(),
             UsedDiskSpaceCheck::new()
                 ->warnWhenUsedSpaceIsAbovePercentage(90)
                 ->failWhenUsedSpaceIsAbovePercentage(95),
@@ -87,7 +130,7 @@ class AppServiceProvider extends ServiceProvider
                 ->canonical()
                 ->searchableByRobots()
                 ->meta('author', 'kyledoesdev')
-                ->meta('keywords', rescue(fn () => cache()->remember('seo-terms', now()->addWeeks(1), fn () => Seo::query()->first()->seo_terms), '', false))
+                ->meta('keywords', rescue(fn () => Seo::seoTerms(), '', false))
                 ->favicon(asset('favicon.ico'), 'image/x-icon')
                 ->icon(asset('favicon-32x32.png'), 'image/png', '32x32')
                 ->icon(asset('favicon-16x16.png'), 'image/png', '16x16')
@@ -122,5 +165,20 @@ class AppServiceProvider extends ServiceProvider
                 ->hiddenFromRobots()
             )
         );
+    }
+
+    private function configureDevTerminal(): void
+    {
+        if (! $this->app->runningInConsole() || $this->app->runningUnitTests() || $this->app->isProduction()) {
+            return;
+        }
+
+        DevCommands::except('server', 'logs');
+        DevCommands::node('dev', 'vite')->yellow();
+        DevCommands::artisan('queue:listen --tries=1 --timeout=0', 'queue')->purple();
+        DevCommands::register(
+            sprintf('stripe listen --forward-to %s/stripe/webhook --skip-verify', rtrim(config('app.url'), '/')),
+            'stripe',
+        )->green();
     }
 }

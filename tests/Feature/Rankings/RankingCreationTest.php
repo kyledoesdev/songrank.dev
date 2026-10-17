@@ -10,6 +10,7 @@ use App\Models\Playlist;
 use App\Models\Ranking;
 use App\Models\Show;
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 
 use function Pest\Laravel\get;
@@ -215,12 +216,6 @@ describe('creating rankings', function () {
         expect($ranking->source->is($show))->toBeTrue();
     });
 
-    test('the type column stores the ranking type enum value', function () {
-        expect(Ranking::factory()->createOne()->getAttributes()['type'])->toBe('artist');
-        expect(Ranking::factory()->playlist()->createOne()->getAttributes()['type'])->toBe('playlist');
-        expect(Ranking::factory()->show()->createOne()->getAttributes()['type'])->toBe('show');
-    });
-
     test('a ranking whose source no longer exists still resolves its type', function () {
         $ranking = Ranking::factory()->createOne(['source_id' => null]);
 
@@ -231,38 +226,116 @@ describe('creating rankings', function () {
 
 describe('ranking setup searching', function () {
     test('cannot search for an artist with an empty search term', function () {
+        Http::fake();
+
         Livewire::actingAs(User::factory()->createOne())
             ->test(ArtistSetup::class)
             ->set('searchTerm', '')
             ->call('search')
             ->assertSet('searchedArtists', null)
             ->assertSet('selectedTracks', fn ($tracks) => $tracks->isEmpty());
+
+        Http::assertNothingSent();
     });
 
     test('cannot search for a playlist with an invalid URL', function () {
+        Http::fake();
+
         Livewire::actingAs(User::factory()->createOne())
             ->test(PlaylistSetup::class)
             ->set('searchTerm', 'abcdxyz')
             ->call('search')
             ->assertSet('selectedPlaylist', [])
             ->assertSet('selectedTracks', fn ($tracks) => $tracks->isEmpty());
+
+        Http::assertNothingSent();
     });
 
     test('can search for a playlist with a valid URL', function () {
+        fakePlaylist([
+            spotifyTrack(),
+            spotifyTrack(['id' => 'eventually-id', 'name' => 'Eventually']),
+        ]);
+
         Livewire::actingAs(User::factory()->createOne())
             ->test(PlaylistSetup::class)
-            ->set('searchTerm', 'https://open.spotify.com/playlist/1l9ToABW4nh8EdGfq3Qvei')
+            ->set('searchTerm', 'https://open.spotify.com/playlist/psych-rock-id?si=shared-link')
             ->call('search')
-            ->assertHasNoErrors();
+            ->assertSet('selectedPlaylist.id', 'psych-rock-id')
+            ->assertSet('selectedTracks', fn ($tracks) => $tracks->pluck('id')->all() === ['less-i-know-id', 'eventually-id']);
     });
 
     test('cannot search for a show with an invalid URL', function () {
+        Http::fake();
+
         Livewire::actingAs(User::factory()->createOne())
             ->test(ShowSetup::class)
             ->set('searchTerm', 'abcdxyz')
             ->call('search')
             ->assertSet('selectedShow', [])
             ->assertSet('selectedTracks', fn ($tracks) => $tracks->isEmpty());
+
+        Http::assertNothingSent();
+    });
+});
+
+describe('loading from spotify', function () {
+    test('loads every song across an artist\'s albums, keeping one of each title', function () {
+        fakeArtistAlbums([
+            spotifyAlbumWithTracks('currents-id', 'album', [['let-it-happen-id', 'Let It Happen'], ['eventually-id', 'Eventually']]),
+            spotifyAlbumWithTracks('single-id', 'single', [['let-it-happen-single-id', 'Let It Happen']]),
+        ]);
+
+        $component = Livewire::actingAs(User::factory()->createOne())
+            ->test(ArtistSetup::class)
+            ->set('searchedArtists', collect([['id' => 'tame-impala-id', 'name' => 'Tame Impala', 'cover' => 'https://example.test/tame-impala.png']]))
+            ->call('loadArtistSongs', 'tame-impala-id')
+            ->assertSet('selectedArtist.id', 'tame-impala-id');
+
+        expect($component->get('selectedTracks')->pluck('id')->all())->toBe(['let-it-happen-id', 'eventually-id']);
+    });
+
+    test('loads a show and its episodes', function () {
+        fakeShow([['episode-one-id', 'Episode One'], ['episode-two-id', 'Episode Two']]);
+
+        $component = Livewire::actingAs(User::factory()->createOne())
+            ->test(ShowSetup::class)
+            ->set('searchTerm', 'https://open.spotify.com/show/song-exploder-id?si=shared-link')
+            ->call('search')
+            ->assertSet('selectedShow.id', 'song-exploder-id');
+
+        expect($component->get('selectedTracks')->pluck('id')->all())->toBe(['episode-one-id', 'episode-two-id']);
+    });
+
+    test('turns down a playlist longer than a ranking can hold', function () {
+        fakePlaylist([spotifyTrack()], total: Ranking::MAX_SONGS + 1);
+
+        $component = Livewire::actingAs(User::factory()->createOne())
+            ->test(PlaylistSetup::class)
+            ->set('searchTerm', 'https://open.spotify.com/playlist/psych-rock-id')
+            ->call('search')
+            ->assertSet('selectedPlaylist', [])
+            ->assertSet('selectedTracks', fn ($tracks) => $tracks->isEmpty());
+
+        expect(alertsFrom($component)->pluck('icon')->all())->toBe(['error']);
+    });
+
+    test('loads the rest of a playlist and names the tracks Spotify has removed', function () {
+        fakePlaylist([
+            spotifyTrack(),
+            spotifyTrack(['id' => 'gone-id', 'name' => 'Gone Missing', 'artists' => [['id' => null, 'name' => 'Ghost']]]),
+        ]);
+
+        $component = Livewire::actingAs(User::factory()->createOne())
+            ->test(PlaylistSetup::class)
+            ->set('searchTerm', 'https://open.spotify.com/playlist/psych-rock-id')
+            ->call('search');
+
+        $alert = alertsFrom($component)->sole();
+
+        expect($component->get('selectedTracks')->pluck('id')->all())->toBe(['less-i-know-id'])
+            ->and($alert['icon'])->toBe('error')
+            ->and($alert['submessage'])->toContain('Gone Missing');
     });
 });
 
@@ -312,3 +385,64 @@ describe('ranking type selection', function () {
             ->assertSeeHtml('switch-ranking-type');
     });
 });
+
+/**
+ * An artist whose albums hold the given tracks, answered the way the artist's
+ * song list is read: its albums a page at a time, then their tracks in batches.
+ *
+ * @param  list<array<string, mixed>>  $albums
+ */
+function fakeArtistAlbums(array $albums): void
+{
+    Http::fake([
+        'https://accounts.spotify.com/*' => Http::response(['access_token' => 'fresh-token']),
+        'https://api.spotify.com/v1/artists/*/albums*' => Http::response([
+            'total' => count($albums),
+            'items' => collect($albums)->map(fn (array $album) => ['id' => $album['id']])->all(),
+        ]),
+        'https://api.spotify.com/v1/albums*' => Http::response(['albums' => $albums]),
+    ]);
+}
+
+/**
+ * @param  list<array{0: string, 1: string}>  $tracks  id and name
+ * @return array<string, mixed>
+ */
+function spotifyAlbumWithTracks(string $id, string $type, array $tracks): array
+{
+    return [
+        'id' => $id,
+        'name' => ucfirst(str_replace('-id', '', $id)),
+        'album_type' => $type,
+        'images' => [['url' => "https://example.test/{$id}.png"]],
+        'tracks' => ['items' => collect($tracks)->map(fn (array $track) => ['id' => $track[0], 'name' => $track[1]])->all()],
+    ];
+}
+
+/**
+ * A podcast holding the given episodes, answered the way the show search reads
+ * it: the show itself, then its episodes a page at a time.
+ *
+ * @param  list<array{0: string, 1: string}>  $episodes  id and name
+ */
+function fakeShow(array $episodes): void
+{
+    Http::fake([
+        'https://accounts.spotify.com/*' => Http::response(['access_token' => 'fresh-token']),
+        'https://api.spotify.com/v1/shows/song-exploder-id/episodes*' => Http::response([
+            'items' => collect($episodes)->map(fn (array $episode) => [
+                'id' => $episode[0],
+                'name' => $episode[1],
+                'images' => [['url' => "https://example.test/{$episode[0]}.png"]],
+            ])->all(),
+        ]),
+        'https://api.spotify.com/v1/shows/song-exploder-id' => Http::response([
+            'id' => 'song-exploder-id',
+            'name' => 'Song Exploder',
+            'description' => 'Musicians take apart their songs',
+            'publisher' => 'Hrishikesh Hirway',
+            'images' => [['url' => 'https://example.test/song-exploder.png']],
+            'total_episodes' => count($episodes),
+        ]),
+    ]);
+}

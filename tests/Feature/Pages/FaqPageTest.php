@@ -1,40 +1,41 @@
 <?php
 
+use App\Livewire\Faq as FaqPage;
 use App\Models\Faq;
+use Livewire\Livewire;
 
 use function Pest\Laravel\get;
 
 describe('faq page', function () {
     test('displays active faqs', function () {
-        Faq::factory()->create([
-            'question' => 'How do I rank songs?',
+        $faq = Faq::factory()->create([
             'text' => '<p>Select an artist and start comparing!</p>',
             'is_active' => true,
         ]);
 
         get(route('faq'))
             ->assertOk()
-            ->assertSee('How do I rank songs?')
-            ->assertSee('Select an artist and start comparing!');
+            ->assertSee('wire:key="faq-'.$faq->getKey().'"', escape: false)
+            ->assertSee('<p>Select an artist and start comparing!</p>', escape: false);
     });
 
     test('does not display inactive faqs', function () {
-        Faq::factory()->inactive()->create([
-            'question' => 'Hidden question',
-        ]);
+        Faq::query()->forceDelete();
 
-        get(route('faq'))
-            ->assertOk()
-            ->assertDontSee('Hidden question');
+        $active = Faq::factory()->create();
+        Faq::factory()->inactive()->create();
+
+        expect(Livewire::test(FaqPage::class)->instance()->faqs->modelKeys())->toBe([$active->getKey()]);
     });
 
     test('displays faqs in order', function () {
-        Faq::factory()->create(['question' => 'Second question', 'order' => 2]);
-        Faq::factory()->create(['question' => 'First question', 'order' => 1]);
+        $second = Faq::factory()->create(['order' => 2]);
+        $first = Faq::factory()->create(['order' => 1]);
 
-        $content = get(route('faq'))->assertOk()->getContent();
-
-        expect(strpos($content, 'First question'))->toBeLessThan(strpos($content, 'Second question'));
+        Livewire::test(FaqPage::class)->assertSeeHtmlInOrder([
+            'wire:key="faq-'.$first->getKey().'"',
+            'wire:key="faq-'.$second->getKey().'"',
+        ]);
     });
 
     test('shows an empty state when no faqs exist', function () {
@@ -42,7 +43,7 @@ describe('faq page', function () {
 
         get(route('faq'))
             ->assertOk()
-            ->assertSee('No FAQs available at this time.');
+            ->assertDontSee('wire:key="faq-', escape: false);
     });
 });
 

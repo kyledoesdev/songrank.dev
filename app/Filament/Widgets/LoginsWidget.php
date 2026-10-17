@@ -13,8 +13,6 @@ use Spatie\Stats\Models\StatsEvent;
 
 class LoginsWidget extends StatsOverviewWidget
 {
-    protected static ?int $sort = 1;
-
     protected ?string $heading = 'User Stats';
 
     protected ?string $pollingInterval = null;
@@ -26,7 +24,7 @@ class LoginsWidget extends StatsOverviewWidget
 
         $totalUsers = User::query()->count();
         $newUsersThisMonth = User::query()
-            ->where('created_at', '>=', $now->copy()->startOfMonth())
+            ->where('created_at', '>=', $now->copy()->startOfMonth()->tz(config('app.timezone')))
             ->count();
         $deletedUsers = User::onlyTrashed()->count();
 
@@ -61,7 +59,7 @@ class LoginsWidget extends StatsOverviewWidget
             ->where('name', (new LoginStat)->getName())
             ->where('type', DataPoint::TYPE_CHANGE)
             ->where('value', '>', 0)
-            ->whereBetween('created_at', [$start, $end])
+            ->whereBetween('created_at', [$start->copy()->tz(config('app.timezone')), $end->copy()->tz(config('app.timezone'))])
             ->sum('value');
     }
 

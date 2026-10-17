@@ -2,15 +2,21 @@
 
 namespace App\Models;
 
-use App\Contracts\Rankable;
+use App\Contracts\SpotifyEntity;
 use App\QueryBuilders\ArtistQueryBuilder;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[UseEloquentBuilder(ArtistQueryBuilder::class)]
-class Artist extends Model implements Rankable
+class Artist extends Model implements SpotifyEntity
 {
+    use HasFactory;
+    use SoftDeletes;
+
     protected $fillable = [
         'artist_id',
         'artist_name',
@@ -35,6 +41,11 @@ class Artist extends Model implements Rankable
     public function rankings(): MorphMany
     {
         return $this->morphMany(Ranking::class, 'source', 'type', 'source_id');
+    }
+
+    public function reviews(): MorphMany
+    {
+        return $this->morphMany(Review::class, 'subject');
     }
 
     public function cover(): ?string

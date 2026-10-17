@@ -18,7 +18,7 @@ class PlaylistFactory extends Factory
             'creator_name' => fake()->userName(),
             'name' => fake()->sentence(1),
             'description' => fake()->sentence(1),
-            'cover' => fake()->imageUrl(200, 200, 'playlist', true),
+            'cover' => 'https://example.test/playlists/'.str()->random(16).'.png',
             'track_count' => rand(5, 100),
         ];
     }

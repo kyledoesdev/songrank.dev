@@ -2,8 +2,10 @@
 
 namespace App\Livewire;
 
+use App\Models\Album;
 use App\Models\Artist;
 use App\Models\Ranking;
+use App\Models\Track;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Livewire\Component;
@@ -16,6 +18,9 @@ class Leaderboards extends Component
             'topArtists' => $this->topArtists(),
             'topCreators' => $this->topCreators(),
             'biggestRankings' => $this->biggestRankings(),
+            'topReviewedArtists' => $this->topReviewedArtists(),
+            'topReviewedAlbums' => $this->topReviewedAlbums(),
+            'topReviewedTracks' => $this->topReviewedTracks(),
         ]);
     }
 
@@ -53,12 +58,58 @@ class Leaderboards extends Component
             ->mostSongs()
             ->get()
             ->map(fn (Ranking $ranking) => [
-                'image' => $ranking->source?->cover(),
+                'image' => $ranking->source->cover(),
                 'name' => $ranking->name,
                 'subtitle' => $ranking->user->name,
                 'count' => $ranking->songs_count,
                 'url' => route('ranking', ['id' => $ranking->getKey()]),
-                'spotify_url' => $ranking->source?->spotifyUrl(),
+                'spotify_url' => $ranking->source->spotifyUrl(),
+            ]));
+    }
+
+    private function topReviewedArtists(): Collection
+    {
+        return cache()->remember('leaderboards:top-reviewed-artists', now()->addHour(), fn () => Artist::query()
+            ->topReviewed()
+            ->get()
+            ->map(fn (Artist $artist) => [
+                'image' => $artist->cover(),
+                'name' => $artist->name(),
+                'count' => $artist->reviews_count,
+                'url' => null,
+                'spotify_url' => $artist->spotifyUrl(),
+            ]));
+    }
+
+    private function topReviewedAlbums(): Collection
+    {
+        return cache()->remember('leaderboards:top-reviewed-albums', now()->addHour(), fn () => Album::query()
+            ->topReviewed()
+            ->with('artist')
+            ->get()
+            ->map(fn (Album $album) => [
+                'image' => $album->cover(),
+                'name' => $album->name(),
+                'subtitle' => $album->artist?->name(),
+                'count' => $album->reviews_count,
+                'url' => null,
+                'spotify_url' => $album->spotifyUrl(),
+            ]));
+    }
+
+    private function topReviewedTracks(): Collection
+    {
+        return cache()->remember('leaderboards:top-reviewed-tracks', now()->addHour(), fn () => Track::query()
+            ->topReviewed()
+            ->with('artist')
+            ->get()
+            ->map(fn (Track $track) => [
+                'image' => $track->cover(),
+                'name' => $track->name(),
+                'subtitle' => $track->artist?->name(),
+                'count' => $track->reviews_count,
+                'url' => null,
+                'spotify_url' => $track->spotifyUrl(),
             ]));
     }
 }
