@@ -3,8 +3,13 @@
 use App\Livewire\Notifications\Bell;
 use App\Livewire\Notifications\Details;
 use App\Models\Comment;
+use App\Models\Notification;
 use App\Models\Ranking;
 use App\Models\User;
+use App\Notifications\NewComment;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
@@ -106,6 +111,22 @@ describe('comment notification dispatch', function () {
         expect($notification->entity['id'])->toBe($ranking->getKey());
     });
 
+    test('notification is created when someone comments on a tier list or a review', function (Closure $record) {
+        $commentable = $record();
+        $commenter = User::factory()->createOne();
+
+        $comment = createComment($commenter, $commentable);
+
+        $notification = $commentable->user->notifications()->sole();
+
+        expect($notification->type)->toBe(NewComment::class)
+            ->and($notification->entity['id'])->toBe($commentable->getKey())
+            ->and($notification->actionUrl())->toBe($commentable->url()."#comment-{$comment->getKey()}");
+    })->with([
+        'tier list' => fn () => publicCompletedTierlist(['comments_enabled' => true]),
+        'review' => fn () => publicPublishedReview(['comments_enabled' => true]),
+    ]);
+
     test('notification is not created when owner comments on their own ranking', function () {
         $ranking = commentableRanking();
 
@@ -139,6 +160,24 @@ describe('comment notification dispatch', function () {
 
         expect($ranking->user->notifications()->count())->toBe(1);
     });
+
+    test('notifications from before tier lists and reviews still read as comments', function () {
+        $owner = User::factory()->createOne();
+
+        DB::table('notifications')->insert([
+            'id' => Str::uuid()->toString(),
+            'type' => 'App\Notifications\NewCommentOnRanking',
+            'notifiable_type' => User::class,
+            'notifiable_id' => $owner->getKey(),
+            'data' => json_encode(['comment_id' => 1]),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        (require database_path('migrations/2026_10_16_202901_rename_ranking_comment_notifications.php'))->up();
+
+        expect(Notification::query()->sole()->isCommentNotification())->toBeTrue();
+    });
 });
 
 function commentableRanking(): Ranking
@@ -146,11 +185,11 @@ function commentableRanking(): Ranking
     return publicCompletedRanking(attributes: ['comments_enabled' => true]);
 }
 
-function createComment(User $commenter, Ranking $ranking, string $text = 'Great ranking!'): Comment
+function createComment(User $commenter, Model $commentable, string $text = 'Great ranking!'): Comment
 {
     return Comment::create([
-        'commentable_type' => Ranking::class,
-        'commentable_id' => $ranking->getKey(),
+        'commentable_type' => $commentable::class,
+        'commentable_id' => $commentable->getKey(),
         'commentator_type' => User::class,
         'commentator_id' => $commenter->getKey(),
         'original_text' => $text,

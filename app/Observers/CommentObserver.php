@@ -5,7 +5,9 @@ namespace App\Observers;
 use App\Models\Comment;
 use App\Models\Notification;
 use App\Models\Ranking;
-use App\Notifications\NewCommentOnRanking;
+use App\Models\Review;
+use App\Models\Tierlist;
+use App\Notifications\NewComment;
 
 class CommentObserver
 {
@@ -13,24 +15,24 @@ class CommentObserver
     {
         $commentable = $comment->commentable;
 
-        if (! $commentable instanceof Ranking) {
+        if (! ($commentable instanceof Ranking || $commentable instanceof Tierlist || $commentable instanceof Review)) {
             return;
         }
 
-        $rankingOwner = $commentable->user;
+        $owner = $commentable->user;
 
-        if (! $rankingOwner || $rankingOwner->getKey() === $comment->commentator_id) {
+        if (! $owner || $owner->getKey() === $comment->commentator_id) {
             return;
         }
 
-        $rankingOwner->notify(new NewCommentOnRanking($comment, $commentable));
+        $owner->notify(new NewComment($comment, $commentable));
     }
 
     public function deleted(Comment $comment): void
     {
         Notification::query()
             ->whereNull('read_at')
-            ->where('type', NewCommentOnRanking::class)
+            ->where('type', NewComment::class)
             ->whereJsonContains('data->comment_id', $comment->getKey())
             ->delete();
     }

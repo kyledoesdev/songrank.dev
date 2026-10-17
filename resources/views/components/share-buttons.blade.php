@@ -8,7 +8,7 @@
     @click.outside="open = false"
     @keydown.escape.window="open = false"
 >
-    <button type="button" class="btn-helper my-0 px-2 py-1" title="Share" @click="open = ! open">
+    <button type="button" class="btn-accent my-0 px-2 py-1" title="Share" @click="open = ! open">
         <i class="fa-solid fa-share-nodes text-sm"></i>
     </button>
 

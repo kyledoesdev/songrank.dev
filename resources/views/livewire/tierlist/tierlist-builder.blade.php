@@ -1,6 +1,5 @@
-<x-card class="p-2 sm:p-4 mt-4">
-    {{-- Header --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-1 pb-3">
+<x-card class="mt-4">
+    <x-card.header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div class="min-w-0">
             <h5 class="text-base sm:text-lg md:text-xl font-medium truncate">{{ $tierlist->name }}</h5>
             <p class="text-xs text-zinc-500 mt-0.5">
@@ -17,7 +16,7 @@
 
             <button
                 type="button"
-                class="btn-primary px-3 py-1.5"
+                class="btn-primary my-0 px-3 py-1.5"
                 wire:click="confirmFinish"
                 @disabled(! $this->canFinish())
                 title="{{ $this->canFinish() ? 'Publish this tier list' : 'Place everything first' }}"
@@ -26,105 +25,107 @@
                 Publish
             </button>
         </div>
-    </div>
+    </x-card.header>
 
-    @if ($showEmbeds)
-        <p class="mx-1 mb-3 text-xs text-zinc-500 bg-amber-50 border border-amber-200 rounded-lg p-2">
-            <i class="fa-solid fa-triangle-exclamation text-amber-500 mr-1"></i>
-            Players make the tier list heavier. Turn them off if it starts feeling laggy.
-        </p>
-    @endif
+    <div class="p-2 sm:p-4">
+        @if ($showEmbeds)
+            <p class="mb-3 text-xs text-zinc-500 bg-amber-50 border border-amber-200 rounded-lg p-2">
+                <i class="fa-solid fa-triangle-exclamation text-amber-500 mr-1"></i>
+                Players make the tier list heavier. Turn them off if it starts feeling laggy.
+            </p>
+        @endif
 
-    {{-- The tiers --}}
-    <div class="space-y-1" x-auto-animate>
-        @foreach ($tiers as $tier)
-            <div class="flex items-stretch rounded-lg overflow-hidden border border-zinc-200" wire:key="tier-{{ $tier->getKey() }}">
-                <div
-                    class="w-20 sm:w-28 shrink-0 flex items-center justify-center p-2 text-zinc-800 font-bold text-center break-words leading-tight"
-                    style="background-color: {{ $tier->color }}"
-                >
-                    {{ $tier->name }}
-                </div>
-
-                <div class="w-7 shrink-0 flex flex-col items-center justify-center gap-1 bg-zinc-100 border-x border-zinc-200 text-zinc-400">
-                    <button
-                        type="button"
-                        class="px-1 cursor-pointer hover:text-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed"
-                        wire:click="moveTier({{ $tier->getKey() }}, 'up')"
-                        @disabled($loop->first)
-                        title="Move up"
+        {{-- The tiers --}}
+        <div class="space-y-1" x-auto-animate>
+            @foreach ($tiers as $tier)
+                <div class="flex items-stretch rounded-lg overflow-hidden border border-zinc-200" wire:key="tier-{{ $tier->getKey() }}">
+                    <div
+                        class="w-20 sm:w-28 shrink-0 flex items-center justify-center p-2 text-zinc-800 font-bold text-center break-words leading-tight"
+                        style="background-color: {{ $tier->color }}"
                     >
-                        <i class="fa-solid fa-chevron-up text-[10px]"></i>
-                    </button>
+                        {{ $tier->name }}
+                    </div>
 
-                    <button
-                        type="button"
-                        class="px-1 cursor-pointer hover:text-zinc-700"
-                        wire:click="editTier({{ $tier->getKey() }})"
-                        title="Tier settings"
+                    <div class="w-7 shrink-0 flex flex-col items-center justify-center gap-1 bg-zinc-100 border-x border-zinc-200 text-zinc-400">
+                        <button
+                            type="button"
+                            class="px-1 cursor-pointer hover:text-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                            wire:click="moveTier({{ $tier->getKey() }}, 'up')"
+                            @disabled($loop->first)
+                            title="Move up"
+                        >
+                            <i class="fa-solid fa-chevron-up text-[10px]"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="px-1 cursor-pointer hover:text-zinc-700"
+                            wire:click="editTier({{ $tier->getKey() }})"
+                            title="Tier settings"
+                        >
+                            <i class="fa-solid fa-gear text-xs"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="px-1 cursor-pointer hover:text-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                            wire:click="moveTier({{ $tier->getKey() }}, 'down')"
+                            @disabled($loop->last)
+                            title="Move down"
+                        >
+                            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </button>
+                    </div>
+
+                    <div
+                        class="flex-1 flex flex-wrap gap-2 p-2 bg-zinc-50 min-h-24 max-h-56 sm:max-h-64 overflow-y-auto"
+                        wire:sort="moveItem"
+                        wire:sort:group="entries"
+                        wire:sort:group-id="{{ $tier->getKey() }}"
                     >
-                        <i class="fa-solid fa-gear text-xs"></i>
-                    </button>
-
-                    <button
-                        type="button"
-                        class="px-1 cursor-pointer hover:text-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed"
-                        wire:click="moveTier({{ $tier->getKey() }}, 'down')"
-                        @disabled($loop->last)
-                        title="Move down"
-                    >
-                        <i class="fa-solid fa-chevron-down text-[10px]"></i>
-                    </button>
+                        @foreach ($tier->items as $item)
+                            @include('livewire.tierlist.partials.builder-tile', ['item' => $item, 'showEmbeds' => $showEmbeds])
+                        @endforeach
+                    </div>
                 </div>
-
-                <div
-                    class="flex-1 flex flex-wrap gap-2 p-2 bg-zinc-50 min-h-24 max-h-56 sm:max-h-64 overflow-y-auto"
-                    wire:sort="moveItem"
-                    wire:sort:group="entries"
-                    wire:sort:group-id="{{ $tier->getKey() }}"
-                >
-                    @foreach ($tier->items as $item)
-                        @include('livewire.tierlist.partials.builder-tile', ['item' => $item, 'showEmbeds' => $showEmbeds])
-                    @endforeach
-                </div>
-            </div>
-        @endforeach
-    </div>
-
-    <div class="mt-2 px-1">
-        <button type="button" class="text-xs px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 cursor-pointer" wire:click="addTier">
-            <i class="fa-solid fa-plus mr-1"></i>
-            Add a tier
-        </button>
-    </div>
-
-    {{-- Anything not placed yet --}}
-    <div class="mt-4 rounded-lg border border-zinc-200 overflow-hidden">
-        <div class="px-4 py-2 bg-gray-50 border-b border-zinc-200 flex items-center justify-between gap-2">
-            <h4 class="font-semibold text-gray-800 text-sm">Unranked</h4>
-
-            <span @class([
-                'text-xs px-2 py-1 rounded-lg',
-                'bg-green-100 text-green-700' => $this->canFinish(),
-                'bg-zinc-100 text-zinc-600' => ! $this->canFinish(),
-            ])>
-                @if ($this->canFinish())
-                    All placed
-                @else
-                    {{ $this->bankCount() }} still to place
-                @endif
-            </span>
+            @endforeach
         </div>
 
-        <div
-            class="flex flex-wrap gap-2 p-2 min-h-24"
-            wire:sort="moveItem"
-            wire:sort:group="entries"
-            wire:sort:group-id="{{ $bank->getKey() }}"
-        >
-            @foreach ($bank->items as $item)
-                @include('livewire.tierlist.partials.builder-tile', ['item' => $item, 'showEmbeds' => $showEmbeds])
-            @endforeach
+        <div class="mt-2">
+            <button type="button" class="text-xs px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 cursor-pointer" wire:click="addTier">
+                <i class="fa-solid fa-plus mr-1"></i>
+                Add a tier
+            </button>
+        </div>
+
+        {{-- Anything not placed yet --}}
+        <div class="mt-4 rounded-lg border border-zinc-200 overflow-hidden">
+            <div class="px-4 py-2 bg-gray-50 border-b border-zinc-200 flex items-center justify-between gap-2">
+                <h4 class="font-semibold text-gray-800 text-sm">Unranked</h4>
+
+                <span @class([
+                    'text-xs px-2 py-1 rounded-lg',
+                    'bg-green-100 text-green-700' => $this->canFinish(),
+                    'bg-zinc-100 text-zinc-600' => ! $this->canFinish(),
+                ])>
+                    @if ($this->canFinish())
+                        All placed
+                    @else
+                        {{ $this->bankCount() }} still to place
+                    @endif
+                </span>
+            </div>
+
+            <div
+                class="flex flex-wrap gap-2 p-2 min-h-24"
+                wire:sort="moveItem"
+                wire:sort:group="entries"
+                wire:sort:group-id="{{ $bank->getKey() }}"
+            >
+                @foreach ($bank->items as $item)
+                    @include('livewire.tierlist.partials.builder-tile', ['item' => $item, 'showEmbeds' => $showEmbeds])
+                @endforeach
+            </div>
         </div>
     </div>
 
@@ -171,10 +172,10 @@
                     </button>
 
                     <div class="flex gap-2">
-                        <button type="button" class="btn-secondary px-3 py-1.5 text-sm" wire:click="cancelEdit">
+                        <button type="button" class="btn-secondary px-3 py-1.5 text-sm" wire:click="cancelEdit" aria-label="Cancel">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
-                        <button type="button" class="btn-primary px-3 py-1.5 text-sm" wire:click="saveTier">
+                        <button type="button" class="btn-primary px-3 py-1.5 text-sm" wire:click="saveTier" aria-label="Save tier">
                             <i class="fa-solid fa-check"></i>
                         </button>
                     </div>

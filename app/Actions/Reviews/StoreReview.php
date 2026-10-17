@@ -2,6 +2,7 @@
 
 namespace App\Actions\Reviews;
 
+use App\Actions\MaskProfanity;
 use App\Enums\ReviewType;
 use App\Models\Review;
 use App\Models\User;
@@ -25,7 +26,7 @@ final class StoreReview
             'type' => $type->value,
             'subject_type' => $subject->getMorphClass(),
             'subject_id' => $subject->getKey(),
-            'name' => Str::limit($this->name($attributes, $subject), 60, ''),
+            'name' => Str::limit((new MaskProfanity)->handle($this->name($attributes, $subject), keep: $subject->name()), 60, ''),
             'is_public' => $attributes['is_public'],
             'comments_enabled' => $attributes['comments_enabled'],
             'comments_replies_enabled' => $attributes['comments_replies_enabled'],

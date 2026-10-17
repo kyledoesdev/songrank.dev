@@ -58,7 +58,7 @@ Route::middleware(EnsureFeaturesAreActive::using('tierlists'))->group(function (
 
 An unreleased product should look **absent**, not forbidden — a 403 confirms the feature exists. This is deliberate and tests depend on it: a user without the flag gets `assertNotFound()`, not `assertForbidden()`.
 
-Entitlement is separate middleware (`RedirectIfAlreadyPro`, `EnsureUserIsPro`) applied inside the flagged group.
+Entitlement is never a flag: it is the `pro_licenses` table, read through `is_pro`, and the checkout route turns away an existing buyer with `RedirectIfAlreadyPro`.
 
 ## Checking a Flag
 

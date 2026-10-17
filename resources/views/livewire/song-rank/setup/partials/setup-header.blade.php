@@ -67,6 +67,7 @@
                             class="btn-primary px-2 py-1 cursor-pointer transform transition-all duration-300 hover:scale-110 active:scale-95"
                             x-data
                             @click="window.showLoader(); $wire.search().then(() => window.hideLoader())"
+                            aria-label="Search"
                         >
                             <i class="text-lg text-zinc-800 fa fa-magnifying-glass mt-1"></i>
                         </button>
@@ -74,6 +75,7 @@
                             type="button"
                             class="btn-secondary px-2 py-1 cursor-pointer transform transition-all duration-300 hover:scale-110 active:scale-95"
                             wire:click="resetSetup"
+                            aria-label="Start over"
                         >
                             <i class="text-lg text-zinc-800 fa-solid fa-rotate-left mt-1"></i>
                         </button>

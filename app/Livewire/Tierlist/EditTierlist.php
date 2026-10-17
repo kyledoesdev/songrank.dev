@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Tierlist;
 
+use App\Actions\Tierlists\DestroyTierlist;
 use App\Actions\Tierlists\UpdateTierlist;
 use App\Livewire\Concerns\InteractsWithAlerts;
 use App\Livewire\Forms\TierlistForm;
@@ -68,6 +69,7 @@ class EditTierlist extends Component
             title: 'Delete this tier list?',
             message: 'This will remove it from your profile and the explore feed. You cannot undo this.',
             confirmText: 'Delete it',
+            destructive: true,
         );
     }
 
@@ -75,7 +77,7 @@ class EditTierlist extends Component
     {
         $user = $this->tierlist->user;
 
-        $this->tierlist->delete();
+        (new DestroyTierlist)->handle($this->tierlist);
 
         session()->flash('success', 'Tier list removed successfully.');
 

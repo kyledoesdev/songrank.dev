@@ -7,6 +7,7 @@ use App\Filament\Resources\ProLicenses\ProLicenseResource;
 use App\Models\ProLicense;
 use App\Models\User;
 use Filament\Actions\Testing\TestAction;
+use Illuminate\Support\Collection;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
@@ -53,14 +54,14 @@ describe('granting a licence', function () {
             ->callAction('grant', [
                 'user_id' => $recipient->getKey(),
                 'source' => ProLicenseSource::GIFT->value,
-                'notes' => 'Gift from Jane for the charity stream.',
+                'notes' => 'Gift from Shania for the charity stream.',
             ]);
 
         $license = ProLicense::query()->forUser($recipient)->first();
 
         expect($license->source)->toBe(ProLicenseSource::GIFT)
             ->and($license->status)->toBe(ProLicenseStatus::ACTIVE)
-            ->and($license->notes)->toBe('Gift from Jane for the charity stream.')
+            ->and($license->notes)->toBe('Gift from Shania for the charity stream.')
             ->and($recipient->fresh()->is_pro)->toBeTrue();
     });
 
@@ -100,6 +101,25 @@ describe('granting a licence', function () {
             ->assertHasActionErrors(['notes' => 'required']);
 
         assertDatabaseCount('pro_licenses', 0);
+    });
+
+    it('finds the recipient by name, email or Spotify id', function (string $field) {
+        $recipient = User::factory()->createOne(['name' => 'Findable Person', 'email' => 'findable@example.test']);
+        User::factory()->createOne();
+
+        $found = grantPickerResults($recipient->{$field});
+
+        expect($found->pluck('value')->all())->toBe([(string) $recipient->getKey()]);
+    })->with(['name', 'email', 'spotify_id']);
+
+    it('shows each person\'s email, so two people with the same name can be told apart', function () {
+        $first = User::factory()->createOne(['name' => 'Same Name']);
+        $second = User::factory()->createOne(['name' => 'Same Name']);
+
+        $labels = grantPickerResults('Same Name')->pluck('label', 'value');
+
+        expect($labels[(string) $first->getKey()])->toContain($first->email)
+            ->and($labels[(string) $second->getKey()])->toContain($second->email);
     });
 });
 
@@ -167,3 +187,15 @@ describe('licences are not hand-editable', function () {
             ->assertActionDoesNotExist(TestAction::make('delete')->table($license));
     });
 });
+
+/**
+ * What the grant form's user picker offers for a search, as the browser receives it.
+ *
+ * @return Collection<int, array{label: string, value: string}>
+ */
+function grantPickerResults(string $search): Collection
+{
+    $page = Livewire::test(ListProLicenses::class)->mountAction('grant');
+
+    return collect($page->instance()->callSchemaComponentMethod('mountedActionSchema0.user_id', 'getSearchResultsForJs', ['search' => $search]));
+}

@@ -2,6 +2,7 @@
 
 namespace App\Actions\Rankings;
 
+use App\Actions\MaskProfanity;
 use App\Actions\Playlists\ResolvePlaylist;
 use App\Enums\RankingType;
 use App\Models\Artist;
@@ -28,7 +29,7 @@ final class StorePlaylistRanking
                 'type' => RankingType::PLAYLIST->value,
                 'source_id' => $playlist->getKey(),
                 'user_id' => $user->getKey(),
-                'name' => Str::limit($name, 30),
+                'name' => Str::limit((new MaskProfanity)->handle($name, keep: $playlist->name), 30),
                 'is_public' => $attributes['is_public'] ?? false,
                 'comments_enabled' => $attributes['comments_enabled'] ?? false,
                 'comments_replies_enabled' => $attributes['comments_replies_enabled'] ?? false,

@@ -2,6 +2,7 @@
 
 namespace App\Actions\Tierlists;
 
+use App\Actions\MaskProfanity;
 use App\Enums\TierlistType;
 use App\Models\Tierlist;
 use App\Models\TierlistItem;
@@ -34,7 +35,7 @@ final class StoreTierlist
                 'type' => $type->value,
                 'source_type' => $source?->getMorphClass(),
                 'source_id' => $source?->getKey(),
-                'name' => Str::limit($this->name($attributes, $type, $source), 30),
+                'name' => Str::limit((new MaskProfanity)->handle($this->name($attributes, $type, $source), keep: $source?->name()), 30),
                 'is_public' => $attributes['is_public'] ?? false,
                 'comments_enabled' => $attributes['comments_enabled'] ?? false,
                 'comments_replies_enabled' => $attributes['comments_replies_enabled'] ?? false,

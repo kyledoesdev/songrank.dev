@@ -20,10 +20,10 @@ Tailwind v4, CSS-first. Entry point is `resources/css/app.css`, which imports `t
 | Text | `text-primary`, `text-secondary`, `text-helper`, `text-danger`, `text-primary-icon` |
 | Background | `bg-primary`, `bg-primary-soft`, `bg-primary-muted`, `bg-primary-accent`, `bg-secondary`, `bg-helper`, `bg-danger` |
 | Border | `border-primary`, `border-primary-soft`, `border-secondary`, `border-helper`, `border-danger` |
-| Button | `btn-primary`, `btn-secondary`, `btn-helper`, `btn-danger`, `btn-animated` |
+| Button | `btn-primary`, `btn-secondary`, `btn-helper`, `btn-accent`, `btn-danger`, `btn-animated` |
 | Misc | `medal-gold`, `medal-silver`, `medal-bronze`, the `notification-bell-*` set |
 
-The meanings are fixed: **primary is purple, secondary is green, helper is blue, danger is red.** `RankingType::color()` and `TierlistType::color()` return those same names (`purple`, `green`, `blue`), so a type's color in Blade and its color in the admin panel stay in step.
+The meanings are fixed: **primary is purple, secondary is green, helper is blue, accent is amber, danger is red.** Accent is the yellow the app already uses for stars, progress chips and `medal-gold`; as a button it marks an action that sits beside a helper one, like Share next to Add to crates. `RankingType::color()` and `TierlistType::color()` return those same names (`purple`, `green`, `blue`), so a type's color in Blade and its color in the admin panel stay in step.
 
 `btn-*` already includes `rounded-md shadow-md`, spacing, `cursor-pointer` and `disabled:` states — do not re-add them. `btn-animated` is the gradient call-to-action and carries its own keyframes from `animations.css`.
 

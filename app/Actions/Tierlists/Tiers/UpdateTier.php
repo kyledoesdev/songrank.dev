@@ -2,6 +2,7 @@
 
 namespace App\Actions\Tierlists\Tiers;
 
+use App\Actions\MaskProfanity;
 use App\Models\Tier;
 
 final class UpdateTier
@@ -12,7 +13,7 @@ final class UpdateTier
     public function handle(Tier $tier, array $attributes): void
     {
         $tier->update([
-            'name' => $attributes['name'],
+            'name' => (new MaskProfanity)->handle($attributes['name']),
             'color' => $attributes['color'],
         ]);
     }

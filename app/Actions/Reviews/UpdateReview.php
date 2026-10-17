@@ -2,6 +2,7 @@
 
 namespace App\Actions\Reviews;
 
+use App\Actions\MaskProfanity;
 use App\Models\Review;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -20,7 +21,7 @@ final class UpdateReview
 
         return DB::transaction(function () use ($review, $attributes, $cleaned) {
             $review->update([
-                'name' => Str::limit($attributes['name'], 60, ''),
+                'name' => Str::limit((new MaskProfanity)->handle($attributes['name'], keep: $review->subject->name()), 60, ''),
                 'stars' => $attributes['stars'],
                 'body' => $cleaned['body'],
                 'body_text' => $cleaned['body_text'],

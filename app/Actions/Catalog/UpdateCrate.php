@@ -2,6 +2,7 @@
 
 namespace App\Actions\Catalog;
 
+use App\Actions\MaskProfanity;
 use App\Models\Crate;
 use App\Models\CrateIcon;
 use Illuminate\Support\Str;
@@ -21,7 +22,7 @@ final class UpdateCrate
         }
 
         $crate->update([
-            'name' => Str::limit($attributes['name'], 40, ''),
+            'name' => Str::limit((new MaskProfanity)->handle($attributes['name']), 40, ''),
             'color' => $attributes['color'],
             'crate_icon_id' => $attributes['crate_icon_id'],
         ]);

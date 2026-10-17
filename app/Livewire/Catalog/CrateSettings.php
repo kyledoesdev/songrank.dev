@@ -140,6 +140,7 @@ class CrateSettings extends Component
             title: 'Delete '.$this->crate->name.'?',
             message: 'Your rankings, tier lists and reviews will not be deleted.',
             confirmText: 'Delete it',
+            destructive: true,
         );
     }
 

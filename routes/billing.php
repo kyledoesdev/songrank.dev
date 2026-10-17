@@ -4,6 +4,7 @@ use App\Http\Controllers\Billing\ProCheckoutController;
 use App\Http\Middleware\RedirectIfAlreadyPro;
 use App\Livewire\Billing\Billing;
 use Illuminate\Auth\Middleware\Authenticate;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(Authenticate::class)->group(function () {
@@ -12,7 +13,7 @@ Route::middleware(Authenticate::class)->group(function () {
         ->withHead(title: 'Billing');
 
     Route::post('/billing/checkout', [ProCheckoutController::class, 'store'])
-        ->middleware(RedirectIfAlreadyPro::class)
+        ->middleware([ThrottleRequests::with(maxAttempts: 5, decayMinutes: 1), RedirectIfAlreadyPro::class])
         ->name('billing.checkout');
 
     Route::get('/billing/checkout/success', [ProCheckoutController::class, 'show'])

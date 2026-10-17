@@ -38,11 +38,13 @@ class ListProLicenses extends ListRecords
                 ->schema([
                     Select::make('user_id')
                         ->label('User')
-                        ->options(fn (): array => User::query()
-                            ->orderBy('name')
-                            ->pluck('name', 'id')
-                            ->all())
                         ->searchable()
+                        ->getSearchResultsUsing(fn (string $search): array => User::query()
+                            ->forGrantPicker($search)
+                            ->get()
+                            ->mapWithKeys(fn (User $user): array => [$user->getKey() => self::userOption($user)])
+                            ->all())
+                        ->getOptionLabelUsing(fn (?string $value): ?string => ($user = User::find($value)) ? self::userOption($user) : null)
                         ->required(),
 
                     /* Paid sources are excluded: only Stripe may call a license a purchase. */
@@ -58,7 +60,6 @@ class ListProLicenses extends ListRecords
 
                     Textarea::make('notes')
                         ->label('Why')
-                        ->placeholder('Beta tester for tier lists. / Gift from Jane for the charity stream.')
                         ->required()
                         ->rows(3),
                 ])
@@ -71,5 +72,13 @@ class ListProLicenses extends ListRecords
                 })
                 ->successNotificationTitle('License granted.'),
         ];
+    }
+
+    /**
+     * Two people can share a display name, so each option shows who it is.
+     */
+    private static function userOption(User $user): string
+    {
+        return "{$user->name} ({$user->email})";
     }
 }

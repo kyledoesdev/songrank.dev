@@ -3,6 +3,7 @@
 namespace App\Actions\Rankings;
 
 use App\Actions\Artists\ResolveArtists;
+use App\Actions\MaskProfanity;
 use App\Enums\RankingType;
 use App\Models\Artist;
 use App\Models\Ranking;
@@ -33,7 +34,7 @@ final class StoreArtistRanking
                 'type' => RankingType::ARTIST->value,
                 'source_id' => $rankedArtist->getKey(),
                 'user_id' => $user->getKey(),
-                'name' => Str::limit($name, 30),
+                'name' => Str::limit((new MaskProfanity)->handle($name, keep: $rankedArtist->artist_name), 30),
                 'is_public' => $attributes['is_public'] ?? false,
                 'comments_enabled' => $attributes['comments_enabled'] ?? false,
                 'comments_replies_enabled' => $attributes['comments_replies_enabled'] ?? false,

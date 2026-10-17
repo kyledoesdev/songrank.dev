@@ -6,7 +6,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div class="min-w-0">
                     <h5 class="text-base sm:text-lg md:text-xl font-medium">
-                        <i class="fa-solid fa-book text-primary-icon mr-1"></i>
+                        <i class="fa-solid fa-box-archive text-primary-icon mr-1"></i>
                         Catalog
                     </h5>
                     <p class="text-xs text-zinc-500 mt-0.5">

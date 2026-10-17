@@ -5,6 +5,7 @@ use App\Models\ProLicense;
 use App\Models\User;
 use Stripe\Checkout\Session;
 use Stripe\Customer;
+use Stripe\Exception\InvalidRequestException;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseCount;
@@ -97,6 +98,61 @@ describe('starting a checkout', function () {
         expect($stripe->sessionPayload['success_url'])->toStartWith(route('billing.success'))
             ->and($stripe->sessionPayload['success_url'])->toContain('{CHECKOUT_SESSION_ID}')
             ->and($stripe->sessionPayload['cancel_url'])->toBe(route('billing.cancel'));
+    });
+
+    it('remembers the Stripe session it opened', function () {
+        fakeStripe();
+
+        actingAs(User::factory()->createOne())->post(route('billing.checkout'));
+
+        expect(ProLicense::sole()->stripe_checkout_session_id)->toBe('cs_test_songrank');
+    });
+
+    it('closes a checkout the buyer left open in another tab', function () {
+        $stripe = fakeStripe();
+        $buyer = User::factory()->createOne();
+        $otherTab = ProLicense::factory()->pending()->for($buyer)->create(['stripe_checkout_session_id' => 'cs_test_other_tab']);
+        $someoneElse = ProLicense::factory()->pending()->create(['stripe_checkout_session_id' => 'cs_test_someone_else']);
+
+        actingAs($buyer)->post(route('billing.checkout'));
+
+        expect($stripe->sessions->expired)->toBe(['cs_test_other_tab'])
+            ->and($otherTab->fresh()->status)->toBe(ProLicenseStatus::ABANDONED)
+            ->and($someoneElse->fresh()->status)->toBe(ProLicenseStatus::PENDING)
+            ->and($buyer->proLicenses()->pending()->sole()->stripe_checkout_session_id)->toBe('cs_test_songrank');
+    });
+
+    it('leaves a checkout for fulfillment once Stripe says it was paid', function () {
+        $stripe = fakeStripe();
+        $stripe->sessions->paid = ['cs_test_paid'];
+        $buyer = User::factory()->createOne();
+        $paid = ProLicense::factory()->pending()->for($buyer)->create(['stripe_checkout_session_id' => 'cs_test_paid']);
+
+        actingAs($buyer)->post(route('billing.checkout'));
+
+        expect($paid->fresh()->status)->toBe(ProLicenseStatus::PENDING);
+    });
+
+    it('sends the buyer back to billing when Stripe cannot be reached', function () {
+        actingAs(User::factory()->createOne())
+            ->post(route('billing.checkout'))
+            ->assertRedirect(route('billing'))
+            ->assertSessionHasErrors('checkout');
+
+        expect(ProLicense::sole()->status)->toBe(ProLicenseStatus::ABANDONED);
+    });
+
+    it('limits how often one person can start a checkout', function () {
+        fakeStripe();
+
+        actingAs(User::factory()->createOne());
+
+        $statuses = collect(range(1, 10))->map(fn (): int => post(route('billing.checkout'))->status());
+        $started = $statuses->reject(fn (int $status): bool => $status === 429)->count();
+
+        expect($statuses)->toContain(429);
+
+        assertDatabaseCount('pro_licenses', $started);
     });
 
     it('turns an existing Pro user away without charging again', function () {
@@ -244,6 +300,12 @@ function fakeStripe(): object
         /** @var array<string, mixed> */
         public array $retrieved = [];
 
+        /** @var list<string> */
+        public array $expired = [];
+
+        /** @var list<string> */
+        public array $paid = [];
+
         public function __construct(private object $spy) {}
 
         public function create(array $payload = [], $opts = null): Session
@@ -263,6 +325,17 @@ function fakeStripe(): object
                 'id' => $id,
                 'object' => 'checkout.session',
             ]);
+        }
+
+        public function expire(string $id, $params = null, $opts = null): Session
+        {
+            if (in_array($id, $this->paid, true)) {
+                throw InvalidRequestException::factory('Only Checkout Sessions with a status of open can be expired.');
+            }
+
+            $this->expired[] = $id;
+
+            return Session::constructFrom(['id' => $id, 'object' => 'checkout.session', 'status' => 'expired']);
         }
     };
 

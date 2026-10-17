@@ -72,4 +72,4 @@ A controller that redirects a browser back from a third party may do slightly mo
 - `Authenticate::class` wraps authenticated groups; guests are redirected to `welcome` by `redirectGuestsTo()` in `bootstrap/app.php`
 - `IsDeveloper` (from `kyledoesdev/essentials`) gates developer-only routes and the Filament panel on `is_dev`
 - `EnsureFeaturesAreActive::using(...)` gates a flagged domain
-- `RedirectIfAlreadyPro` and `EnsureUserIsPro` handle entitlement on billing routes, so controllers keep a single return type
+- `RedirectIfAlreadyPro` handles entitlement on the checkout route, so a buyer who already has Pro is sent back before a session opens

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Tierlist;
 
+use App\Actions\Tierlists\DestroyTierlist;
 use App\Livewire\Concerns\InteractsWithAlerts;
 use App\Models\Tierlist;
 use Illuminate\Support\Facades\Auth;
@@ -22,7 +23,7 @@ class Card extends Component
     {
         abort_unless(Auth::check() && $this->tierlist->user_id == Auth::id(), 403);
 
-        $this->tierlist->delete();
+        (new DestroyTierlist)->handle($this->tierlist);
 
         $this->dispatch('tierlists-updated');
 

@@ -9,7 +9,7 @@
                     : 'bg-gray-100 border-transparent text-zinc-600 hover:text-zinc-800'"
                 class="text-xs font-medium px-3 py-1.5 rounded-lg border-b-2 transition-all cursor-pointer"
             >
-                <i class="fa-solid fa-book mr-1"></i>
+                <i class="fa-solid fa-box-archive mr-1"></i>
                 Catalog
             </button>
 
@@ -33,7 +33,7 @@
     <div x-show="tab === 'catalog'" class="p-4">
         @if ($this->crates->isEmpty())
             <div class="text-center py-8">
-                <i class="fa-solid fa-book text-3xl text-zinc-300 mb-3"></i>
+                <i class="fa-solid fa-box-archive text-3xl text-zinc-300 mb-3"></i>
                 <p class="text-sm text-zinc-500 mb-4">
                     Crates keep your rankings, tier lists and reviews together, sorted however you like.
                 </p>

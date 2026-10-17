@@ -2,6 +2,7 @@
 
 namespace App\Actions\Rankings;
 
+use App\Actions\MaskProfanity;
 use App\Enums\RankingType;
 use App\Models\Artist;
 use App\Models\Ranking;
@@ -43,7 +44,7 @@ final class StoreShowRanking
                 'type' => RankingType::SHOW->value,
                 'source_id' => $show->getKey(),
                 'user_id' => $user->getKey(),
-                'name' => Str::limit($name, 30),
+                'name' => Str::limit((new MaskProfanity)->handle($name, keep: $show->name), 30),
                 'is_public' => $attributes['is_public'] ?? false,
                 'comments_enabled' => $attributes['comments_enabled'] ?? false,
                 'comments_replies_enabled' => $attributes['comments_replies_enabled'] ?? false,

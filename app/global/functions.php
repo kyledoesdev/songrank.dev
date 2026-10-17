@@ -2,7 +2,6 @@
 
 use App\Models\Artist;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
@@ -49,20 +48,4 @@ function short_number(int $number): string
         $number >= 1000 => round($number / 1000, 1).'k',
         default => (string) $number,
     };
-}
-
-function title(): string
-{
-    $title = config('app.name').' - ';
-
-    match (Route::currentRouteName()) {
-        'ranking' => $title .= 'Ranking',
-        'profile' => $title .= session()->get('profile_name').' Profile',
-        'faq' => $title .= 'FAQ',
-        'terms' => $title .= 'Terms of Service',
-        'privacy' => $title .= 'Privacy Policy',
-        default => $title .= Str::title(Str::lower(Str::replace('.', ' ', Route::currentRouteName())))
-    };
-
-    return $title;
 }

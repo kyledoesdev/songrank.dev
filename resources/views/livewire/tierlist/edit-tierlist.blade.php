@@ -82,74 +82,71 @@
 
     {{-- Tier list preview --}}
     @if ($tierlist->is_complete)
-        <div class="bg-white rounded-lg shadow-md mt-4 p-4">
-            <div class="flex justify-between items-center mb-4">
+        <x-card class="mt-4">
+            <x-card.header class="flex justify-between items-center">
                 <h6 class="font-semibold text-zinc-700">Tier List</h6>
 
-                @if ($canEditEntries)
-                    <span class="text-xs text-green-600 font-medium">
-                        <i class="fa fa-solid fa-unlock mr-1"></i>
-                        Pro &mdash; entries are editable
-                    </span>
-                @else
+                @if (!$canEditEntries)
                     <span class="text-xs text-zinc-400">
                         <i class="fa fa-solid fa-lock mr-1"></i>
                         Read-only
                     </span>
                 @endif
-            </div>
+            </x-card.header>
 
-            @if ($canEditEntries)
-                <livewire:tierlist.tierlist-builder :tierlist="$tierlist" />
-            @else
-                {{-- Locked board for free users --}}
-                <div class="relative" x-data="{ showTooltip: false }">
-                    <div class="space-y-1 opacity-60">
-                        @foreach ($tiers as $tier)
-                            <div
-                                class="flex items-stretch rounded-lg overflow-hidden border border-zinc-200"
-                                wire:key="locked-tier-{{ $tier->getKey() }}"
-                            >
+            <div class="p-4">
+                @if ($canEditEntries)
+                    <livewire:tierlist.tierlist-builder :tierlist="$tierlist" />
+                @else
+                    {{-- Locked board for free users --}}
+                    <div class="relative" x-data="{ showTooltip: false }">
+                        <div class="space-y-1 opacity-60">
+                            @foreach ($tiers as $tier)
                                 <div
-                                    class="w-16 sm:w-24 shrink-0 flex items-center justify-center p-2 text-zinc-800 font-bold"
-                                    style="background-color: {{ $tier->color }}"
+                                    class="flex items-stretch rounded-lg overflow-hidden border border-zinc-200"
+                                    wire:key="locked-tier-{{ $tier->getKey() }}"
                                 >
-                                    {{ $tier->name }}
-                                </div>
+                                    <div
+                                        class="w-16 sm:w-24 shrink-0 flex items-center justify-center p-2 text-zinc-800 font-bold"
+                                        style="background-color: {{ $tier->color }}"
+                                    >
+                                        {{ $tier->name }}
+                                    </div>
 
-                                <div class="flex-1 flex flex-wrap gap-2 p-2 bg-zinc-50 min-h-20">
-                                    @foreach ($tier->items as $item)
-                                        @include('livewire.tierlist.partials.board-tile', ['item' => $item])
-                                    @endforeach
+                                    <div class="flex-1 flex flex-wrap gap-2 p-2 bg-zinc-50 min-h-20">
+                                        @foreach ($tier->items as $item)
+                                            @include('livewire.tierlist.partials.board-tile', ['item' => $item])
+                                        @endforeach
+                                    </div>
                                 </div>
-                            </div>
-                        @endforeach
-                    </div>
+                            @endforeach
+                        </div>
 
-                    {{-- Lock overlay — scoped to the tier rows only --}}
-                    <div
-                        class="absolute inset-0 cursor-not-allowed flex items-center justify-center"
-                        @mouseenter="showTooltip = true"
-                        @mouseleave="showTooltip = false"
-                    >
+                        {{-- Lock overlay — scoped to the tier rows only --}}
                         <div
-                            x-show="showTooltip"
-                            x-transition
-                            class="bg-zinc-800 text-white text-xs rounded-lg px-3 py-2 shadow-lg"
+                            class="absolute inset-0 cursor-not-allowed flex items-center justify-center"
+                            @mouseenter="showTooltip = true"
+                            @mouseleave="showTooltip = false"
                         >
-                            <i class="fa fa-solid fa-lock mr-1"></i>
-                            Upgrade to {{ config('app.name') }} Pro to edit your completed tier list
+                            <div
+                                x-show="showTooltip"
+                                x-transition
+                                class="bg-zinc-800 text-white text-xs rounded-lg px-3 py-2 shadow-lg"
+                            >
+                                <i class="fa fa-solid fa-lock mr-1"></i>
+                                Upgrade to {{ config('app.name') }} Pro to edit your completed tier list
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {{-- Upgrade banner --}}
-                <x-pro-upgrade-banner class="mt-4">
-                    <p class="mt-2 text-sm text-zinc-600">
-                        Want to rearrange entries on a finished tier list? Go Pro for full editing.
-                    </p>
-                </x-pro-upgrade-banner>
-            @endif
-        </div>
+                    {{-- Upgrade banner --}}
+                    <x-pro-upgrade-banner class="mt-4">
+                        <p class="mt-2 text-sm text-zinc-600">
+                            Want to rearrange entries on a finished tier list? Go Pro for full editing.
+                        </p>
+                    </x-pro-upgrade-banner>
+                @endif
+            </div>
+        </x-card>
     @endif
 </div>

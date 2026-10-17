@@ -102,6 +102,7 @@ class EditReview extends Component
             title: 'Delete this review?',
             message: 'This will remove it from your profile and the explore feed, and free up one of your slots. You cannot undo this.',
             confirmText: 'Delete it',
+            destructive: true,
         );
     }
 

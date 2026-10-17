@@ -35,6 +35,7 @@
                     <button
                         @click="shown = false; setTimeout(() => $wire.close(), 150)"
                         class="text-zinc-400 hover:text-zinc-600 cursor-pointer"
+                        aria-label="Close"
                     >
                         <i class="fa fa-times"></i>
                     </button>

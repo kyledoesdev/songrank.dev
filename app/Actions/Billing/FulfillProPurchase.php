@@ -121,6 +121,15 @@ final class FulfillProPurchase
             return;
         }
 
+        if ($buyer->proLicenses()->active()->whereKeyNot($license->getKey())->exists()) {
+            Log::channel('discord_billing_updates')->warning('A buyer who already had Pro paid for it again. This payment likely needs refunding.', [
+                'pro_license_uuid' => $license->uuid,
+                'stripe_payment_intent_id' => $license->stripe_payment_intent_id,
+            ]);
+
+            return;
+        }
+
         $buyer->notify(new ProPurchaseReceipt($license));
 
         Log::channel('discord_user_updates')->info("{$buyer->name} has gone pro!");

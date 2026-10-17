@@ -6,7 +6,7 @@
     <x-card class="px-4 py-2.5">
         <nav class="flex items-center gap-2 text-sm text-zinc-500 min-w-0" aria-label="Breadcrumb">
             <a href="{{ route('catalog') }}" class="shrink-0 hover:text-zinc-800">
-                <i class="fa-solid fa-book text-primary-icon mr-0.5"></i>
+                <i class="fa-solid fa-box-archive text-primary-icon mr-0.5"></i>
                 Catalog
             </a>
 

@@ -2,6 +2,7 @@
 
 namespace App\Actions\Tierlists;
 
+use App\Actions\MaskProfanity;
 use App\Models\Tierlist;
 use Illuminate\Support\Facades\DB;
 
@@ -11,7 +12,7 @@ final class UpdateTierlist
     {
         DB::transaction(function () use ($tierlist, $data) {
             $tierlist->update([
-                'name' => $data['name'],
+                'name' => (new MaskProfanity)->handle($data['name'], keep: $tierlist->source?->name()),
                 'is_public' => $data['is_public'],
                 'comments_enabled' => $data['comments_enabled'],
                 'comments_replies_enabled' => $data['comments_replies_enabled'],

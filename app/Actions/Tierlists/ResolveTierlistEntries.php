@@ -16,11 +16,6 @@ final class ResolveTierlistEntries
      * Turns the entry arrays a Spotify search hands back into the catalog rows a
      * tier list points at, creating the ones we have never seen.
      *
-     * Each branch costs a handful of queries whatever the size of the bank: look
-     * up what we already hold, insert only the rest in one go. A row we already
-     * have is left alone rather than rewritten, so importing five hundred albums
-     * does not mean five hundred updates that change nothing.
-     *
      * @param  Collection<int, array<string, mixed>>  $entries
      * @return Collection<string, Model> spotify id => catalog row
      */

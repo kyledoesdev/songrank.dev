@@ -20,9 +20,17 @@ use Stripe\Exception\ApiErrorException;
  */
 class ProCheckoutController extends Controller
 {
-    public function store(StartProCheckout $startCheckout): Checkout
+    public function store(StartProCheckout $startCheckout): Checkout|RedirectResponse
     {
-        return $startCheckout->handle(Auth::user());
+        try {
+            return $startCheckout->handle(Auth::user());
+        } catch (ApiErrorException $e) {
+            report($e);
+
+            return redirect()
+                ->route('billing')
+                ->withErrors(['checkout' => 'We could not reach our payment provider, so nothing was charged. Please try again in a moment.']);
+        }
     }
 
     /**

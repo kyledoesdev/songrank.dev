@@ -2,6 +2,7 @@
 
 namespace App\Actions\Catalog;
 
+use App\Actions\MaskProfanity;
 use App\Models\Crate;
 use App\Models\User;
 use Illuminate\Support\Str;
@@ -26,7 +27,7 @@ final class StoreCrate
 
         return $user->crates()->create([
             'parent_id' => $parent?->getKey(),
-            'name' => Str::limit($attributes['name'], 40, ''),
+            'name' => Str::limit((new MaskProfanity)->handle($attributes['name']), 40, ''),
             'depth' => $parent ? $parent->depth + 1 : 0,
         ]);
     }

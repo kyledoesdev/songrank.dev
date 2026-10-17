@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Actions\Reviews\DestroyReview;
+use App\Actions\Tierlists\DestroyTierlist;
 use App\Models\Review;
 use App\Models\Tierlist;
 use App\Models\User;
@@ -45,7 +46,7 @@ class DeleteUserJob implements ShouldQueue
             });
         }
 
-        $this->user->tierlists->each(fn (Tierlist $tierlist) => $tierlist->delete());
+        $this->user->tierlists->each(fn (Tierlist $tierlist) => (new DestroyTierlist)->handle($tierlist));
 
         $this->user->reviews->each(fn (Review $review) => (new DestroyReview)->handle($review));
 

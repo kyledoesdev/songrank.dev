@@ -2,13 +2,12 @@
 
 use App\Actions\Rankings\DestroyRanking;
 use App\Actions\Reviews\DestroyReview;
+use App\Actions\Tierlists\DestroyTierlist;
 use App\Jobs\DeleteUserJob;
-use App\Livewire\Tierlist\Card;
 use App\Models\Crate;
 use App\Models\CrateItem;
 use App\Models\Ranking;
 use Illuminate\Support\Facades\Notification;
-use Livewire\Livewire;
 
 use function Pest\Laravel\assertDatabaseCount;
 use function Pest\Laravel\assertModelMissing;
@@ -36,9 +35,7 @@ describe('deleting something filed in crates', function () {
     it('takes a deleted tier list out of its crate', function () {
         $item = CrateItem::factory()->forTierlist()->create();
 
-        Livewire::actingAs($item->crate->user)
-            ->test(Card::class, ['tierlist' => $item->entity])
-            ->call('destroy');
+        (new DestroyTierlist)->handle($item->entity);
 
         assertModelMissing($item);
     });

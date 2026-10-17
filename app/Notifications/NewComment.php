@@ -4,16 +4,18 @@ namespace App\Notifications;
 
 use App\Models\Comment;
 use App\Models\Ranking;
+use App\Models\Review;
+use App\Models\Tierlist;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
-class NewCommentOnRanking extends Notification
+class NewComment extends Notification
 {
     use Queueable;
 
     public function __construct(
         public Comment $comment,
-        public Ranking $ranking,
+        public Ranking|Tierlist|Review $commentable,
     ) {}
 
     /**
@@ -31,10 +33,10 @@ class NewCommentOnRanking extends Notification
     {
         return [
             'entity' => [
-                'id' => $this->ranking->getKey(),
-                'name' => $this->ranking->name,
+                'id' => $this->commentable->getKey(),
+                'name' => $this->commentable->commentableName(),
             ],
-            'url' => route('ranking', ['id' => $this->ranking->getKey()])."#comment-{$this->comment->getKey()}",
+            'url' => $this->comment->commentUrl(),
             'message' => $this->comment->original_text,
             'user_name' => $this->comment->commentator?->name,
             'avatar' => $this->comment->commentator?->avatar,

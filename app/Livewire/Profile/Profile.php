@@ -22,8 +22,6 @@ class Profile extends Component
         $this->user = User::where('spotify_id', $id)->firstOrFail();
 
         Head::title($this->possessiveName().' Profile');
-
-        session()->put(['profile_name' => $this->user->name]);
     }
 
     public function render()

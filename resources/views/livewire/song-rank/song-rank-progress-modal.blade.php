@@ -43,6 +43,7 @@
                             type="button"
                             class="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
                             @click="showModal = false"
+                            aria-label="Close"
                         >
                             <i class="fa-solid fa-xmark text-xl"></i>
                         </button>

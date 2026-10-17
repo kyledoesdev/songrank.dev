@@ -35,7 +35,7 @@
                     <img src="{{ logo() }}" alt="{{ config('app.name') }} Logo" class="h-8 w-8 rounded-lg" />
                     <span class="text-sm font-medium text-zinc-800 ml-2">{{ config('app.name') }}</span>
                 </a>
-                <button x-on:click="sidebarOpen = false" class="text-gray-500 hover:text-gray-700">
+                <button x-on:click="sidebarOpen = false" class="text-gray-500 hover:text-gray-700" aria-label="Close menu">
                     <i class="fa fa-times fa-lg"></i>
                 </button>
             </div>
@@ -56,16 +56,10 @@
                 @auth
                     @if (Route::currentRouteName() !== 'catalog')
                         <a href="{{ route('catalog') }}" class="flex items-center px-3 py-2 text-sm font-medium text-zinc-800 rounded-md hover:bg-gray-100">
-                            <i class="fa fa-book mr-3"></i>
+                            <i class="fa fa-box-archive mr-3"></i>
                             Catalog
                         </a>
                     @endif
-                    {{-- @if (Route::currentRouteName() != 'profile' || (Route::currentRouteName() == 'profile' && Route::current()->parameter('id') != auth()->user()?->spotify_id))
-                        <a href="{{ route('profile', ['id' => auth()->user()->spotify_id ]) }}" class="flex items-center px-3 py-2 text-sm font-medium text-zinc-800 rounded-md hover:bg-gray-100">
-                            <i class="fa fa-user mr-3"></i>
-                            Profile
-                        </a>
-                    @endif --}}
                     @if (Route::currentRouteName() != 'billing')
                         <a href="{{ route('billing') }}" class="flex items-center px-3 py-2 text-sm font-medium text-zinc-800 rounded-md hover:bg-gray-100">
                             <i class="fa fa-credit-card mr-3"></i>
@@ -114,7 +108,7 @@
 
                     @auth
                         <a href="{{ route('catalog') }}" class="h-10 flex items-center me-4 rounded-lg cursor-pointer p-2 {{ in_array(Route::currentRouteName(), ['catalog', 'catalog.crate']) ? 'bg-purple-100 border-b-3 border-purple-400' : 'bg-gray-100' }}">
-                            <i class="fa fa-book mr-1"></i>
+                            <i class="fa fa-box-archive mr-1"></i>
                             <span class="text-xs font-medium text-zinc-800 mx-1">Catalog</span>
                         </a>
                     @endauth
@@ -205,7 +199,7 @@
                         </div>
                     @else
                         <div>
-                            <a href="{{ route('welcome') }}" class="btn-primary p-2">
+                            <a href="{{ route('welcome') }}" class="btn-primary p-2" aria-label="Home">
                                 <i class="fa fa-house"></i>
                             </a>
                         </div>
@@ -216,7 +210,7 @@
 
         <!-- Mobile top bar with hamburger -->
         <div class="lg:hidden flex justify-between items-center shadow-md bg-white p-4 rounded-lg">
-            <button x-on:click="sidebarOpen = true" class="text-zinc-800">
+            <button x-on:click="sidebarOpen = true" class="text-zinc-800" aria-label="Open menu">
                 <i class="fa fa-bars fa-lg"></i>
             </button>
             
@@ -233,7 +227,7 @@
                     </a>
                 </div>
             @else
-                <a href="{{ route('welcome') }}" class="btn-primary p-2">
+                <a href="{{ route('welcome') }}" class="btn-primary p-2" aria-label="Home">
                     <i class="fa fa-house"></i>
                 </a>
             @endauth

@@ -9,7 +9,7 @@ use Laravel\Head\Facades\Head;
 
 class TierlistEmbedController extends Controller
 {
-    public function __invoke(int $id): View
+    public function __invoke(string $id): View
     {
         $tierlist = Tierlist::query()->forEmbed()->findOrFail($id);
 

@@ -23,9 +23,7 @@
                     confirmText: 'Delete',
                     componentId: '{{ $this->getId() }}',
                     action: 'destroy',
-                    styles: {
-                        'confirm-btn': 'btn-danger m-2 p-2 text-white'
-                    }
+                    destructive: true
                 })"
                 title="Delete Ranking"
             >

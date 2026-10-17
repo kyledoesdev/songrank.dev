@@ -1,7 +1,11 @@
-@props(['license'])
+@props(['license', 'title'])
 
-<div>
-    <dl class="space-y-3 text-sm">
+<x-card {{ $attributes }}>
+    <x-card.header>
+        <h5 class="font-semibold">{{ $title }}</h5>
+    </x-card.header>
+
+    <dl class="p-4 space-y-3 text-sm">
         <div class="flex items-start justify-between gap-4">
             <dt class="text-slate-600">License ID</dt>
             <dd class="font-mono text-xs text-slate-900 break-all text-right">{{ $license->uuid }}</dd>
@@ -52,24 +56,24 @@
     </dl>
 
     @if ($license->isPaid())
-        <div class="flex flex-wrap gap-2 mt-6">
+        <x-card.footer class="flex flex-wrap justify-end gap-2">
             @if ($license->hosted_invoice_url)
-                <a href="{{ $license->hosted_invoice_url }}" target="_blank" rel="noopener" class="text-sm px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 hover:border-slate-300">
+                <a href="{{ $license->hosted_invoice_url }}" target="_blank" rel="noopener" class="text-sm px-3 py-2 rounded-lg bg-white border border-slate-200 hover:border-slate-300">
                     <i class="fa fa-solid fa-file-invoice mr-1"></i> Invoice
                 </a>
             @endif
 
             @if ($license->invoice_pdf_url)
-                <a href="{{ $license->invoice_pdf_url }}" target="_blank" rel="noopener" class="text-sm px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 hover:border-slate-300">
+                <a href="{{ $license->invoice_pdf_url }}" target="_blank" rel="noopener" class="text-sm px-3 py-2 rounded-lg bg-white border border-slate-200 hover:border-slate-300">
                     <i class="fa fa-solid fa-file-pdf mr-1"></i> PDF
                 </a>
             @endif
 
             @unless ($license->hasReceipt())
-                <button wire:click="refreshReceipt" wire:loading.attr="disabled" class="text-sm px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 hover:border-slate-300">
+                <button wire:click="refreshReceipt" wire:loading.attr="disabled" class="text-sm px-3 py-2 rounded-lg bg-white border border-slate-200 hover:border-slate-300">
                     <i class="fa fa-solid fa-rotate mr-1"></i> Fetch receipt
                 </button>
             @endunless
-        </div>
+        </x-card.footer>
     @endif
-</div>
+</x-card>

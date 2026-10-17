@@ -244,6 +244,12 @@ describe('the embed', function () {
         get(route('tierlist.embed', ['id' => $tierlist->getKey()]))->assertNotFound();
     });
 
+    it('404s on an id that is not a number', function () {
+        publicCompletedTierlist();
+
+        get(route('tierlist.embed', ['id' => 'not-a-list']))->assertNotFound();
+    });
+
     it('finds the top picks however far down the board they sit', function () {
         $tierlist = publicCompletedTierlist();
 

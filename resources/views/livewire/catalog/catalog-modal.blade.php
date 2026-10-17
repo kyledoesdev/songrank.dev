@@ -1,6 +1,6 @@
 <div x-data="{ open: false }">
     <button type="button" class="text-xs text-primary hover:underline cursor-pointer" x-on:click="open = true">
-        <i class="fa-solid fa-book mr-1"></i>
+        <i class="fa-solid fa-box-archive mr-1"></i>
         View catalog
     </button>
 
@@ -18,7 +18,7 @@
                 <x-card.header class="flex items-center justify-between gap-3">
                     <nav class="flex items-center gap-2 text-sm text-zinc-500 min-w-0" aria-label="Breadcrumb">
                         <button type="button" class="shrink-0 font-semibold text-zinc-800 hover:text-zinc-600 cursor-pointer" wire:click="showTopLevel">
-                            <i class="fa-solid fa-book text-primary-icon mr-1"></i>
+                            <i class="fa-solid fa-box-archive text-primary-icon mr-1"></i>
                             {{ $user->name }}'s Catalog
                         </button>
 

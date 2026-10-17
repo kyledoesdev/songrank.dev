@@ -27,7 +27,7 @@ The one gap is mass assignment: `ProLicense::query()->update(...)` fires no mode
 ## The Purchase Lifecycle
 
 1. **`POST /billing/checkout`** → `ProCheckoutController::store` → `StartProCheckout`
-   Writes a `pro_licenses` row with status `pending` **before** redirecting, so a webhook arriving moments later has something to attach to. The licence uuid rides along in both `client_reference_id` and `metadata.pro_license_uuid`. The session is `mode: payment` with `invoice_creation.enabled`. If Stripe issues no session the row is marked `abandoned` and the throwable re-raised — nothing will ever attach to it.
+   Writes a `pro_licenses` row with status `pending` **before** redirecting, so a webhook arriving moments later has something to attach to. The licence uuid rides along in both `client_reference_id` and `metadata.pro_license_uuid`. The session is `mode: payment` with `invoice_creation.enabled`. If Stripe issues no session the row is marked `abandoned` and the throwable re-raised — nothing will ever attach to it. Otherwise the session id is stored on the row. Before any of this, it expires every session the buyer still has open, so a second tab cannot be paid too; Stripe refuses to expire a paid one, and that licence stays pending for fulfillment to claim.
 2. **`GET /billing/checkout/success?session_id=…`** → `ProCheckoutController::show` → `FulfillProPurchase`
 3. **In parallel**, `checkout.session.completed` reaches Cashier's webhook route, which dispatches `WebhookReceived`, which `HandleStripeWebhook` listens to → `FulfillProPurchase`
 
@@ -47,7 +47,7 @@ Both callers run, and Stripe retries webhooks for three days, so **fulfillment m
 - **Store as little as possible.** No card brand or last four, no payment-method columns on `users`, no trial columns, no subscription tables — Cashier's published migrations for those were deliberately removed. Stripe holds the card; we hold an invoice URL. Anything added here has to be disclosed in the privacy policy, so the bar is "the product genuinely cannot work without it".
 - **Invoice PDFs come from Stripe** (`invoice_creation` on the session). There is no PDF library and none should be added, whatever `config/cashier.php`'s `invoices.renderer` default says.
 - **Automatic tax is opt-in** via `STRIPE_AUTOMATIC_TAX`, gating both `Cashier::calculateTaxes()` and the session's `automatic_tax`/`tax_id_collection`. Sending those before the Stripe account has a head office address makes Stripe reject the whole checkout session, so it stays off until Stripe Tax is genuinely configured.
-- **The checkout session is a resource:** `store`, `show`, `cancel`. `show` and `cancel` answer GET because Stripe redirects the customer's browser to them. `RedirectIfAlreadyPro` handles entitlement on the route so the controller keeps a single return type.
+- **The checkout session is a resource:** `store`, `show`, `cancel`. `show` and `cancel` answer GET because Stripe redirects the customer's browser to them. `RedirectIfAlreadyPro` handles entitlement on the route, which is throttled, and `store` sends the buyer back to billing with an error when Stripe cannot be reached.
 - **Limits are a UI block, not a policy.** `setup-header.blade.php` swaps the search box for an upgrade prompt when the allowance is spent, so a capped user never reaches a search. `ensureCanCreateRanking()` / `ensureCanCreateTierlist()` are backstops for stale pages. There is no ranking or tier list policy — a 403 after clicking "begin ranking" is the wrong place to find out.
 
 ## The Files

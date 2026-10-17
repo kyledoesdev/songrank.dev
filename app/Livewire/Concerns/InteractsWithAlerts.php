@@ -25,13 +25,15 @@ trait InteractsWithAlerts
 
     /**
      * Puts a yes/no in front of an action, calling back into this component
-     * when the answer is yes.
+     * when the answer is yes. A destructive one, like a delete, gets a red
+     * confirm button rather than the primary purple.
      */
     protected function confirmAction(
         string $action,
         string $title,
         string $message,
         string $confirmText = 'Confirm',
+        bool $destructive = false,
     ): void {
         $this->alert('confirm', [
             'title' => $title,
@@ -39,6 +41,7 @@ trait InteractsWithAlerts
             'confirmText' => $confirmText,
             'componentId' => $this->getId(),
             'action' => $action,
+            'destructive' => $destructive,
         ]);
     }
 

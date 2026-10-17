@@ -55,6 +55,7 @@ class EditRanking extends Component
             title: 'Delete this ranking?',
             message: 'This will remove it from your profile and the explore feed. You cannot undo this.',
             confirmText: 'Delete it',
+            destructive: true,
         );
     }
 

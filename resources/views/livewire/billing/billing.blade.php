@@ -1,36 +1,34 @@
 <div>
     @if (Auth::user()->is_pro)
-        <div class="mt-2 bg-white shadow-lg p-4 md:p-6 rounded-xl">
+        <x-card class="mt-2 p-4 md:p-6">
 
             <!-- Plan Summary -->
-            <div class="bg-white rounded-xl p-6 shadow-md border border-slate-100">
-                <div class="flex items-center gap-2">
+            <x-card>
+                <x-card.header class="flex items-center gap-2">
                     <h4 class="text-lg font-semibold text-slate-900">{{ config('app.name') }} Pro</h4>
 
                     <span class="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-700">
                         <i class="fa fa-solid fa-star"></i>
                         Pro
                     </span>
+                </x-card.header>
+
+                <div class="p-4">
+                    <p class="text-sm text-slate-600">
+                        Thanks for supporting {{ config('app.name') }}. Everything built for Pro is included on this license.
+                    </p>
+
+                    <p class="text-xs text-slate-500 mt-2 font-semibold">
+                        Your license belongs to this account.
+                    </p>
                 </div>
-
-                <p class="text-sm text-slate-600 mt-1">
-                    Thanks for supporting {{ config('app.name') }}. Everything we build for Pro is included on this license.
-                </p>
-
-                <p class="text-xs text-slate-500 mt-2 font-semibold">
-                    Your license belongs to this account. Deleting your account ends it, and it cannot be transferred or restored.
-                </p>
-            </div>
+            </x-card>
 
             @if ($license)
                 <!-- License details -->
-                <div class="mt-4 bg-white rounded-xl p-6 shadow-md">
-                    <h5 class="font-semibold mb-6">Your Purchase</h5>
-
-                    <x-billing.license-details :license="$license" />
-                </div>
+                <x-billing.license-details :license="$license" title="Your Purchase" class="mt-4" />
             @endif
-        </div>
+        </x-card>
     @else
         <div class="mt-2 max-w-5xl mx-auto">
             <div class="text-center my-6">
@@ -63,11 +61,7 @@
 
             @if ($license)
                 <!-- A past purchase that no longer grants Pro, e.g. refunded -->
-                <div class="mt-6 bg-white rounded-xl p-6 shadow-md">
-                    <h5 class="font-semibold mb-6">Your Previous Purchase</h5>
-
-                    <x-billing.license-details :license="$license" />
-                </div>
+                <x-billing.license-details :license="$license" title="Your Previous Purchase" class="mt-6" />
             @endif
         </div>
     @endif

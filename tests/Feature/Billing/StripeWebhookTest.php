@@ -297,6 +297,24 @@ describe('a buyer who is no longer there', function () {
     });
 });
 
+describe('a buyer who already has Pro', function () {
+    it('records the second payment and flags it for a refund, without welcoming them again', function () {
+        watchBillingLog();
+
+        $buyer = proUser();
+        $license = ProLicense::factory()->pending()->for($buyer)->create(['source' => ProLicenseSource::PURCHASE]);
+
+        handleStripeEvent('checkout.session.completed', completedSession($license->uuid));
+
+        expect($license->fresh()->status)->toBe(ProLicenseStatus::ACTIVE);
+
+        Log::shouldHaveReceived('warning')
+            ->withArgs(fn (string $message, array $context) => $context['pro_license_uuid'] === $license->uuid)
+            ->once();
+        Notification::assertNotSentTo($buyer, ProPurchaseReceipt::class);
+    });
+});
+
 describe('charge.dispute.created', function () {
     it('revokes access on a chargeback', function () {
         $license = ProLicense::factory()->active()->create([

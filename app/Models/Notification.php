@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Notifications\NewCommentOnRanking;
+use App\Notifications\NewComment;
 use App\Notifications\ProPurchaseReceipt;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Notifications\DatabaseNotification;
@@ -39,13 +39,13 @@ class Notification extends DatabaseNotification
 
     public function isCommentNotification(): bool
     {
-        return $this->type === NewCommentOnRanking::class;
+        return $this->type === NewComment::class;
     }
 
     public function description(): string
     {
         return match ($this->type) {
-            NewCommentOnRanking::class => ($this->user_name ?? 'Someone').' commented on '.($this->entity['name'] ?? 'your ranking'),
+            NewComment::class => ($this->user_name ?? 'Someone').' commented on '.($this->entity['name'] ?? 'something you made'),
             ProPurchaseReceipt::class => $this->message ?? 'Welcome to '.config('app.name').' Pro!',
             default => 'You have a new notification',
         };

@@ -3,16 +3,12 @@
 namespace App\Actions\Reviews;
 
 use App\Actions\Artists\ResolveArtists;
-use App\Actions\Tierlists\ResolveTierlistEntries;
 use App\Enums\ReviewType;
 use App\Models\Album;
 use App\Models\Artist;
 use App\Models\Track;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * @see ResolveTierlistEntries for the many-entry version
- */
 final class ResolveReviewSubject
 {
     public function handle(ReviewType $type, array $entry): Model
