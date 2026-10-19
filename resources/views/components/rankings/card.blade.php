@@ -37,7 +37,8 @@
                 {{-- Top Song --}}
                 <span class="inline-flex items-center gap-1.5 text-xs bg-zinc-100 text-zinc-600 px-2.5 py-1 rounded-lg">
                     <i class="fa-regular fa-star text-amber-500"></i>
-                    {{ $ranking->is_ranked ? Str::limit($ranking->songs->first()->title, 20) : 'N/A' }}
+                    {{-- Null check ->title here because deleting a ranking through card on profile can refresh the profile before delete transaction completes --}}
+                    {{ $ranking->is_ranked ? Str::limit($ranking->songs->first()?->title, 20) : 'N/A' }}
                 </span>
 
                 {{-- Track Count --}}
