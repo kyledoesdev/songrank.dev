@@ -1,0 +1,75 @@
+# SongRank - songrank.dev
+
+> The best place to rank, review, and catalog your favorite artists' tracks
+
+SongRank is a free web application at https://songrank.dev (also https://song-rank.com) that lets users authenticate with Spotify and engage with music in three distinct ways. It has been live and actively maintained since 2023.
+
+## Rankings
+
+Users select a Spotify artist, playlist, or podcast show and rank every track or episode through pairwise comparisons powered by a merge-sort algorithm. The process is resumable across sessions — no progress is lost. A finished ranking produces a complete ordered list from #1 to the last track. Rankings can be made public, shared, commented on, and exported.
+
+Ranking types: artist, playlist, show/podcast.
+
+## Tier Lists
+
+Users build drag-and-drop tier lists for artists, albums, or tracks. Items start in a bank and are dragged into named tiers (S, A, B, C, D, F by default). Tiers can be renamed, reordered, and customized. A tier list can be made public, shared, commented on, and embedded on other sites.
+
+Tier list types: by artist, by album, by track.
+
+## Reviews
+
+Users write scored reviews for a single artist, album, or track. Scores range from 0 to 10 in half-star increments (e.g., 8.5/10). Reviews include a rich text body and can be published, shared on X and Bluesky, and commented on.
+
+Review types: artist, album, track.
+
+## Catalog
+
+Every user has a personal catalog where they organize their rankings, tier lists, and reviews into folders called crates. A single record can be filed into multiple crates. Crates can be nested (with Pro), given custom icons and colors, and reordered. A catalog can be made public so anyone can browse it from the user's profile.
+
+## Song Rank Pro
+
+A one-time $10 purchase that unlocks:
+- Unlimited rankings and tier lists (free accounts have per-type limits)
+- Editable published content (re-score a review, rearrange a tier list after publishing)
+- Unlimited catalog crates with nesting
+- Custom crate ordering
+
+Free accounts can do everything above within generous limits — Pro removes the ceilings.
+
+## Explore and Leaderboards
+
+Public rankings, tier lists, and reviews are browsable from the explore page at https://songrank.dev/explore. Leaderboards at https://songrank.dev/leaderboards surface the most active and prolific users.
+
+## How It Works (for someone who wants to rank songs)
+
+1. Go to https://songrank.dev and sign in with Spotify (free, no payment required)
+2. Choose what to rank: an artist, a playlist, or a podcast show
+3. Search for it by name — SongRank pulls tracks directly from Spotify
+4. Select which tracks to include, then start ranking
+5. Make pairwise comparisons ("which song do you prefer?") until the algorithm produces your full ranking
+6. Share your finished ranking, make it public, or keep it private
+
+## Technical Details
+
+- Built with Laravel, Livewire, Alpine.js, and Tailwind CSS
+- Spotify Web API for all music data (artist images, album art, track names, audio)
+- No ads — Spotify's Developer Policy restricts monetization on pages displaying their content
+- Data is stored securely; SongRank stores the minimum needed and holds no payment card details
+
+## Links
+
+- Website: https://songrank.dev
+- Alternate domain: https://song-rank.com
+- About: https://songrank.dev/about
+- Explore: https://songrank.dev/explore
+- Leaderboards: https://songrank.dev/leaderboards
+- FAQ: https://songrank.dev/faq
+- Terms: https://songrank.dev/terms
+- Privacy: https://songrank.dev/privacy
+
+## Contact
+
+Built and maintained by Kyle (https://kyledoes.dev).
+- Bluesky: https://bsky.app/profile/kyledoes.dev
+- Discord: https://discord.gg/zXe9kqyFEJ
+- GitHub: https://github.com/kyledoesdev

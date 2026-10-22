@@ -41,6 +41,13 @@ function logo(): string
     return asset(auth()->user()?->is_pro ? 'images/pro-logo.png' : 'images/logo.png');
 }
 
+function possessive(string $name): string
+{
+    return str_ends_with($name, 's')
+        ? $name."'"
+        : $name."'s";
+}
+
 function short_number(int $number): string
 {
     return match (true) {

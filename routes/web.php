@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\NewsletterUnsubscribeController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\SpotifyAuthController;
 use App\Livewire\About;
 use App\Livewire\Dashboard\Dashboard;
@@ -87,6 +88,8 @@ Route::middleware(Authenticate::class)->group(function () {
         Route::get('health', HealthCheckResultsController::class)->name('health');
     });
 });
+
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
 require __DIR__.'/rankings.php';
 require __DIR__.'/billing.php';

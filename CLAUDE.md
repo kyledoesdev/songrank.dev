@@ -42,7 +42,7 @@ The **Catalog** sits on top of all three: each user files their own rankings, ti
 
 ## Tech Stack
 
-- **Backend:** PHP 8.4+ (8.5 locally and in CI), Laravel 13
+- **Backend:** PHP 8.5, Laravel 13
 - **Frontend:** Livewire 4 with Blade templates, Alpine.js, Tailwind CSS v4, Vite. sweetalert2 for dialogs. Flux UI (Pro) is installed, but **only** for session-flash toasts and the rich text editor
 - **Admin Panel:** Filament 5
 - **Auth:** Laravel Socialite with the Spotify provider
@@ -129,9 +129,21 @@ Every model with non-trivial reads has a builder in `app/QueryBuilders/`, attach
 
 `app/global/functions.php` is autoloaded via the `files` array in `composer.json`.
 
+### SEO
+
+All page-level SEO logic (OG tags, Twitter cards, canonical URLs, JSON-LD structured data) lives in `app/Seo/`, one class per page surface. Each class owns the full set of `Head::` calls for that page; the Livewire component or controller just news it up and calls `handle()`.
+
+- `RankingPage` — OG/Twitter/canonical + `ItemList` schema for public finished rankings
+- `TierlistPage` — OG/Twitter/canonical + `ItemList` schema for public completed tier lists
+- `ReviewPage` — OG/Twitter/canonical + `Review` schema with `Rating` for public reviews
+- `FaqPage` — `FAQPage` schema from active FAQ entries
+- `WelcomePage` — `WebApplication` schema with pricing tiers and author
+
+The site-wide default meta description and OG/Twitter fallbacks are configured in `AppServiceProvider::configureHead()`. SEO keywords come from `ApplicationDashboard::seoTerms()`, cached for a week and busted by `ApplicationDashboardObserver` on save.
+
 ## Feature Flags
 
-Three Pennant flags: `songrank-pro` (`app/Features/SongRankPro.php`), `tierlists` (`app/Features/Tierlists.php`) and `reviews` (`app/Features/Reviews.php`). All three are released — each resolves true for any signed-in user and false for a guest — and nothing in the app checks them any more; what a free account can do is limited by Pro, not by a flag. `pennant:purge` is a routine deploy step. A flag is a rollout switch and nothing more — it never answers "has this person paid?" (see Song Rank Pro below).
+Three Pennant flags exist (`songrank-pro`, `tierlists`, `reviews`) but all three are fully released — each resolves true for any signed-in user and false for a guest. Nothing in the app checks them; what a free account can do is limited by Pro, not by a flag. `pennant:purge` is a routine deploy step. A flag is a rollout switch and nothing more — it never answers "has this person paid?" (see Song Rank Pro below).
 
 ## Tier Lists
 
@@ -167,10 +179,7 @@ Three Pennant flags: `songrank-pro` (`app/Features/SongRankPro.php`), `tierlists
 
 A one-time $10 purchase.
 
-Two separate concepts, deliberately never merged:
-
-- **The flag** answers "does the Pro system exist for this user yet?" — a rollout switch.
-- **A `pro_licenses` row** answers "has this person paid?" — the entitlement. **Never grant Pro by activating a Pennant flag.**
+The Pennant flag (`songrank-pro`) is a rollout switch, not an entitlement — **never grant Pro by activating a Pennant flag.** A `pro_licenses` row answers "has this person paid?"
 
 `users.is_pro` is a projection of the licences table, not a second source of truth. `ProLicenseObserver` recomputes it whenever a licence is saved, deleted or restored, so `$user->is_pro` is a column read rather than a query — it is called from the nav, the setup header, the middleware and the billing page on a single page load. The one gap is mass assignment: `ProLicense::query()->update(...)` fires no model events, so anything doing that must call `$user->syncProStatus()` itself (`DeleteUserJob` is the only place that currently does).
 

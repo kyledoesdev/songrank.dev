@@ -14,6 +14,7 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         @head
+        <link rel="help" type="text/plain" href="/llms.txt">
 
         <!-- Fonts -->
         <script src="https://kit.fontawesome.com/07b7751319.js" crossorigin="anonymous"></script>

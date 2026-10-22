@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\Tierlists\ApplyTierlistShareTags;
 use App\Models\Tierlist;
+use App\Seo\TierlistPage;
 use Illuminate\Contracts\View\View;
 use Laravel\Head\Facades\Head;
 
@@ -13,7 +13,7 @@ class TierlistEmbedController extends Controller
     {
         $tierlist = Tierlist::query()->forEmbed()->findOrFail($id);
 
-        (new ApplyTierlistShareTags)->handle($tierlist);
+        (new TierlistPage)->handle($tierlist);
 
         Head::title($tierlist->name);
         Head::robots('noindex, follow');

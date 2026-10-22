@@ -125,7 +125,7 @@ class AppServiceProvider extends ServiceProvider
         Head::defaults(function (HeadBuilder $head): HeadBuilder {
             return $head
                 ->title(config('app.name'), suffix: ' | '.config('app.name'))
-                ->description('Rank your favorite artists\' tracks')
+                ->description('The best place to rank, review, and catalog your favorite artists\' tracks')
                 ->viewport('width=device-width, initial-scale=1')
                 ->canonical()
                 ->searchableByRobots()

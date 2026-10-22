@@ -1,24 +1,28 @@
-# Song Rank - songrank.dev
+# SongRank - songrank.dev
 
-> Rank your favorite artists, custom playlists and shows/podcast episodes
+> The best place to rank, review, and catalog your favorite artists' tracks
 
-Song Rank is a free web application that lets users authenticate with Spotify, select an artist, playlist or show, and rank the tracks/episodes through pairwise comparisons. The merge-sort algorithm produces a complete ranking that can be shared publicly.
+SongRank is a web application that lets users authenticate with Spotify and engage with music in three ways: rank an artist's, playlist's or show's tracks through pairwise comparisons, build tier lists for artists, albums or tracks, and write scored reviews. Finished records can be made public, browsed from the explore page and commented on. Users organize their work into a personal catalog of crates (folders).
 
 ## Features
 
 - Spotify OAuth authentication
-- Artist playlist & show ranking
-- Merge-sort pairwise comparison algorithm
-- Resumable ranking sessions
-- Public ranking sharing and exploration
-- Comments on public rankings
+- Artist, playlist & show ranking via merge-sort pairwise comparisons
+- Tier lists by artist, album or track on a drag-and-drop board
+- Reviews scored out of ten in half stars with a rich text body
+- Catalog system with nested crates to organize rankings, tier lists and reviews
+- Resumable ranking and tier list sessions
+- Public sharing, exploration and leaderboards
+- Comments on public rankings, tier lists and reviews
 - User profiles and dashboards
+- Song Rank Pro: a one-time purchase for unlimited lists, editable published content and more
 
 ## Links
 
 - Website: https://songrank.dev (also https://song-rank.com)
 - About: https://songrank.dev/about
+- Explore: https://songrank.dev/explore
+- Leaderboards: https://songrank.dev/leaderboards
 - FAQ: https://songrank.dev/faq
 - Terms: https://songrank.dev/terms
 - Privacy: https://songrank.dev/privacy
-- Explorer: https://songrank.dev/explore
