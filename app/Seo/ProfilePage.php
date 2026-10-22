@@ -3,14 +3,13 @@
 namespace App\Seo;
 
 use App\Models\User;
-use Illuminate\Support\Str;
 use Laravel\Head\Facades\Head;
 
 final class ProfilePage
 {
     public function handle(User $user): void
     {
-        $name = $this->possessiveName($user);
+        $name = possessive($user->name);
         $description = "{$name} profile on SongRank with rankings, tier lists, and reviews";
         $url = route('profile', ['id' => $user->spotify_id]);
 
@@ -54,12 +53,5 @@ final class ProfilePage
                 'image' => $user->avatar,
             ], fn ($value) => filled($value)),
         ], fn ($value) => filled($value));
-    }
-
-    private function possessiveName(User $user): string
-    {
-        return Str::endsWith($user->name, 's')
-            ? $user->name."'"
-            : $user->name."'s";
     }
 }

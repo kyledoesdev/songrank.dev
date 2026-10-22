@@ -8,7 +8,6 @@ use App\Models\Tierlist;
 use App\Models\User;
 use App\Seo\ProfilePage;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 use Laravel\Head\Facades\Head;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -22,7 +21,7 @@ class Profile extends Component
     {
         $this->user = User::where('spotify_id', $id)->firstOrFail();
 
-        Head::title($this->possessiveName().' Profile');
+        Head::title(possessive($this->user->name).' Profile');
         (new ProfilePage)->handle($this->user);
     }
 
@@ -33,19 +32,12 @@ class Profile extends Component
         $hasReviews = $this->reviews->isNotEmpty();
 
         return view('livewire.profile.profile', [
-            'name' => $this->possessiveName(),
+            'name' => possessive($this->user->name),
             'hasRankings' => $hasRankings,
             'hasTierlists' => $hasTierlists,
             'hasReviews' => $hasReviews,
             'showTabs' => collect([$hasRankings, $hasTierlists, $hasReviews])->filter()->count() > 1,
         ]);
-    }
-
-    private function possessiveName(): string
-    {
-        return Str::endsWith($this->user->name, 's')
-            ? $this->user->name."'"
-            : $this->user->name."'s";
     }
 
     #[Computed]
