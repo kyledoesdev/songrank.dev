@@ -6,6 +6,7 @@ use App\Models\Ranking;
 use App\Models\Review;
 use App\Models\Tierlist;
 use App\Models\User;
+use App\Seo\ProfilePage;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Laravel\Head\Facades\Head;
@@ -22,6 +23,7 @@ class Profile extends Component
         $this->user = User::where('spotify_id', $id)->firstOrFail();
 
         Head::title($this->possessiveName().' Profile');
+        (new ProfilePage)->handle($this->user);
     }
 
     public function render()

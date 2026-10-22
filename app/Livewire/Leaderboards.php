@@ -7,11 +7,17 @@ use App\Models\Artist;
 use App\Models\Ranking;
 use App\Models\Track;
 use App\Models\User;
+use App\Seo\LeaderboardsPage;
 use Illuminate\Support\Collection;
 use Livewire\Component;
 
 class Leaderboards extends Component
 {
+    public function mount(): void
+    {
+        (new LeaderboardsPage)->handle($this->topArtists());
+    }
+
     public function render()
     {
         return view('livewire.leaderboards', [
