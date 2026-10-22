@@ -5,8 +5,8 @@ User-agent: *
 Allow: /
 
 # About
-Name: Song Rank
-Description: A web application that ranks songs via a merge-sort algorithm. Users authenticate with Spotify, select an artist, playlist or show, then make pairwise song comparisons until a full ranking is produced.
+Name: SongRank
+Description: A web application for ranking, reviewing, and cataloging music. Users authenticate with Spotify, then rank tracks via pairwise comparisons, build drag-and-drop tier lists for artists, albums or tracks, and write scored reviews. Finished records can be shared publicly, browsed and commented on.
 URL: https://songrank.dev
 URL: https://song-rank.com
 Contact: https://songrank.dev/about

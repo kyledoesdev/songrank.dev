@@ -129,6 +129,17 @@ class Ranking extends Model implements CrateEntity
         return $this->is_public && $this->is_ranked;
     }
 
+    /* share */
+
+    public function shareDescription(): string
+    {
+        $topSongs = $this->songs->take(3)->pluck('title')->filter()->join(', ');
+
+        $prefix = filled($topSongs) ? "Top 3: {$topSongs}. " : '';
+
+        return "{$prefix}A {$this->type->label()} ranking by {$this->user->name} on ".config('app.name');
+    }
+
     /* contracts */
 
     public function cover(): ?string

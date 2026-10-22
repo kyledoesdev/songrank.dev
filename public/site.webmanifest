@@ -1,6 +1,8 @@
 {
-    "name":"songrank.dev",
-    "short_name":"songrank",
+    "name":"SongRank",
+    "short_name":"SongRank",
+    "description":"The best place to rank, review, and catalog your favorite artists' tracks",
+    "start_url":"/",
     "icons":[
         {
             "src":"/android-chrome-192x192.png",
