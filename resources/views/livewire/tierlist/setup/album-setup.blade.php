@@ -71,5 +71,12 @@
                 </div>
             </div>
         @endunless
+
+        @if ($this->removedEntryCount() > 0)
+            @include('livewire.tierlist.setup.partials.removed-entries', [
+                'removedEntries' => $this->removedEntries,
+                'type' => $this->tierlistType(),
+            ])
+        @endif
     </x-card>
 </div>

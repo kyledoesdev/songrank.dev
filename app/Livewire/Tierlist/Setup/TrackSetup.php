@@ -13,6 +13,7 @@ use App\Livewire\Tierlist\Concerns\HasEntryBank;
 use App\Livewire\Tierlist\Concerns\HasTierlistFlashErrors;
 use App\Livewire\Tierlist\Concerns\HasTierlistForm;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Livewire\Component;
@@ -117,10 +118,55 @@ class TrackSetup extends Component
                 'cover' => $song['cover'],
                 'artist_id' => $this->selectedArtist['id'],
                 'artist_name' => $this->selectedArtist['name'],
+                'album_id' => $song['album_id'],
                 'album_name' => $song['album_name'] ?? null,
+                'album_type' => $song['album_type'] ?? null,
             ])
         );
     }
+
+    // -- Album filtering (discography mode) --
+
+    public function albums(): Collection
+    {
+        $removedIds = $this->removedEntries->pluck('id');
+
+        return $this->bank->concat($this->removedEntries)
+            ->filter(fn (array $entry) => isset($entry['album_id']))
+            ->groupBy('album_id')
+            ->map(function (Collection $tracks) use ($removedIds) {
+                $first = $tracks->first();
+                $removedCount = $tracks->pluck('id')->intersect($removedIds)->count();
+
+                return [
+                    'id' => $first['album_id'],
+                    'name' => $first['album_name'],
+                    'type' => $first['album_type'],
+                    'cover' => $first['cover'],
+                    'track_count' => $tracks->count(),
+                    'selected_count' => $tracks->count() - $removedCount,
+                    'all_selected' => $removedCount === 0,
+                    'none_selected' => $removedCount === $tracks->count(),
+                ];
+            })
+            ->sortBy([['type', 'asc'], ['name', 'asc']])
+            ->values();
+    }
+
+    public function toggleAlbum(string $albumId): void
+    {
+        $inBank = $this->bank->filter(fn (array $e) => ($e['album_id'] ?? null) === $albumId);
+
+        if ($inBank->isEmpty()) {
+            $this->bulkRestore(
+                $this->removedEntries->filter(fn (array $e) => ($e['album_id'] ?? null) === $albumId)->pluck('id')
+            );
+        } else {
+            $this->bulkRemove($inBank->pluck('id'));
+        }
+    }
+
+    // -- Reset --
 
     public function resetSetup(): void
     {
