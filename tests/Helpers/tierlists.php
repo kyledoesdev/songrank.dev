@@ -50,7 +50,9 @@ function trackEntry(array $overrides = []): array
         'cover' => 'https://example.test/currents.png',
         'artist_id' => 'tame-impala-id',
         'artist_name' => 'Tame Impala',
+        'album_id' => 'currents-id',
         'album_name' => 'Currents',
+        'album_type' => 'album',
     ], $overrides);
 }
 

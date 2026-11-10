@@ -104,9 +104,24 @@
 
                     @include('livewire.tierlist.setup.partials.entry-bank', [
                         'type' => $this->tierlistType(),
+                        'showAlbumFilter' => $this->albums()->isNotEmpty(),
                     ])
                 </div>
             </div>
         @endunless
+
+        @if ($this->albums()->isNotEmpty())
+            @include('partials.album-filters', [
+                'albums' => $this->albums(),
+                'removeMethod' => 'removeEntriesMatching',
+            ])
+        @endif
+
+        @if ($this->removedEntryCount() > 0)
+            @include('livewire.tierlist.setup.partials.removed-entries', [
+                'removedEntries' => $this->removedEntries,
+                'type' => $this->tierlistType(),
+            ])
+        @endif
     </x-card>
 </div>

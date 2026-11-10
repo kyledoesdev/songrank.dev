@@ -38,8 +38,7 @@
         <button
             type="button"
             class="text-gray-500 hover:text-red-600 transition-all duration-200 p-1 shrink-0 cursor-pointer transform hover:scale-110"
-            wire:click="removeEntry('{{ $entry['id'] }}')"
-            wire:key="remove-{{ $entry['id'] }}"
+            @click="removing = true; $wire.removeEntry('{{ $entry['id'] }}')"
             title="Take off the board"
         >
             <i class="fa-solid fa-trash-can"></i>

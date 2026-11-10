@@ -1,4 +1,4 @@
-{{-- Livewire partial: expects $albums (nullable Collection from ArtistSetup::albums()). --}}
+{{-- Shared album-filters modal. Expects $albums (Collection) and $removeMethod (string). --}}
 
 @php
     $albums = $albums ? collect($albums) : collect();
@@ -124,7 +124,7 @@
                             </div>
                         @endif
 
-                        {{-- Custom Filters tab --}}
+                        {{-- Quick Filters tab --}}
                         <div x-show="activeTab === 'custom'" x-cloak class="space-y-3">
                             <p class="text-sm text-zinc-500 mb-4">
                                 Quickly remove tracks matching common patterns.
@@ -133,21 +133,21 @@
                                 <button
                                     type="button"
                                     class="btn-primary px-3 py-2 text-sm transform transition-all duration-300 hover:scale-105 active:scale-95 hover:shadow-md"
-                                    wire:click="removeTracksMatching('remix')"
+                                    wire:click="{{ $removeMethod }}('remix')"
                                 >
                                     Remove Remixes
                                 </button>
                                 <button
                                     type="button"
                                     class="btn-secondary px-3 py-2 text-sm transform transition-all duration-300 hover:scale-105 active:scale-95 hover:shadow-md"
-                                    wire:click="removeTracksMatching('live from')"
+                                    wire:click="{{ $removeMethod }}('live from')"
                                 >
                                     Remove "Live From" Tracks
                                 </button>
                                 <button
                                     type="button"
                                     class="btn-helper px-3 py-2 text-sm transform transition-all duration-300 hover:scale-105 active:scale-95 hover:shadow-md"
-                                    wire:click="removeTracksMatching('instrumental')"
+                                    wire:click="{{ $removeMethod }}('instrumental')"
                                 >
                                     Remove "Instrumental" Tracks
                                 </button>

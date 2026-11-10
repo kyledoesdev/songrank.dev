@@ -4,11 +4,15 @@ namespace App\Livewire\Tierlist\Concerns;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 trait HasEntryBank
 {
     /** The entries picked so far, in the order they were picked. */
     public Collection $bank;
+
+    /** Entries the user took off the board but might want back. */
+    public Collection $removedEntries;
 
     public ?Collection $searchResults = null;
 
@@ -17,6 +21,7 @@ trait HasEntryBank
     public function initializeHasEntryBank(): void
     {
         $this->bank ??= collect();
+        $this->removedEntries ??= collect();
     }
 
     // -- Reading the bank --
@@ -52,6 +57,11 @@ trait HasEntryBank
         return max(0, $this->bankLimit() - $this->bankCount());
     }
 
+    public function removedEntryCount(): int
+    {
+        return $this->removedEntries->count();
+    }
+
     /**
      * Spotify's url segments are the same words as our type values, so an
      * entry never has to carry a link it can be asked for.
@@ -79,6 +89,12 @@ trait HasEntryBank
 
     public function addEntry(string $id): void
     {
+        if ($this->removedEntries->contains('id', $id)) {
+            $this->restoreEntry($id);
+
+            return;
+        }
+
         $entry = collect($this->searchResults)->firstWhere('id', $id);
 
         if (is_null($entry) || $this->holds($id)) {
@@ -113,16 +129,96 @@ trait HasEntryBank
         $this->bank = $this->bank->concat($fresh)->values();
     }
 
-    // -- Emptying it --
+    // -- Removing entries --
 
     public function removeEntry(string $id): void
     {
-        $this->bank = $this->bank->reject(fn (array $entry) => $entry['id'] === $id)->values();
+        $entry = $this->bank->firstWhere('id', $id);
+
+        if (is_null($entry)) {
+            return;
+        }
+
+        $this->bank = $this->bank->reject(fn (array $e) => $e['id'] === $id)->values();
+        $this->removedEntries->push($entry);
     }
+
+    public function bulkRemove(Collection $ids): void
+    {
+        if ($ids->isEmpty()) {
+            return;
+        }
+
+        $moving = $this->bank->filter(fn (array $e) => $ids->contains($e['id']));
+        $this->bank = $this->bank->reject(fn (array $e) => $ids->contains($e['id']))->values();
+        $this->removedEntries = $this->removedEntries->concat($moving)->values();
+    }
+
+    public function removeEntriesMatching(string $term): void
+    {
+        $this->bulkRemove(
+            $this->bank
+                ->filter(fn (array $entry) => Str::contains($entry['name'], $term, ignoreCase: true))
+                ->pluck('id')
+        );
+    }
+
+    // -- Restoring entries --
+
+    public function restoreEntry(string $id): void
+    {
+        $entry = $this->removedEntries->firstWhere('id', $id);
+
+        if (is_null($entry)) {
+            return;
+        }
+
+        if ($this->bankIsFull()) {
+            $this->flashBankIsFull($this->bankLimit());
+
+            return;
+        }
+
+        $this->removedEntries = $this->removedEntries->reject(fn (array $e) => $e['id'] === $id)->values();
+        $this->bank->push($entry);
+    }
+
+    public function bulkRestore(Collection $ids): void
+    {
+        $toRestore = $this->removedEntries->filter(fn (array $e) => $ids->contains($e['id']))->values();
+
+        if ($toRestore->isEmpty()) {
+            return;
+        }
+
+        $room = $this->roomLeft();
+
+        if ($toRestore->count() > $room) {
+            $restoring = $toRestore->take($room);
+            $restoringIds = $restoring->pluck('id');
+            $this->removedEntries = $this->removedEntries->reject(fn (array $e) => $restoringIds->contains($e['id']))->values();
+            $this->bank = $this->bank->concat($restoring)->values();
+            $this->roomForOnlySome($room, $toRestore->count() - $room);
+
+            return;
+        }
+
+        $restoringIds = $toRestore->pluck('id');
+        $this->removedEntries = $this->removedEntries->reject(fn (array $e) => $restoringIds->contains($e['id']))->values();
+        $this->bank = $this->bank->concat($toRestore)->values();
+    }
+
+    public function clearRemovedEntries(): void
+    {
+        $this->removedEntries = collect();
+    }
+
+    // -- Resetting --
 
     protected function resetBank(): void
     {
         $this->bank = collect();
+        $this->removedEntries = collect();
         $this->searchResults = null;
     }
 }

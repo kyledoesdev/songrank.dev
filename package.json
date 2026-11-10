@@ -27,7 +27,7 @@
         "@tailwindcss/vite": "^4.3.3",
         "alpinejs": "^3.14.1",
         "mitt": "^3.0.1",
-        "playwright": "^1.55.1",
+        "playwright": "^1.65.0",
         "sweetalert2": "^11.26.25"
     }
 }

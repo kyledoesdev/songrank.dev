@@ -106,7 +106,10 @@
                     </div>
                 </div>
 
-                @include('livewire.song-rank.setup.partials.album-filters', ['albums' => $this->albums()])
+                @include('partials.album-filters', [
+                    'albums' => $this->albums(),
+                    'removeMethod' => 'removeTracksMatching',
+                ])
 
                 @if (count($this->removedTrackUuids) > 0)
                     @include('livewire.song-rank.setup.partials.removed-tracks', [

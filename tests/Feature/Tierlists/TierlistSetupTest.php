@@ -104,7 +104,7 @@ describe('filling the board', function () {
         expect($component->get('bank'))->toBeEmpty();
     });
 
-    it('takes an entry back off the board', function () {
+    it('takes an entry back off the board and into the removed pile', function () {
         fakeSearch('artists', [spotifyArtist()]);
 
         $component = artistTierlistSetup()
@@ -113,7 +113,9 @@ describe('filling the board', function () {
             ->call('addEntry', 'tame-impala-id')
             ->call('removeEntry', 'tame-impala-id');
 
-        expect($component->get('bank'))->toBeEmpty();
+        expect($component->get('bank'))->toBeEmpty()
+            ->and($component->get('removedEntries'))->toHaveCount(1)
+            ->and($component->get('removedEntries')->first()['id'])->toBe('tame-impala-id');
     });
 
     it('says nothing was found when nothing was', function () {
@@ -256,6 +258,123 @@ describe('the allowance', function () {
             ->call('addEntry', 'three');
 
         expect($component->get('bank'))->toHaveCount(2);
+    });
+});
+
+describe('undoing a removal', function () {
+    it('restores a removed entry back to the board', function () {
+        fakeSearch('artists', [spotifyArtist()]);
+
+        $component = artistTierlistSetup()
+            ->set('searchTerm', 'radiohead')
+            ->call('search')
+            ->call('addEntry', 'tame-impala-id')
+            ->call('removeEntry', 'tame-impala-id')
+            ->call('restoreEntry', 'tame-impala-id');
+
+        expect($component->get('bank'))->toHaveCount(1)
+            ->and($component->get('bank')->first()['id'])->toBe('tame-impala-id')
+            ->and($component->get('removedEntries'))->toBeEmpty();
+    });
+
+    it('blocks restoring when the board is full', function () {
+        config()->set('billing.tierlist_item_limits.free', 2);
+
+        fakeSearch('artists', [
+            spotifyArtist(['id' => 'one', 'name' => 'One']),
+            spotifyArtist(['id' => 'two', 'name' => 'Two']),
+            spotifyArtist(['id' => 'three', 'name' => 'Three']),
+        ]);
+
+        $component = artistTierlistSetup()
+            ->set('searchTerm', 'heads')
+            ->call('search')
+            ->call('addEntry', 'one')
+            ->call('addEntry', 'two')
+            ->call('addEntry', 'three');
+
+        expect($component->get('bank'))->toHaveCount(2);
+
+        $component
+            ->call('removeEntry', 'one')
+            ->call('addEntry', 'three')
+            ->call('restoreEntry', 'one');
+
+        expect($component->get('bank'))->toHaveCount(2)
+            ->and($component->get('bank')->pluck('id')->all())->toBe(['two', 'three'])
+            ->and($component->get('removedEntries'))->toHaveCount(1);
+    });
+
+    it('re-adds a removed entry when the user searches and adds it again', function () {
+        fakeSearch('artists', [spotifyArtist()]);
+
+        $component = artistTierlistSetup()
+            ->set('searchTerm', 'radiohead')
+            ->call('search')
+            ->call('addEntry', 'tame-impala-id')
+            ->call('removeEntry', 'tame-impala-id')
+            ->call('addEntry', 'tame-impala-id');
+
+        expect($component->get('bank'))->toHaveCount(1)
+            ->and($component->get('removedEntries'))->toBeEmpty();
+    });
+
+    it('clears all removed entries at once', function () {
+        fakeSearch('artists', [
+            spotifyArtist(['id' => 'one', 'name' => 'One']),
+            spotifyArtist(['id' => 'two', 'name' => 'Two']),
+        ]);
+
+        $component = artistTierlistSetup()
+            ->set('searchTerm', 'heads')
+            ->call('search')
+            ->call('addEntry', 'one')
+            ->call('addEntry', 'two')
+            ->call('removeEntry', 'one')
+            ->call('removeEntry', 'two')
+            ->call('clearRemovedEntries');
+
+        expect($component->get('bank'))->toBeEmpty()
+            ->and($component->get('removedEntries'))->toBeEmpty();
+    });
+
+    it('excludes removed entries from the tier list', function () {
+        fakeSearch('artists', [
+            spotifyArtist(['id' => 'one', 'name' => 'One']),
+            spotifyArtist(['id' => 'two', 'name' => 'Two']),
+            spotifyArtist(['id' => 'three', 'name' => 'Three']),
+        ]);
+
+        Livewire::actingAs(User::factory()->createOne())
+            ->test(ArtistSetup::class)
+            ->set('searchTerm', 'heads')
+            ->call('search')
+            ->call('addEntry', 'one')
+            ->call('addEntry', 'two')
+            ->call('addEntry', 'three')
+            ->call('removeEntry', 'two')
+            ->set('form.name', 'Test')
+            ->call('startTierlist')
+            ->assertRedirect();
+
+        $tierlist = Tierlist::first();
+
+        expect($tierlist->bank->items)->toHaveCount(2)
+            ->and($tierlist->bank->items->pluck('entryable.artist_id')->all())->toBe(['one', 'three']);
+    });
+
+    it('resets removed entries alongside the bank', function () {
+        fakeSearch('artists', [spotifyArtist()]);
+
+        $component = artistTierlistSetup()
+            ->set('searchTerm', 'radiohead')
+            ->call('search')
+            ->call('addEntry', 'tame-impala-id')
+            ->call('removeEntry', 'tame-impala-id')
+            ->call('resetSetup');
+
+        expect($component->get('bank'))->toBeEmpty()
+            ->and($component->get('removedEntries'))->toBeEmpty();
     });
 });
 
