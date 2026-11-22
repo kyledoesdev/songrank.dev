@@ -48,13 +48,15 @@
                             {{ $place }}
                         </span>
 
-                        <span class="mt-1 text-sm font-semibold truncate w-full text-center" title="{{ $entry['name'] }}">
-                            {{ $entry['name'] }}
+                        <span class="mt-1 flex w-full items-center justify-center gap-1 text-sm font-semibold">
+                            <span class="truncate" title="{{ $entry['name'] }}">{{ $entry['name'] }}</span>
+                            <x-pro-badge :user="$entry['creator'] ?? null" />
                         </span>
 
                         @if ($entry['subtitle'] ?? null)
-                            <span class="text-[11px] text-zinc-400 truncate w-full text-center">
-                                by {{ $entry['subtitle'] }}
+                            <span class="flex w-full items-center justify-center gap-1 text-[11px] text-zinc-400">
+                                <span class="truncate">by {{ $entry['subtitle'] }}</span>
+                                <x-pro-badge :user="$entry['author'] ?? null" />
                             </span>
                         @endif
 
@@ -92,13 +94,15 @@
                             @endif
 
                             <span class="flex-1 min-w-0">
-                                <span class="block truncate text-sm" title="{{ $entry['name'] }}">
-                                    {{ $entry['name'] }}
+                                <span class="flex items-center gap-1 text-sm">
+                                    <span class="truncate" title="{{ $entry['name'] }}">{{ $entry['name'] }}</span>
+                                    <x-pro-badge :user="$entry['creator'] ?? null" />
                                 </span>
 
                                 @if ($entry['subtitle'] ?? null)
-                                    <span class="block text-[11px] text-zinc-400 truncate">
-                                        by {{ $entry['subtitle'] }}
+                                    <span class="flex items-center gap-1 text-[11px] text-zinc-400">
+                                        <span class="truncate">by {{ $entry['subtitle'] }}</span>
+                                        <x-pro-badge :user="$entry['author'] ?? null" />
                                     </span>
                                 @endif
                             </span>

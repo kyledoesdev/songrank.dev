@@ -6,9 +6,13 @@ use Illuminate\Database\Eloquent\Builder;
 
 class UserQueryBuilder extends Builder
 {
+    /**
+     * Only the columns the board shows, because the leaderboard caches these rows.
+     */
     public function topCreators(int $limit = 10): static
     {
         return $this->newQuery()
+            ->select(['users.id', 'users.name', 'users.avatar', 'users.spotify_id', 'users.is_pro', 'users.pro_since'])
             ->whereHas('rankings', fn (Builder $query) => $query->public()->completed())
             ->withCount(['rankings' => fn (Builder $query) => $query->public()->completed()])
             ->orderByDesc('rankings_count')

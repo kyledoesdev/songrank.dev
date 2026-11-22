@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
 use Kyledoesdev\Essentials\Concerns\HasStatsAfterEvents;
 use Laravel\Cashier\Billable;
@@ -59,6 +60,7 @@ class User extends Authenticatable implements CanComment, FilamentUser
         'stripe_id',
         'is_dev',
         'is_pro',
+        'pro_since',
         'password',
     ];
 
@@ -80,6 +82,7 @@ class User extends Authenticatable implements CanComment, FilamentUser
             'user_packet' => 'object',
             'is_dev' => 'boolean',
             'is_pro' => 'boolean',
+            'pro_since' => 'datetime',
         ];
     }
 
@@ -151,16 +154,32 @@ class User extends Authenticatable implements CanComment, FilamentUser
         return $this->getKey() === Auth::id();
     }
 
+    /**
+     * Pro dates from the earliest active licence. One without a purchase date
+     * counts from when it was created, so is_pro never hinges on that column.
+     */
     public function syncProStatus(): void
     {
-        $isPro = $this->proLicenses()->active()->exists();
+        $proSince = $this->proLicenses()
+            ->active()
+            ->min(DB::raw('coalesce(purchased_at, created_at)'));
+
+        $attributes = [
+            'is_pro' => filled($proSince),
+            'pro_since' => $proSince,
+        ];
 
         static::withTrashed()
             ->whereKey($this->getKey())
-            ->update(['is_pro' => $isPro]);
+            ->update($attributes);
 
-        $this->is_pro = $isPro;
-        $this->syncOriginalAttribute('is_pro');
+        $this->forceFill($attributes);
+        $this->syncOriginalAttributes(array_keys($attributes));
+    }
+
+    public function formattedProSince(): ?string
+    {
+        return $this->pro_since?->inUserTimezone()->format('M j, Y');
     }
 
     public function newsletterUnsubscribeUrl(): string

@@ -51,6 +51,7 @@
                         Reviewed by
                         <a href="{{ route('profile', ['id' => $review->user->spotify_id]) }}" class="text-primary hover:underline">
                             {{ $review->user->name }}
+                            <x-pro-badge :user="$review->user" />
                             <i class="fa fa-arrow-up-right-from-square text-blue-500 text-xs"></i>
                         </a>
                     </p>

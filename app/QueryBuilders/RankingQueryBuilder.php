@@ -80,7 +80,7 @@ class RankingQueryBuilder extends Builder
             ->completed()
             ->has('songs', '<=', 500)
             ->withCount('songs')
-            ->with('user', 'source')
+            ->with('user:id,name,is_pro,pro_since', 'source')
             ->orderByDesc('songs_count')
             ->orderBy('name')
             ->limit($limit);

@@ -52,6 +52,7 @@ class Leaderboards extends Component
             ->map(fn (User $user) => [
                 'image' => $user->avatar,
                 'name' => $user->name,
+                'creator' => $user,
                 'count' => $user->rankings_count,
                 'url' => route('profile', ['id' => $user->spotify_id]),
                 'spotify_url' => null,
@@ -67,6 +68,7 @@ class Leaderboards extends Component
                 'image' => $ranking->source->cover(),
                 'name' => $ranking->name,
                 'subtitle' => $ranking->user->name,
+                'author' => $ranking->user,
                 'count' => $ranking->songs_count,
                 'url' => route('ranking', ['id' => $ranking->getKey()]),
                 'spotify_url' => $ranking->source->spotifyUrl(),

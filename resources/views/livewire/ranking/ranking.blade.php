@@ -56,6 +56,7 @@
                                 Ranked by
                                 <a href="{{ route('profile', ['id' => $ranking->user->spotify_id]) }}" class="text-primary hover:underline">
                                     {{ $ranking->user->name }}
+                                    <x-pro-badge :user="$ranking->user" />
                                     <i class="fa fa-arrow-up-right-from-square text-blue-500 text-xs"></i>
                                 </a>
                             </p>

@@ -42,6 +42,7 @@
                             <img src="{{ $tierlist->user->avatar }}" alt="" class="h-5 w-5 rounded-full object-cover shrink-0">
                         @endif
                         <span class="truncate">{{ $tierlist->user->name }}</span>
+                        <x-pro-badge :user="$tierlist->user" />
                         <span class="ml-auto shrink-0 font-semibold text-purple-600">
                             {{ config('app.name') }}
                             <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
