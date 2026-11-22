@@ -23,6 +23,7 @@
                 @else
                     {{ $comment->commentatorProperties()?->name ?? __('comments::comments.guest')  }}
                 @endif
+                <x-pro-badge :user="$comment->commentator" class="mx-1" />
                 <ul class="comments-comment-header-actions">
                     <li>
                         <a

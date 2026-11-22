@@ -80,7 +80,10 @@
                     <div class="flex items-center mb-4">
                         <img src="{{ auth()->user()->avatar }}" alt="User Avatar" class="h-10 w-10 rounded-2xl" />
                         <div class="ml-3">
-                            <p class="text-sm font-medium text-zinc-800">{{ auth()->user()->name }}</p>
+                            <p class="flex items-center gap-1.5 text-sm font-medium text-zinc-800">
+                                {{ auth()->user()->name }}
+                                <x-pro-badge :user="auth()->user()" />
+                            </p>
                         </div>
                     </div>
                     <a href="{{ route('logout') }}" class="flex items-center px-3 py-2 text-sm font-medium text-red-600 rounded-md hover:bg-red-50">
@@ -163,6 +166,7 @@
                                 <div class="text-sm font-medium truncate text-zinc-800 mx-2 cursor-pointer">
                                     {{ auth()->user()->name }}
                                 </div>
+                                <x-pro-badge :user="auth()->user()" />
                                 <i class="fa fa-solid fa-chevron-down ml-2 cursor-pointer"></i>
                             </button>
                             <div

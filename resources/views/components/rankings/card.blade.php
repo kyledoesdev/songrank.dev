@@ -63,6 +63,7 @@
                         <a href="{{ route('profile', ['id' => $ranking->user->spotify_id]) }}" class="inline-flex items-center gap-1 hover:text-zinc-600 transition-colors">
                             <i class="fa-regular fa-user"></i>
                             {{ $ranking->user->name }}
+                            <x-pro-badge :user="$ranking->user" />
                             <i class="fa fa-arrow-up-right-from-square text-blue-500"></i>
                         </a>
                     </div>

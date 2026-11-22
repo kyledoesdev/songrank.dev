@@ -44,7 +44,7 @@ function proUser(array $attributes = []): User
  */
 function revokePro(User $user): User
 {
-    $user->update(['is_pro' => false]);
+    $user->update(['is_pro' => false, 'pro_since' => null]);
 
     return $user;
 }

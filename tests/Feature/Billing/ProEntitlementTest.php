@@ -77,3 +77,49 @@ describe('the is_pro projection', function () {
         expect($user->fresh()->is_pro)->toBeTrue();
     });
 });
+
+describe('the pro_since projection', function () {
+    it('starts empty', function () {
+        expect(User::factory()->createOne()->pro_since)->toBeNull();
+    });
+
+    it('dates from the earliest licence still active', function () {
+        $user = User::factory()->createOne();
+        ProLicense::factory()->refunded()->for($user)->create(['purchased_at' => '2024-01-01 12:00:00']);
+        ProLicense::factory()->active()->for($user)->create(['purchased_at' => '2025-06-01 12:00:00']);
+        ProLicense::factory()->active()->for($user)->create(['purchased_at' => '2025-02-01 12:00:00']);
+
+        expect($user->fresh()->pro_since->toDateTimeString())->toBe('2025-02-01 12:00:00');
+    });
+
+    it('counts a licence with no purchase date from when it was created', function () {
+        $user = User::factory()->createOne();
+        $licence = ProLicense::factory()->active()->for($user)->create(['purchased_at' => null]);
+
+        expect($user->fresh())
+            ->is_pro->toBeTrue()
+            ->pro_since->toDateTimeString()->toBe($licence->created_at->toDateTimeString());
+    });
+
+    it('clears when the licence is revoked', function () {
+        $user = User::factory()->createOne();
+        $licence = ProLicense::factory()->active()->for($user)->create();
+
+        expect($user->fresh()->pro_since)->not->toBeNull();
+
+        app(RevokeProLicense::class)->handle($licence, ProLicenseStatus::REVOKED);
+
+        expect($user->fresh()->pro_since)->toBeNull();
+    });
+
+    it('lands on the instance that synced it, with nothing left dirty', function () {
+        $user = User::factory()->createOne();
+        ProLicense::factory()->active()->for($user)->create();
+
+        $user->syncProStatus();
+
+        expect($user->pro_since)->not->toBeNull()
+            ->and($user->is_pro)->toBeTrue()
+            ->and($user->isDirty())->toBeFalse();
+    });
+});

@@ -60,6 +60,7 @@
                             Tiered by
                             <a href="{{ route('profile', ['id' => $tierlist->user->spotify_id]) }}" class="text-primary hover:underline">
                                 {{ $tierlist->user->name }}
+                                <x-pro-badge :user="$tierlist->user" />
                                 <i class="fa fa-arrow-up-right-from-square text-blue-500 text-xs"></i>
                             </a>
                         </p>

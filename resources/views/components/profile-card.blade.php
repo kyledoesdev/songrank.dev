@@ -14,7 +14,10 @@
         
         <div class="flex-1 min-w-0">
             <div class="mb-1">
-                <h2 class="text-xl font-bold text-gray-800 my-2">{{ $user->name }}</h2>
+                <h2 class="flex items-center gap-2 text-xl font-bold text-gray-800 my-2">
+                    {{ $user->name }}
+                    <x-pro-badge :user="$user" />
+                </h2>
             </div>
             
             <div class="flex space-x-4 overflow-x-auto pb-2">
